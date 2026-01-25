@@ -1,0 +1,301 @@
+1. Kafka Consumer Lag Explosion
+
+Scenario
+After a deployment, Kafka consumer lag spikes from near-zero to millions. Pods are healthy, CPU is normal.
+
+Interview focus
+
+How do you diagnose lag in Kafka vs app vs Kubernetes?
+
+What metrics do you check first?
+
+How do you determine if this is a consumer, broker, or network issue?
+
+How do you fix it without data loss?
+
+2. Rebalance Storm During Deployment
+
+Scenario
+Rolling deployment of Spring Boot consumers causes constant Kafka rebalancing and throughput collapse.
+
+Interview focus
+
+Why does rolling deployment trigger rebalances?
+
+How do you design consumers to be rebalance-friendly?
+
+What Kubernetes and Kafka configs reduce this?
+
+When would you pause consumption during deploys?
+
+3. Duplicate Message Processing
+
+Scenario
+After a pod restart, downstream systems report duplicate processing of Kafka messages.
+
+Interview focus
+
+Why does this happen even with commits enabled?
+
+How do you design idempotent consumers?
+
+Where do you store deduplication state?
+
+At-least-once vs exactly-once trade-offs
+
+4. Kafka Consumer Keeps Restarting in EKS
+
+Scenario
+Kafka consumer pods keep restarting due to liveness probe failures during traffic spikes.
+
+Interview focus
+
+Why liveness probes fail under load
+
+Difference between liveness vs readiness for Kafka consumers
+
+How to design probes for message-driven apps
+
+When NOT to use liveness probes
+
+5. Poison Message Blocking a Partition
+
+Scenario
+One bad message causes repeated consumer failures, blocking an entire Kafka partition.
+
+Interview focus
+
+How do you detect poison messages?
+
+How do you skip or quarantine bad events?
+
+Retry topics vs dead-letter topics
+
+Offset management strategy
+
+6. Kafka Throughput Drops After Scaling Pods
+
+Scenario
+You scale consumers from 5 to 20 pods, but throughput stays the same or gets worse.
+
+Interview focus
+
+Kafka partition vs consumer relationship
+
+Why scaling pods doesn’t always increase throughput
+
+Optimal partition strategy
+
+How EKS autoscaling interacts with Kafka
+
+7. Message Processing Slows Down Without Errors
+
+Scenario
+No errors, no crashes—but Kafka lag slowly increases over hours.
+
+Interview focus
+
+Thread pool exhaustion in Spring Boot consumers
+
+Blocking calls inside Kafka listeners
+
+Backpressure handling
+
+Consumer poll loop starvation
+
+8. Kafka Commit Happens but Data Is Lost
+
+Scenario
+Offsets are committed, but downstream DB has missing records.
+
+Interview focus
+
+Commit timing vs business transaction
+
+Exactly-once illusion
+
+Transactional outbox pattern
+
+Why “commit after save” is not always safe
+
+9. Large Kafka Message Causes OOM in Pods
+
+Scenario
+A few large messages crash consumer pods with OOMKilled.
+
+Interview focus
+
+Kafka max message size vs consumer heap
+
+Deserialization memory impact
+
+Handling large payloads (chunking, references)
+
+JVM tuning in containers
+
+10. Kafka Broker Latency Affects All Services
+
+Scenario
+Kafka broker latency spikes cause cascading failures across multiple Spring Boot services.
+
+Interview focus
+
+Why Kafka becomes a shared blast radius
+
+Circuit breakers for Kafka (yes/no?)
+
+Producer retries and timeout tuning
+
+Isolation strategies per service
+
+11. Producer Sends Messages but Consumers See Nothing
+
+Scenario
+Spring Boot producer logs success, but consumers receive no messages.
+
+Interview focus
+
+Wrong topic, partitioning, or key issues
+
+Serialization mismatch
+
+ACL / IAM issues in EKS
+
+How to verify end-to-end delivery
+
+12. Kafka + DB Transaction Coupling
+
+Scenario
+A service writes to DB and publishes to Kafka in the same flow.
+
+Interview focus
+
+Why 2PC is a bad idea here
+
+Outbox pattern design
+
+Failure scenarios and recovery
+
+Ordering guarantees
+
+13. EKS Node Upgrade Breaks Kafka Consumers
+
+Scenario
+After EKS node group upgrade, consumers start failing randomly.
+
+Interview focus
+
+JVM + container + kernel interactions
+
+DNS, MTU, and networking issues
+
+Graceful shutdown handling
+
+Pod eviction and Kafka rebalancing
+
+14. Autoscaling Causes Kafka Instability
+
+Scenario
+HPA aggressively scales consumers up and down, causing unstable lag.
+
+Interview focus
+
+Why Kafka consumers don’t like aggressive autoscaling
+
+Metrics you should NOT scale on
+
+Stabilization windows
+
+Manual vs automatic scaling decisions
+
+15. Reprocessing Old Kafka Data Safely
+
+Scenario
+Business asks to replay last 7 days of Kafka events.
+
+Interview focus
+
+Offset reset strategies
+
+Replay without corrupting state
+
+Versioned consumers
+
+Data idempotency guarantees
+
+16. Kafka Security in EKS
+
+Scenario
+Kafka is secured with TLS + IAM, but apps fail intermittently.
+
+Interview focus
+
+IAM role vs pod identity issues
+
+Cert rotation impact
+
+Truststore/keystore management
+
+Debugging auth vs network failures
+
+17. Graceful Shutdown Fails Under Load
+
+Scenario
+During deployment, Kafka consumers shut down but messages are reprocessed.
+
+Interview focus
+
+Spring Boot shutdown hooks
+
+max.poll.interval.ms interaction
+
+Stop polling vs stop processing
+
+Draining in Kubernetes
+
+18. Cross-Region Kafka Disaster Recovery
+
+Scenario
+Primary Kafka cluster goes down; services must fail over.
+
+Interview focus
+
+Active-active vs active-passive
+
+Topic replication strategies
+
+Consumer offset sync
+
+Operational complexity trade-offs
+
+19. Debugging in Production Without Restart
+
+Scenario
+High lag + partial failures, but restarting pods is risky.
+
+Interview focus
+
+Actuator usage safely
+
+Runtime diagnostics
+
+Log level changes at runtime
+
+Kafka tooling vs app introspection
+
+20. Design Question (Principal-Level)
+
+Scenario
+You’re asked to design an event-driven platform using Spring Boot + Kafka + EKS for 50+ services.
+
+Interview focus
+
+Topic ownership model
+
+Schema evolution strategy
+
+Consumer isolation
+
+Platform vs product responsibility
+
+Guardrails, not frameworks

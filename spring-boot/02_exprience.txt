@@ -1,0 +1,241 @@
+Architecture & Design (Senior Level)
+
+How do you decide where Spring Boot fits in an enterprise architecture?
+
+When would you avoid using Spring Boot?
+
+How do you structure a large Spring Boot codebase with multiple teams?
+
+How do you enforce architectural boundaries in Spring Boot applications?
+
+How do you handle backward compatibility of APIs in long-running systems?
+
+What trade-offs have you seen with Spring Boot auto-configuration?
+
+How do you standardize Spring Boot practices across teams?
+
+How do you design a shared Spring Boot starter for an organization?
+
+How do you handle cross-cutting concerns without abusing AOP?
+
+How do you evaluate Spring Boot upgrades in a large production system?
+
+Startup, Auto-Configuration & Internals
+
+Explain the Spring Boot startup sequence in detail.
+
+How do you troubleshoot slow application startup in Spring Boot?
+
+How do you inspect which auto-configurations are applied or excluded?
+
+When and how do you override Spring Boot auto-configuration?
+
+What problems have you faced due to classpath-based auto-configuration?
+
+How do you disable unused auto-configurations safely?
+
+How does conditional configuration work internally?
+
+How do you debug bean creation issues in complex applications?
+
+How do you manage circular dependencies at scale?
+
+What are common anti-patterns in Spring Boot auto-configuration usage?
+
+Configuration, Profiles & Environments
+
+How do you design configuration strategy for 4–5 environments?
+
+How do you handle secrets in Spring Boot applications?
+
+How do you avoid configuration drift across environments?
+
+When do you use @ConfigurationProperties vs external config servers?
+
+How do you manage dynamic configuration changes at runtime?
+
+How do you validate configuration early during startup?
+
+How do you handle misconfiguration failures in production?
+
+How do you design environment-agnostic Spring Boot applications?
+
+How do you manage feature toggles in Spring Boot?
+
+What configuration mistakes commonly cause production outages?
+
+REST API Design & Governance
+
+How do you design REST APIs for long-term evolution?
+
+How do you version APIs in Spring Boot?
+
+How do you enforce API standards across teams?
+
+How do you handle global exception handling in large systems?
+
+How do you design consistent error responses?
+
+How do you implement idempotency in REST APIs?
+
+How do you handle large payloads and streaming responses?
+
+How do you design APIs for backward compatibility?
+
+How do you handle request validation at scale?
+
+What API mistakes have you seen cause performance issues?
+
+Data, Transactions & Consistency
+
+How do you decide transaction boundaries in Spring Boot services?
+
+How do you handle distributed transactions in microservices?
+
+When do you avoid @Transactional?
+
+How do you design database access for high-throughput systems?
+
+How do you handle connection pool tuning?
+
+How do you prevent N+1 query issues?
+
+How do you handle schema evolution safely?
+
+How do you manage read vs write workloads?
+
+How do you design retry logic for database failures?
+
+What data-related production issues have you handled?
+
+Security (Real-World Focus)
+
+How do you design authentication and authorization in Spring Boot?
+
+How do you integrate Spring Security with enterprise identity providers?
+
+How do you handle token expiration and refresh securely?
+
+How do you secure internal vs external APIs differently?
+
+How do you prevent common security misconfigurations?
+
+How do you design role and permission models?
+
+How do you handle audit logging securely?
+
+How do you manage secrets rotation?
+
+How do you secure actuator endpoints in production?
+
+What security incidents have you debugged in Spring Boot systems?
+
+Microservices & Distributed Systems
+
+How do you decide service boundaries when using Spring Boot?
+
+When does a Spring Boot microservice become too large?
+
+How do you handle synchronous vs asynchronous communication?
+
+How do you implement resiliency patterns in Spring Boot?
+
+How do you prevent cascading failures?
+
+How do you implement circuit breakers correctly?
+
+How do you design retries without causing retry storms?
+
+How do you handle schema evolution in event-driven systems?
+
+How do you manage inter-service contracts?
+
+What failures have you seen in distributed Spring Boot systems?
+
+Observability, Actuator & Production Support
+
+How do you design observability for Spring Boot services?
+
+Which actuator endpoints do you expose in production and why?
+
+How do you correlate logs, metrics, and traces?
+
+How do you implement distributed tracing?
+
+How do you detect memory leaks in Spring Boot?
+
+How do you design health checks for Kubernetes?
+
+How do you differentiate readiness vs liveness?
+
+How do you handle graceful shutdown in production?
+
+How do you debug production issues without restarting services?
+
+What metrics matter most for Spring Boot services?
+
+Performance & Scalability
+
+How do you benchmark Spring Boot applications?
+
+How do you tune thread pools for different workloads?
+
+How do you handle blocking vs non-blocking calls?
+
+How do you prevent thread starvation?
+
+How do you tune JVM for Spring Boot in production?
+
+How do you optimize startup time?
+
+How do you handle high GC pressure?
+
+How do you scale Spring Boot services horizontally?
+
+How do you handle backpressure?
+
+What performance regressions have you fixed?
+
+Testing, CI/CD & Quality
+
+How do you design test strategy for large Spring Boot systems?
+
+What tests must always run in CI pipelines?
+
+How do you avoid slow integration tests?
+
+How do you use Testcontainers in enterprise setups?
+
+How do you manage test data at scale?
+
+How do you enforce quality gates?
+
+How do you handle flaky tests?
+
+How do you test backward compatibility?
+
+How do you validate production readiness?
+
+What testing gaps commonly cause production failures?
+
+Leadership & Ownership (12+ Years Signal)
+
+How do you mentor teams on Spring Boot best practices?
+
+How do you review Spring Boot designs effectively?
+
+How do you push back on bad architectural decisions?
+
+How do you balance delivery speed vs long-term maintainability?
+
+How do you handle legacy Spring applications migration to Spring Boot?
+
+How do you drive technical consistency across teams?
+
+How do you document Spring Boot architecture for new hires?
+
+How do you handle production incidents as a lead?
+
+How do you make build vs buy decisions?
+
+What Spring Boot decision are you most proud of?

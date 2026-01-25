@@ -1,0 +1,143 @@
+Application Startup & Failures
+
+A Spring Boot service suddenly takes 3× longer to start after a release. How do you diagnose and fix it?
+
+Your application fails to start in production but works locally. What steps do you take?
+
+After adding a new dependency, unexpected beans start getting created. How do you find the root cause?
+
+A minor config change causes the app to fail at startup. How do you prevent such failures?
+
+Your service crashes on startup due to missing environment variables. How do you design around this?
+
+Configuration & Environment Management
+
+One environment works, another breaks with the same build. How do you debug it?
+
+Secrets were accidentally committed in application.yml. What immediate and long-term steps do you take?
+
+Config values need to change without restarting the service. How do you design this?
+
+A config value has different meanings across teams. How do you standardize it?
+
+A wrong profile was activated in production. How do you detect and prevent this?
+
+REST API & Contract Scenarios
+
+A downstream client breaks after your API change. What went wrong and how do you fix it?
+
+You need to introduce a new mandatory field in an existing API. How do you do it safely?
+
+APIs start returning inconsistent error responses across services. How do you fix this?
+
+One endpoint is abused by clients causing high CPU usage. How do you protect it?
+
+A large response payload causes latency spikes. How do you optimize it?
+
+Exception Handling & Resilience
+
+An external dependency starts timing out intermittently. How does your service behave?
+
+Retries are causing system-wide slowdown. How do you redesign retry logic?
+
+Circuit breakers are open too often. How do you tune them?
+
+Errors are swallowed and logs show nothing useful. How do you redesign error handling?
+
+How do you ensure failures are visible but not catastrophic?
+
+Database & Transactions
+
+A simple read API starts timing out under load. What do you investigate first?
+
+A transaction rollback does not happen as expected. How do you debug it?
+
+N+1 queries appear after a small code change. How do you detect and prevent this?
+
+Database connections are exhausted during peak hours. How do you fix it?
+
+A long-running transaction blocks other requests. How do you redesign it?
+
+Data Consistency & Distributed Systems
+
+A service writes to DB but fails before publishing an event. How do you ensure consistency?
+
+Duplicate events are being processed. How do you make consumers idempotent?
+
+Two services disagree on data state. How do you debug and fix it?
+
+Schema changes break consumers. How do you avoid this?
+
+A replay of events corrupts downstream data. How do you design safe reprocessing?
+
+Security Incidents
+
+A public endpoint was unintentionally exposed. How do you respond?
+
+JWT tokens suddenly start failing validation. How do you debug it?
+
+Actuator endpoints are accessible publicly. How do you secure them quickly?
+
+Role-based access behaves differently across environments. What do you check?
+
+A vulnerability is reported in a Spring dependency. How do you handle it?
+
+Performance & Scalability
+
+CPU usage spikes with no increase in traffic. How do you investigate?
+
+Thread pool queues grow indefinitely. How do you introduce backpressure?
+
+A blocking call sneaks into a high-throughput API. How do you detect it?
+
+After scaling pods, performance gets worse. Why could that happen?
+
+GC pauses increase after a feature release. How do you diagnose it?
+
+Observability & Production Debugging
+
+Requests are slow but logs show no errors. What do you check?
+
+Metrics look normal but users report failures. How do you reconcile this?
+
+You cannot reproduce a production issue locally. How do you debug it?
+
+Logs are too noisy to find real issues. How do you fix logging strategy?
+
+Traces show latency gaps. How do you identify the bottleneck?
+
+Kubernetes & Cloud (Spring Boot on EKS)
+
+Pods restart frequently with no clear errors. How do you debug?
+
+Liveness probes are killing healthy pods. How do you fix probe design?
+
+ConfigMaps were updated but pods didn’t reflect changes. Why?
+
+Traffic spikes after deployment cause failures. How do you handle this?
+
+Rolling deployments cause partial outages. How do you fix rollout strategy?
+
+Testing & Release Management
+
+A bug reaches production despite tests passing. What went wrong?
+
+Integration tests are too slow for CI. How do you optimize them?
+
+A feature works in staging but not production. How do you design better tests?
+
+A rollback is required immediately after deployment. How do you design for it?
+
+Canary deployment shows mixed results. How do you decide to proceed?
+
+Leadership & Decision-Making Scenarios
+
+Two teams use Spring Boot very differently. How do you bring consistency?
+
+A developer wants to bypass Spring Boot conventions. Do you allow it?
+
+Business wants faster delivery at the cost of tech debt. How do you respond?
+
+A critical incident happens at 2 AM. What’s your role as a lead?
+
+What is the most serious Spring Boot production failure you’ve handled and what did you change afterward?

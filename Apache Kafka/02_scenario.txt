@@ -1,0 +1,219 @@
+🔥 Kafka Consumer Scenarios
+
+Consumer lag keeps increasing but CPU and memory look normal. How do you debug this?
+
+After a deployment, consumers stop processing messages but offsets keep committing. What went wrong?
+
+Kafka consumers restart frequently during peak traffic. Why?
+
+One consumer instance is much slower than others in the same group. How do you investigate?
+
+Consumers process messages twice after a restart. Is this expected? How do you prevent it?
+
+A consumer crashes on a specific message and keeps reprocessing it forever. What do you do?
+
+Rebalancing happens too frequently and throughput collapses. What causes this?
+
+Consumers fall behind only at night. What could explain this?
+
+One partition is always lagging while others are fine. Why?
+
+After scaling consumers, throughput doesn’t improve. Why?
+
+🚀 Kafka Producer Scenarios
+
+Producer logs show “message sent successfully” but consumers don’t receive anything. How do you debug?
+
+Producer latency spikes suddenly with no code change. What could cause this?
+
+Messages are duplicated after enabling retries. Why?
+
+Producers start timing out intermittently under load. What do you tune?
+
+A producer crash causes message loss. How is that possible?
+
+Large messages cause producer OOM errors. How do you fix it?
+
+Producer throughput drops after enabling compression. Why?
+
+Messages are unevenly distributed across partitions. What’s wrong?
+
+One producer floods Kafka and impacts all other services. How do you isolate it?
+
+Producer sends data faster than consumers can handle. How do you handle backpressure?
+
+⚖️ Offset & Delivery Semantics Scenarios
+
+Offsets are committed but database records are missing. How did this happen?
+
+You need exactly-once processing but still see duplicates. Why?
+
+Business asks to replay last 3 days of data without breaking systems. How do you do it?
+
+A consumer accidentally resets offsets to earliest in production. What do you do next?
+
+Duplicate messages corrupt downstream systems. How do you redesign?
+
+Offset commits fail intermittently. What are the consequences?
+
+How do you safely pause consumption during incidents?
+
+A rollback requires reprocessing messages already consumed. How do you handle it?
+
+Messages arrive out of order. Why?
+
+Consumers reprocess messages after scaling down. Is this expected?
+
+🧱 Topic & Partition Design Scenarios
+
+Topic was created with too few partitions and now can’t keep up. What are your options?
+
+One partition becomes a hotspot. How do you fix it without downtime?
+
+Increasing partitions breaks message ordering. Why?
+
+Too many topics exist and Kafka becomes hard to manage. How do you fix governance?
+
+A topic grows faster than expected and disk fills up. What do you do?
+
+Retention cleanup causes performance degradation. Why?
+
+Compacted topic loses data unexpectedly. How?
+
+Partition reassignment causes lag spikes. Why?
+
+Multi-tenant topics cause noisy-neighbor issues. How do you isolate?
+
+What happens if partition leaders move frequently?
+
+🧬 Schema & Data Evolution Scenarios
+
+Producer deploys a schema change and consumers crash. What went wrong?
+
+Old consumers break after a new field is added. Why?
+
+Schema Registry is down — what happens?
+
+Different teams evolve schemas independently. How do you prevent outages?
+
+A backward-compatible change still causes issues. Why?
+
+How do you safely remove a field from events?
+
+A schema change corrupts downstream data. How do you recover?
+
+Schema compatibility rules are bypassed in production. What’s the impact?
+
+Replay of old events fails due to schema mismatch. Why?
+
+How do you test schema changes before production?
+
+🧨 Failure & Reliability Scenarios
+
+Kafka broker goes down during peak traffic. What happens?
+
+ISR shrinks frequently. What does that indicate?
+
+Disk usage grows faster than expected. Why?
+
+Network latency spikes affect Kafka cluster. What breaks first?
+
+One broker is much slower than others. Why?
+
+Zookeeper instability causes Kafka issues. How?
+
+Kafka cluster survives but clients start failing. Why?
+
+GC pauses on brokers cause lag. How do you detect?
+
+Messages pile up but brokers look healthy. What do you check?
+
+What failure modes can cause silent data loss?
+
+⚙️ Performance & Tuning Scenarios
+
+Throughput suddenly drops by 50% after a config change. How do you debug?
+
+Consumer fetch requests are slow. Why?
+
+High CPU on brokers but low network usage. Why?
+
+Compression improves throughput but increases latency. Why?
+
+Kafka performs well in test but poorly in prod. Why?
+
+Increasing batch size makes latency worse. Why?
+
+Brokers run out of file handles. What caused it?
+
+GC tuning improves throughput but causes latency spikes. Why?
+
+How do you identify the true bottleneck — producer, broker, or consumer?
+
+What tuning mistakes commonly cause outages?
+
+🌍 Kafka in Distributed Systems Scenarios
+
+A service publishes events but downstream state is inconsistent. Why?
+
+Kafka is used as a request-response system and starts failing. Why?
+
+A single event triggers a cascade of failures. How do you prevent this?
+
+Event-driven workflow partially completes and gets stuck. Why?
+
+Multiple services consume the same topic but interpret data differently. How do you fix this?
+
+Replay causes downstream systems to double charge customers. What went wrong?
+
+Event ordering across services is broken. Why?
+
+Kafka becomes a shared blast radius. How do you redesign?
+
+One bad consumer slows the entire ecosystem. How?
+
+What Kafka anti-patterns have you seen in microservices?
+
+🔐 Security & Compliance Scenarios
+
+Unauthorized consumer reads sensitive data. How did this happen?
+
+ACL misconfiguration blocks production traffic. How do you recover?
+
+Certificates expire and Kafka clients start failing. What breaks?
+
+A team bypasses security using shared credentials. How do you prevent this?
+
+Audit team asks who accessed which topics. How do you answer?
+
+Kafka credentials leak. What’s your immediate action?
+
+TLS handshake failures happen intermittently. Why?
+
+IAM-based auth works in one region but not another. Why?
+
+Security changes break older consumers. Why?
+
+How do you rotate secrets without downtime?
+
+🧠 Senior / Architect-Level Scenarios
+
+Kafka is used everywhere and becomes hard to govern. What do you change?
+
+Business wants Kafka for everything. When do you say no?
+
+Kafka cluster cost keeps increasing. How do you optimize?
+
+One team’s design causes repeated Kafka incidents. How do you fix culturally and technically?
+
+You need cross-region disaster recovery for Kafka. How do you design it?
+
+A migration from MQ to Kafka causes message loss. Why?
+
+You inherit a badly designed Kafka platform. Where do you start?
+
+What Kafka decision caused the biggest outage you’ve seen?
+
+What would you redesign if starting Kafka from scratch?
+
+What Kafka failure changed how you design systems?

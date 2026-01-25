@@ -1,0 +1,263 @@
+EKS Fundamentals
+
+What is Amazon EKS and why would you choose it over self-managed Kubernetes?
+
+What components of the Kubernetes control plane are managed by EKS?
+
+How does EKS differ from ECS?
+
+What versions of Kubernetes does EKS support?
+
+How is high availability achieved in EKS control plane?
+
+What is the cost model of EKS?
+
+Can EKS be used in private-only clusters?
+
+What AWS resources are created when you create an EKS cluster?
+
+What is the role of kubeconfig in EKS?
+
+How do you authenticate to an EKS cluster?
+
+Cluster Architecture & Networking
+
+How does networking work in EKS?
+
+What is the AWS VPC CNI plugin?
+
+How are Pods assigned IP addresses in EKS?
+
+Difference between Pod IP and Node IP in EKS?
+
+What is the maximum number of pods per node and why?
+
+How does EKS integrate with VPC subnets?
+
+Public vs private EKS cluster — trade-offs?
+
+How does DNS work inside an EKS cluster?
+
+What happens if a subnet runs out of IPs?
+
+How do security groups apply to EKS traffic?
+
+Worker Nodes & Compute
+
+Difference between managed node groups and self-managed nodes?
+
+What is an EKS worker node?
+
+How does node bootstrap work?
+
+What is a launch template in EKS?
+
+How do you upgrade worker nodes safely?
+
+What happens when a node becomes NotReady?
+
+How does EKS handle node failure?
+
+When would you use Fargate with EKS?
+
+Limitations of EKS Fargate?
+
+How do you drain a node safely?
+
+IAM, Authentication & Authorization
+
+How does IAM authentication work in EKS?
+
+What is aws-auth ConfigMap?
+
+Difference between IAM authentication and Kubernetes RBAC?
+
+How do you give cluster access to a new user?
+
+How do you restrict namespace-level access?
+
+What is IRSA (IAM Roles for Service Accounts)?
+
+Why is IRSA preferred over node IAM roles?
+
+How does pod-level IAM work internally?
+
+Common IAM misconfigurations in EKS?
+
+How do you audit access to an EKS cluster?
+
+Deployments & Workloads
+
+How do you deploy applications to EKS?
+
+Difference between Deployment, StatefulSet, and DaemonSet?
+
+How does rolling deployment work in EKS?
+
+How do you handle zero-downtime deployments?
+
+What causes pods to restart frequently?
+
+How do you debug CrashLoopBackOff in EKS?
+
+How do you control pod placement?
+
+What are taints and tolerations?
+
+What are node selectors and affinity rules?
+
+How do you isolate workloads in the same cluster?
+
+Scaling & Autoscaling
+
+Difference between HPA, VPA, and Cluster Autoscaler?
+
+How does HPA work internally?
+
+What metrics should NOT be used for autoscaling?
+
+How does Cluster Autoscaler interact with AWS Auto Scaling Groups?
+
+Why does scaling sometimes make performance worse?
+
+How do you prevent autoscaling thrashing?
+
+How do you scale Kafka or stateful workloads in EKS?
+
+How do you handle uneven pod distribution?
+
+When should scaling be manual?
+
+How do you test autoscaling behavior?
+
+Load Balancing & Ingress
+
+How does service type LoadBalancer work in EKS?
+
+Difference between ALB Ingress Controller and NGINX Ingress?
+
+How does ALB get created in EKS?
+
+What security groups apply to ALB-created services?
+
+How do you expose internal vs external services?
+
+What happens when an ALB target becomes unhealthy?
+
+How does path-based routing work?
+
+How do you do blue-green or canary deployments using ALB?
+
+How do you handle TLS in EKS?
+
+Common ingress misconfigurations you’ve seen?
+
+Storage in EKS
+
+How does persistent storage work in EKS?
+
+Difference between emptyDir, hostPath, and PVC?
+
+What is the EBS CSI driver?
+
+How does dynamic volume provisioning work?
+
+How do you back up persistent data?
+
+Can a PVC move across nodes?
+
+What happens if a node with EBS volume fails?
+
+EFS vs EBS in EKS — when to use what?
+
+How do StatefulSets handle storage?
+
+Common storage-related failures in EKS?
+
+Observability & Troubleshooting
+
+How do you monitor an EKS cluster?
+
+What metrics are critical at cluster level?
+
+How do you collect logs from pods?
+
+How do you debug network connectivity issues?
+
+Difference between liveness and readiness probes?
+
+How do bad probes cause outages?
+
+How do you debug intermittent pod restarts?
+
+How do you troubleshoot DNS issues?
+
+How do you debug node-level issues?
+
+What tools do you rely on most for EKS debugging?
+
+Upgrades & Operations
+
+How do you upgrade an EKS cluster?
+
+What is the safest upgrade strategy?
+
+What breaks during Kubernetes upgrades?
+
+How do you handle deprecated APIs?
+
+How do you test upgrades before production?
+
+How do you roll back an EKS upgrade?
+
+How do you manage multiple clusters?
+
+How do you enforce cluster standards?
+
+How do you reduce operational toil?
+
+Biggest operational challenge you faced with EKS?
+
+Security & Compliance
+
+How do you secure EKS clusters in production?
+
+How do you isolate workloads for compliance?
+
+How do you scan container images?
+
+How do you handle secret management?
+
+Why should Kubernetes Secrets not be trusted blindly?
+
+How do you secure etcd data?
+
+How do you prevent privilege escalation?
+
+How do you handle multi-tenant clusters?
+
+What security incidents have you handled?
+
+How do you design EKS for regulated environments?
+
+Senior / Architect-Level Scenarios
+
+Single large cluster vs multiple clusters — how do you decide?
+
+When should you split clusters?
+
+How do you design EKS for 50+ microservices?
+
+How do you control blast radius in EKS?
+
+How do you handle noisy neighbors?
+
+How do you design DR for EKS?
+
+How do you migrate from ECS/VMs to EKS?
+
+How do you standardize EKS across teams?
+
+What would you redesign if starting fresh?
+
+What EKS decision went wrong and what did you learn?

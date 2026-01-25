@@ -1,0 +1,263 @@
+Kafka Fundamentals (Experienced-Level)
+
+Why did your organization choose Kafka over traditional messaging systems?
+
+What problems does Kafka solve well—and what does it not solve?
+
+How does Kafka guarantee message ordering?
+
+What is the role of partitions in Kafka scalability?
+
+How do producers decide which partition a message goes to?
+
+What happens if a partition leader fails?
+
+How does Kafka ensure durability?
+
+What are ISR (In-Sync Replicas)?
+
+What happens when ISR shrinks?
+
+How does Kafka handle backpressure?
+
+Producers (Deep Dive)
+
+What delivery guarantees does Kafka provide?
+
+How do acks=0, acks=1, and acks=all differ in practice?
+
+When can Kafka acknowledge a message but still lose it?
+
+How do retries work in Kafka producers?
+
+How do you avoid message duplication on producer retries?
+
+What is idempotent producer and when do you enable it?
+
+How does batching improve producer throughput?
+
+What are common causes of producer latency?
+
+How do you tune producer performance?
+
+What producer misconfigurations have you seen in production?
+
+Consumers (Deep Dive)
+
+How does Kafka consumer group coordination work?
+
+What causes consumer rebalancing?
+
+Why are frequent rebalances dangerous?
+
+What is the role of poll() in Kafka consumers?
+
+What happens if poll() is delayed too long?
+
+How does max.poll.interval.ms affect consumers?
+
+Difference between auto-commit and manual commit?
+
+When can offsets be committed but processing fails?
+
+How do you design idempotent consumers?
+
+What consumer bugs have caused production incidents?
+
+Offset Management & Delivery Semantics
+
+What does “at-least-once” delivery really mean?
+
+Why is “exactly-once” often misunderstood in Kafka?
+
+How does Kafka implement exactly-once semantics?
+
+When is exactly-once not worth the complexity?
+
+What happens if offsets are committed before DB writes?
+
+How do you safely replay Kafka messages?
+
+How do you handle duplicate events?
+
+How do you reset offsets in production safely?
+
+How do you reprocess historical data?
+
+What offset-related outages have you seen?
+
+Topic & Partition Design
+
+How do you decide the number of partitions?
+
+What happens if you under-partition a topic?
+
+Can you change partition count later? What are the risks?
+
+How does partition count affect consumer scaling?
+
+How do keys impact data distribution?
+
+What happens with hot partitions?
+
+How do you design topics for multi-tenant systems?
+
+Topic-per-event vs shared-topic — trade-offs?
+
+How do you handle topic explosion?
+
+What topic design mistakes have you fixed?
+
+Kafka Storage & Retention
+
+How does Kafka store messages on disk?
+
+What is log compaction?
+
+When would you use log compaction over retention?
+
+How does Kafka clean up old data?
+
+What happens when disks fill up?
+
+How do you size Kafka storage?
+
+How does retention impact performance?
+
+How do you handle large messages?
+
+Why is Kafka not a database?
+
+What data-loss scenarios exist in Kafka?
+
+Schema & Data Evolution
+
+How do you manage schema evolution in Kafka?
+
+What happens when producers and consumers use different schemas?
+
+How do you handle backward and forward compatibility?
+
+Schema Registry — why and when?
+
+What schema mistakes cause outages?
+
+How do you version events safely?
+
+How do you deprecate fields in events?
+
+What happens if schema compatibility rules are ignored?
+
+How do you test schema changes?
+
+What real schema evolution failures have you handled?
+
+Error Handling & Reliability
+
+How do you handle poison messages?
+
+Retry topics vs dead-letter topics — when to use what?
+
+How do you avoid infinite retry loops?
+
+How do you detect stuck partitions?
+
+What happens when a consumer crashes mid-processing?
+
+How do you monitor consumer lag correctly?
+
+How do you design failure isolation?
+
+How do you prevent cascading failures via Kafka?
+
+How do you pause and resume consumption safely?
+
+What reliability trade-offs have you made?
+
+Performance & Tuning
+
+What metrics matter most for Kafka performance?
+
+How do you tune brokers for high throughput?
+
+How do you tune consumers for low latency?
+
+How do you detect network-related Kafka issues?
+
+How does compression affect performance?
+
+How do you prevent GC issues in Kafka clients?
+
+What causes throughput to drop suddenly?
+
+How do you benchmark Kafka?
+
+What tuning changes caused outages?
+
+What performance bottlenecks are hardest to diagnose?
+
+Kafka in Distributed Systems
+
+How do you design event-driven systems with Kafka?
+
+Kafka vs REST — when to use which?
+
+How do you guarantee ordering across services?
+
+How do you handle eventual consistency?
+
+How do you manage inter-service contracts?
+
+How do you design workflows using Kafka?
+
+What anti-patterns exist in event-driven design?
+
+How do you control blast radius with Kafka?
+
+How do you handle cross-region Kafka?
+
+What distributed system failures involved Kafka?
+
+Kafka Operations & Production
+
+How do you upgrade Kafka safely?
+
+What breaks during Kafka upgrades?
+
+How do you add brokers to a live cluster?
+
+How do you rebalance partitions?
+
+How do you detect broker failures?
+
+How do you handle disk failures?
+
+How do you secure Kafka in production?
+
+How do you manage ACLs?
+
+What Kafka incidents have you personally handled?
+
+What Kafka decision do you regret?
+
+Senior / Architect-Level Questions
+
+When should Kafka NOT be used?
+
+How do you design Kafka for 100+ services?
+
+How do you prevent Kafka becoming a bottleneck?
+
+How do you enforce governance around Kafka usage?
+
+How do you handle multi-team ownership of topics?
+
+How do you migrate from MQ to Kafka?
+
+How do you justify Kafka operational cost?
+
+How do you design DR for Kafka?
+
+What would you redesign in your Kafka setup?
+
+What Kafka failure taught you the most?

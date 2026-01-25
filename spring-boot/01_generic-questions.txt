@@ -1,0 +1,180 @@
+Core Spring Boot
+
+1.  What is Spring Boot and why was it introduced?
+2.  How is Spring Boot different from the Spring Framework?
+3.  What problems does Spring Boot solve?
+4.  What is auto-configuration in Spring Boot?
+5.  How does Spring Boot decide which beans to auto-configure?
+6.  What is the role of @SpringBootApplication?
+7.  What happens internally when a Spring Boot application starts?
+8.  What is Spring Boot Starter and why is it used?
+9.  How does Spring Boot handle dependency management?
+10. What is the default embedded server in Spring Boot?
+
+Configuration & Properties
+1.  What is the difference between application.properties and application.yml?
+2.  How does Spring Boot load configuration properties?
+3.  What is the order of precedence of configuration sources?
+4.  What is @ConfigurationProperties?
+5.  Difference between @Value and @ConfigurationProperties?
+6.  How do you define environment-specific configurations?
+7.  What are Spring Profiles?
+8.  How do you activate a profile in Spring Boot?
+9.  How do you externalize configuration in Spring Boot?
+10. How does Spring Boot support configuration from command-line arguments?
+
+Annotations & Beans
+
+1.  Difference between @Component, @Service, and @Repository?
+2.  What is @Autowired and how does dependency injection work?
+3.  What is constructor injection vs field injection?
+4.  What is @Bean and when should it be used?
+5.  What is the difference between @Configuration and @Component?
+6.  What is @Primary?
+7.  What is @Qualifier?
+8.  How does Spring Boot manage bean lifecycle?
+9.  What is lazy initialization?
+10. What is the default scope of a Spring bean?
+
+REST & Web
+1.  What is @RestController?
+2.  Difference between @Controller and @RestController?
+3.  What is @RequestMapping?
+4.  Difference between @GetMapping, @PostMapping, etc.?
+5.  How does Spring Boot handle JSON serialization?
+6.  What is @RequestBody?
+7.  What is @ResponseBody?
+8.  How does exception handling work in Spring Boot?
+9.  What is @ControllerAdvice?
+10. How do you validate request payloads?
+
+Data & JPA
+1. What is Spring Data JPA?
+
+Difference between JPA and Hibernate?
+
+What is CrudRepository vs JpaRepository?
+
+How does Spring Boot configure DataSource automatically?
+
+What is @Entity?
+
+What is @Transactional?
+
+What is the difference between save() and saveAndFlush()?
+
+How does Spring Boot manage database migrations?
+
+What is lazy vs eager fetching?
+
+How do you handle pagination in Spring Data?
+
+Security
+
+What is Spring Security?
+
+How does Spring Boot auto-configure Spring Security?
+
+What is Authentication and Authorization?
+
+What is the default security behavior in Spring Boot?
+
+How do you disable default security?
+
+What is JWT and how is it used in Spring Boot?
+
+What is UserDetailsService?
+
+What is PasswordEncoder?
+
+How does CSRF protection work?
+
+How do you secure REST APIs in Spring Boot?
+
+Microservices & Cloud
+
+What is Spring Cloud?
+
+Difference between Spring Boot and Spring Cloud?
+
+What is service discovery?
+
+What is Eureka?
+
+What is a config server?
+
+How does Spring Boot support distributed configuration?
+
+What is circuit breaker?
+
+What is Resilience4j?
+
+What is API Gateway in Spring Cloud?
+
+How does Spring Boot handle inter-service communication?
+
+Actuator & Monitoring
+
+What is Spring Boot Actuator?
+
+What are actuator endpoints?
+
+How do you secure actuator endpoints?
+
+Difference between /health and /info?
+
+How do you customize actuator endpoints?
+
+How does Spring Boot support metrics?
+
+What is Micrometer?
+
+How does Spring Boot integrate with Prometheus?
+
+What is readiness vs liveness probe?
+
+How does actuator help in production?
+
+Testing
+
+How do you test Spring Boot applications?
+
+What is @SpringBootTest?
+
+What is @WebMvcTest?
+
+Difference between unit test and integration test?
+
+How do you mock beans in Spring Boot?
+
+What is @MockBean?
+
+How do you test REST APIs?
+
+What is Testcontainers?
+
+How do you test repositories?
+
+How does Spring Boot manage test configurations?
+
+Performance & Internals
+
+How does Spring Boot reduce startup time?
+
+What is Spring Boot DevTools?
+
+How does auto-configuration impact performance?
+
+How do you disable unused auto-configurations?
+
+What is classpath scanning?
+
+How does Spring Boot handle thread pools?
+
+What is the default task executor?
+
+How does Spring Boot manage memory?
+
+What is graceful shutdown?
+
+How do you tune Spring Boot for production?

@@ -1,0 +1,143 @@
+🔥 Cluster Creation & Architecture Scenarios
+
+Your EKS cluster creation succeeds, but no pods can be scheduled. What do you check first?
+
+A team wants a public EKS cluster for speed. Security objects. How do you respond and redesign?
+
+Your EKS control plane is healthy, but kubectl intermittently fails. How do you debug this?
+
+A cluster works in one AWS account but not another with the same Terraform code. Why?
+
+You’re asked to run prod and non-prod workloads in the same cluster. What could go wrong?
+
+🌐 Networking & VPC Scenarios
+
+Pods cannot reach an RDS instance in the same VPC. Where do you look?
+
+External traffic reaches the ALB but never reaches pods. How do you debug?
+
+Pods cannot reach the internet, but nodes can. What’s the likely cause?
+
+Suddenly, new pods fail to start with no clear error. Later you find subnets are exhausted. How did this happen?
+
+Inter-pod communication fails across nodes but works on the same node. Why?
+
+🖥️ Worker Node & Node Group Scenarios
+
+A node goes NotReady randomly and recovers on its own. What do you suspect?
+
+After upgrading node AMIs, applications start failing intermittently. Why?
+
+Cluster Autoscaler keeps adding nodes, but pods still don’t schedule. What’s wrong?
+
+A node group upgrade causes partial outage. What was missed?
+
+Pods are unevenly distributed across nodes causing hot spots. How do you fix it?
+
+🔐 IAM, IRSA & Access Scenarios
+
+Pods suddenly lose access to S3 even though IAM roles weren’t changed. Why?
+
+A pod works with node IAM role but fails after enabling IRSA. What went wrong?
+
+Developers ask for admin access to the cluster for debugging. How do you handle this safely?
+
+One service can access AWS resources it shouldn’t. How do you audit and fix it?
+
+A new engineer cannot access the cluster despite IAM permissions. What did you forget?
+
+🚀 Deployments & Workload Scenarios
+
+Pods keep restarting with CrashLoopBackOff but logs look fine. What do you check next?
+
+Rolling deployment causes user-visible downtime. Why?
+
+A deployment works in staging but fails in production only under load. Why?
+
+Pods remain in Pending state forever. What are the top 5 things you check?
+
+One bad pod affects the entire node’s performance. How do you prevent this?
+
+⚖️ Autoscaling & Performance Scenarios
+
+HPA scales pods aggressively but performance degrades. Why?
+
+Cluster Autoscaler keeps scaling nodes up and down every few minutes. What’s wrong?
+
+Kafka consumers scale up but throughput doesn’t improve. Why?
+
+CPU is low, memory is high, but HPA doesn’t scale. What did you miss?
+
+Autoscaling works in test but not in prod. Why?
+
+🌍 Load Balancing & Ingress Scenarios
+
+ALB is created but shows all targets as unhealthy. How do you debug?
+
+One path works on ALB, another returns 404 even though service exists. Why?
+
+Internal services are accidentally exposed publicly. How did this happen?
+
+TLS works for one domain but not another on the same ALB. Why?
+
+Traffic spikes cause ALB 5xx errors during deployments. How do you fix it?
+
+💾 Storage & Stateful Workloads
+
+Pods using PVCs get stuck during rescheduling. Why?
+
+After node failure, stateful pods don’t recover. What went wrong?
+
+Application performance drops after moving from EC2 disks to EBS. Why?
+
+Multiple pods try to mount the same EBS volume and fail. Why?
+
+A StatefulSet loses data after restart. How is that possible?
+
+🔍 Observability & Debugging Scenarios
+
+Pods restart but no logs are available. How do you debug?
+
+Metrics show everything is healthy, but users report outages. Why?
+
+DNS resolution fails intermittently inside the cluster. What causes this?
+
+Liveness probe keeps killing healthy pods. Why?
+
+You cannot reproduce a prod issue locally. How do you debug it in EKS?
+
+🔄 Upgrade & Maintenance Scenarios
+
+EKS control plane upgrade succeeds, but workloads break. Why?
+
+Deprecated APIs cause failures after upgrade. How do you avoid this?
+
+Node upgrades trigger Kafka rebalances and downtime. How do you prevent it?
+
+During maintenance, pods are evicted too aggressively. What was missing?
+
+How do you design zero-downtime cluster upgrades?
+
+🔥 Security & Incident Scenarios
+
+A pod is compromised. How do you contain blast radius?
+
+A container image vulnerability is reported in production. What do you do immediately?
+
+A service account has cluster-admin accidentally. How do you detect this?
+
+Secrets were leaked via logs. How do you prevent this permanently?
+
+Compliance asks for namespace isolation guarantees. How do you design it?
+
+🧠 Senior / Architect-Level Scenarios
+
+One giant EKS cluster vs multiple clusters — production outage occurs. What do you change?
+
+A “noisy neighbor” workload affects critical services. How do you isolate?
+
+Teams deploy whatever they want, causing chaos. How do you enforce standards?
+
+DR region has EKS cluster but traffic switch fails. Why?
+
+If you were to redesign your EKS platform today, what would you do differently?
