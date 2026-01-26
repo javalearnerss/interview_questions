@@ -1,46 +1,46 @@
 🔥 Kafka Consumer Scenarios
 
-Consumer lag keeps increasing but CPU and memory look normal. How do you debug this?
+1.  Consumer lag keeps increasing but CPU and memory look normal. How do you debug this?
 
-After a deployment, consumers stop processing messages but offsets keep committing. What went wrong?
+2.  After a deployment, consumers stop processing messages but offsets keep committing. What went wrong?
 
-Kafka consumers restart frequently during peak traffic. Why?
+3.  Kafka consumers restart frequently during peak traffic. Why?
 
-One consumer instance is much slower than others in the same group. How do you investigate?
+4.  One consumer instance is much slower than others in the same group. How do you investigate?
 
-Consumers process messages twice after a restart. Is this expected? How do you prevent it?
+5.  Consumers process messages twice after a restart. Is this expected? How do you prevent it?
 
-A consumer crashes on a specific message and keeps reprocessing it forever. What do you do?
+6.  A consumer crashes on a specific message and keeps reprocessing it forever. What do you do?
 
-Rebalancing happens too frequently and throughput collapses. What causes this?
+7.  Rebalancing happens too frequently and throughput collapses. What causes this?
 
-Consumers fall behind only at night. What could explain this?
+8.  Consumers fall behind only at night. What could explain this?
 
-One partition is always lagging while others are fine. Why?
+9.  One partition is always lagging while others are fine. Why?
 
-After scaling consumers, throughput doesn’t improve. Why?
+10. After scaling consumers, throughput doesn’t improve. Why?
 
 🚀 Kafka Producer Scenarios
 
-Producer logs show “message sent successfully” but consumers don’t receive anything. How do you debug?
+1.  Producer logs show “message sent successfully” but consumers don’t receive anything. How do you debug?
 
-Producer latency spikes suddenly with no code change. What could cause this?
+2.  Producer latency spikes suddenly with no code change. What could cause this?
 
-Messages are duplicated after enabling retries. Why?
+3.  Messages are duplicated after enabling retries. Why?
 
-Producers start timing out intermittently under load. What do you tune?
+4.  Producers start timing out intermittently under load. What do you tune?
 
-A producer crash causes message loss. How is that possible?
+5.  A producer crash causes message loss. How is that possible?
 
-Large messages cause producer OOM errors. How do you fix it?
+6.  Large messages cause producer OOM errors. How do you fix it?
 
-Producer throughput drops after enabling compression. Why?
+7.  Producer throughput drops after enabling compression. Why?
 
-Messages are unevenly distributed across partitions. What’s wrong?
+8.  Messages are unevenly distributed across partitions. What’s wrong?
 
-One producer floods Kafka and impacts all other services. How do you isolate it?
+9.  One producer floods Kafka and impacts all other services. How do you isolate it?
 
-Producer sends data faster than consumers can handle. How do you handle backpressure?
+10. Producer sends data faster than consumers can handle. How do you handle backpressure?
 
 ⚖️ Offset & Delivery Semantics Scenarios
 
