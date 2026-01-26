@@ -1,90 +1,355 @@
 EKS Fundamentals
 
-What is Amazon EKS and why would you choose it over self-managed Kubernetes?
+1.  What is Amazon EKS and why would you choose it over self-managed Kubernetes?
+    Amazon EKS is a fully managed Kubernetes service where AWS operates the control plane.
+    Choose EKS to avoid managing etcd, control plane upgrades, HA, security patching, and AWS 
+    integration complexity.
 
-What components of the Kubernetes control plane are managed by EKS?
+2.  What components of the Kubernetes control plane are managed by EKS?
+    EKS manages:
+    1. API Server
+    2. etcd
+    3. Scheduler
+    4. Controller Manager
+    5. Control plane networking & HA
+    You only manage worker nodes and workloads.
 
-How does EKS differ from ECS?
+3.  How does EKS differ from ECS?
+    EKS → Kubernetes standard, portable, ecosystem-rich
+    ECS → AWS-native, simpler, less flexible
+    Use EKS when you need Kubernetes features or portability.
 
-What versions of Kubernetes does EKS support?
+    Real-world analogy
+    EKS → Buying a powerful off-road vehicle(you control everything, but you must drive it)
+    ECS → Using Uber (AWS drives, you just tell where to go)
 
-How is high availability achieved in EKS control plane?
+    EKS gives Kubernetes flexibility and portability with higher operational complexity, 
+    while ECS is AWS-native, simpler, and faster to operate but not portable.
 
-What is the cost model of EKS?
+4.  What versions of Kubernetes does EKS support?
+    EKS supports recent upstream Kubernetes versions (N, N-1, N-2).
+    Older versions are deprecated on a fixed AWS timeline.
 
-Can EKS be used in private-only clusters?
+5.  How is high availability achieved in EKS control plane?
+    AWS runs the control plane across multiple AZs with:
+    1.  Multi-AZ etcd
+    2.  Load-balanced API servers
+    3.  Automatic failover
+    No single AZ dependency.
 
-What AWS resources are created when you create an EKS cluster?
+6.  What is the cost model of EKS?
+    EKS has a fixed per-cluster control-plane cost, while all workload costs—compute, 
+    storage, networking, and add-ons—are billed separately based on actual usage.
 
-What is the role of kubeconfig in EKS?
+7.  Can EKS be used in private-only clusters?
+    yes. A private-only EKS cluster exposes its Kubernetes API server only inside 
+    your VPC and is not reachable from the public internet
 
-How do you authenticate to an EKS cluster?
+8.  What AWS resources are created when you create an EKS cluster?
+    EKS control plane, ENIs in subnets, Security groups, IAM service roles
+    Note : Worker nodes are separate.
+
+9.  What is the role of kubeconfig in EKS?
+    kubeconfig stores: Cluster endpoint, Certificate authority, Auth method
+    It tells kubectl how and where to connect.
+
+10. How do you authenticate to an EKS cluster?
+    You authenticate to EKS using AWS IAM—kubectl uses IAM credentials from kubeconfig 
+    to get a token and access the Kubernetes API server.
 
 Cluster Architecture & Networking
 
-How does networking work in EKS?
+1.  How does networking work in EKS?
+    In EKS, pods get real VPC IPs and communicate directly over the VPC network.
+   
+    Core components involved
+    Amazon Elastic Kubernetes Service
+       1. Runs Kubernetes control plane
+       2. Integrates with AWS VPC networking
 
-What is the AWS VPC CNI plugin?
+    AWS VPC CNI plugin
+       1. Assigns VPC IP addresses to pods
+       2. Attaches ENIs to worker nodes
+       3. No overlay network (unlike Flannel/Calico overlay)
 
-How are Pods assigned IP addresses in EKS?
+    How traffic flows (step by step)
+    1️⃣ Pod gets an IP
+       Pod is created on a node
+       VPC CNI:
+           Attaches ENI to the EC2 node
+           Assigns secondary private IPs
+           Each pod gets a VPC-routable IP
 
-Difference between Pod IP and Node IP in EKS?
+    2️⃣ Pod ↔ Pod communication
+       Same node → direct
+       Different nodes → routed through VPC
+       Controlled by:
+          Security Groups
+          Network Policies (if enabled)
 
-What is the maximum number of pods per node and why?
+    3️⃣ Pod ↔ Service
+       ClusterIP → kube-proxy handles routing
+       NodePort → exposed on node IP
+       LoadBalancer → creates AWS ALB/NLB
 
-How does EKS integrate with VPC subnets?
+    4️⃣ External traffic → Pod
+        Internet → ALB/NLB → Node/Pod
+        Internal traffic → Internal ALB/NLB → Pod
 
-Public vs private EKS cluster — trade-offs?
+    5️⃣ Pod → Internet
+        Private subnets → NAT Gateway
+        Public subnets → Internet Gateway
 
-How does DNS work inside an EKS cluster?
+2   What is the AWS VPC CNI plugin?
+    AWS VPC CNI is the Kubernetes networking plugin that assigns real VPC IP addresses to pods in EKS.
+    What does it actually do?
+    In Amazon Elastic Kubernetes Service:
+       Attaches Elastic Network Interfaces (ENIs) to worker nodes
+       Allocates secondary private IPs from your VPC subnets
+       Assigns those IPs directly to pods
+    ➡️ Each pod becomes a first-class citizen in the VPC
 
-What happens if a subnet runs out of IPs?
+3.  How are Pods assigned IP addresses in EKS?
+    In EKS, pods are assigned IPs by the AWS VPC CNI, which allocates secondary private IPs from the 
+    VPC subnet via ENIs attached to the worker node.
+    
+    How Pods get IPs in EKS (explained)
+    1️⃣ Pod is scheduled
+        Kubernetes scheduler places the pod on a worker node (EC2 or Fargate)
+   
+    2️⃣ AWS VPC CNI kicks in
+       The VPC CNI plugin runs on every node
+       It ensures the node has:
+          An Elastic Network Interface (ENI)
+          Enough secondary private IPs from the subnet
 
-How do security groups apply to EKS traffic?
+    3️⃣ IP is assigned
+        One secondary IP from the ENI is assigned to the pod
+        That IP:
+           Comes directly from the VPC subnet
+           Is routable inside the VPC
+
+    4️⃣ Pod becomes reachable
+        Pod can now talk directly to:
+        Other pods
+        EC2 instances
+        AWS services (RDS, ALB, etc.)
+
+4.  Difference between Pod IP and Node IP in EKS?
+    Node IP → EC2 instance IP
+    Pod IP → VPC IP attached via ENI
+    Pods are first-class network citizens.
+
+5. What is the maximum number of pods per node and why?
+   In EKS, the maximum number of pods per node is limited by how many IP 
+   addresses the EC2 instance can support via ENIs.
+   Why this limit exists (simple explanation)
+     EKS uses AWS VPC CNI, which means:
+         Each pod gets a real VPC IP
+         Pod IPs come from:
+              Secondary IPs on ENIs attached to the EC2 node
+         EC2 instance types have hard limits on:
+             Number of ENIs
+             Number of IPs per ENI
+    So once ENIs or IPs are exhausted → no more pods can be scheduled.
+
+    Max Pods = (ENIs × IPs per ENI) − 1
+    −1 is reserved for the node itself
+    Example:
+    Instance allows 3 ENIs
+    Each ENI supports 10 IPs
+    ➡️ Max pods = (3 × 10) − 1 = 29 pods
+
+6. How does EKS integrate with VPC subnets?
+   EKS uses your VPC subnets to place control-plane endpoints, worker nodes, and pod IPs.
+
+    How subnets are used in EKS
+    Amazon Elastic Kubernetes Service cluster creation  
+    When you create an EKS cluster, you must select subnets. These subnets determine:
+       Where worker nodes run
+       Where pods get their IPs  
+       How load balancers are created
+
+    Subnet roles (simple breakdown)
+    1️⃣ Worker nodes
+    EC2 worker nodes are launched inside selected subnets
+    Subnets can be:
+    Private (recommended)
+    Public (not recommended for prod)
+
+    2️⃣ Pod IP assignment
+    Using AWS VPC CNI:
+    Pods get IPs from the same subnet as the node
+    Subnet size directly affects:
+    Max pods per node
+    Cluster scalability
+
+    3️⃣ Load balancers
+    Kubernetes Service / Ingress creates:
+    Internet-facing ALB/NLB → public subnets
+    Internal ALB/NLB → private subnets
+    Subnet tags control this behavior:
+    kubernetes.io/role/elb
+    kubernetes.io/role/internal-elb
+
+    4️⃣ Control plane access
+    EKS control plane is AWS-managed
+    It creates ENIs in your selected subnets for:
+    Private API endpoint access
+    Traffic stays inside the VPC for private clusters
+
+7. Public vs private EKS cluster — trade-offs?
+   Public vs Private EKS only affects how the Kubernetes API server is 
+   accessed — not how your applications are exposed.
+   What’s the actual difference?
+    Public EKS cluster
+        Kubernetes API server:
+        Has a public endpoint
+        Accessible over the internet
+        Access controlled by:
+           IAM
+           Security groups
+           CIDR allow-lists
+
+    Private EKS cluster
+        Kubernetes API server:
+        No public endpoint
+        Accessible only from inside the VPC
+        Access via:
+           Bastion host
+           VPN / Direct Connect
+           CI/CD runners in VPC
+
+8. How does DNS work inside an EKS cluster?
+   EKS uses CoreDNS to provide service discovery so pods can find each other by name instead of IP.
+  
+   Pod DNS setup
+    When a pod starts in EKS, Kubernetes automatically configures DNS for it by creating a /etc/resolv.conf 
+    file. This file points to the CoreDNS service IP, so all DNS queries from the pod are sent to CoreDNS.
+
+    Service name resolution
+    When a pod calls a service using a name like order-service.default.svc.cluster.local, 
+    the request goes to CoreDNS. CoreDNS checks the Kubernetes API, finds the matching Service, 
+    and returns its ClusterIP. Kubernetes then load-balances the traffic to the backend pods of that service.
+
+    Pod-to-pod communication
+    Pods usually communicate using Service DNS names, not direct pod IPs. This is because pod IPs 
+    are temporary, while Service names are stable and safe to use even when pods are restarted or rescheduled.
+
+9. What happens if a subnet runs out of IPs?
+   Pods fail to schedule
+   Nodes can’t attach ENIs
+   Fix by expanding CIDR or adding subnets.
+
+10. How do security groups apply to EKS traffic?
+    Node-level security groups (default)
+        In EKS, security groups are always attached to worker nodes (EC2). These security groups control:
+        Inbound traffic to the node (from ALB, other nodes, bastion, etc.)
+        Outbound traffic from pods (because pods use the node’s network by default)
+        ➡️ By default, all pods on a node share the node’s security group rules.
+
+    Pod-level security groups (optional)
+        EKS supports Security Groups for Pods:
+        Specific pods get their own security group
+        Works using ENIs attached directly to pods
+        Allows fine-grained control (pod → RDS, pod → external service)
+        ➡️ Useful for production, fintech, zero-trust setups.
+
 
 Worker Nodes & Compute
 
-Difference between managed node groups and self-managed nodes?
+1.  Difference between managed node groups and self-managed nodes?
+    Managed node groups are operated and upgraded by AWS with minimal effort,
+     while self-managed node groups are fully controlled by you, offering more flexibility but 
+     higher operational overhead.
 
-What is an EKS worker node?
+2.  What is an EKS worker node?
+    An EC2 instance registered to the cluster that runs:
+    kubelet
+    kube-proxy
+    container runtime
 
-How does node bootstrap work?
+3.  How does node bootstrap work?
+    When a worker node starts, it runs a bootstrap script that installs Kubernetes components, 
+    configures the kubelet, and registers the node with the EKS cluster. 
+    The script uses the cluster name and endpoint, authenticates using the node’s IAM role, 
+    and then the node appears as Ready so pods can be scheduled.
+    In short: EC2 starts → bootstrap script runs → kubelet joins the cluster.
 
-What is a launch template in EKS?
+4.  What is a launch template in EKS?
+    Defines: AMI, Instance type, IAM role, User data
+    Used by node groups.
 
-How do you upgrade worker nodes safely?
+5.  How do you upgrade worker nodes safely?
+    Worker nodes are upgraded using a rolling strategy. New nodes with the updated AMI are launched, 
+    old nodes are cordoned and drained (pods are safely evicted), traffic shifts to healthy pods on new
+     nodes, and only then are old nodes terminated. This ensures no downtime when workloads use multiple 
+     replicas and PodDisruptionBudgets.
 
-What happens when a node becomes NotReady?
+    For managed node groups, AWS automates this process.
+    For self-managed nodes, you perform the same steps manually using Auto Scaling Groups and kubectl drain.  
 
-How does EKS handle node failure?
+6.  What happens when a node becomes NotReady?
+    When an EKS node becomes NotReady, Kubernetes treats it as unhealthy and protects your workloads automatically.
 
-When would you use Fargate with EKS?
+    What Kubernetes does
+        The node is marked NotReady
+        Pods on that node are not scheduled anymore
+        After a grace period (~5 minutes by default), pods are evicted
+        Replacement pods are rescheduled on healthy nodes
+        If you use an Auto Scaling Group / managed node group, a new node is launched
 
-Limitations of EKS Fargate?
+7.  How does EKS handle node failure?
+    EKS handles node failure by marking the node NotReady, evicting its pods, rescheduling them onto healthy nodes,
+    and automatically replacing the failed node via the node group or Auto Scaling Group.
+    When a node in EKS fails (instance crash, network issue, kubelet stops), the Kubernetes control plane detects
+     missed heartbeats and marks the node as NotReady. New pods are no longer scheduled on that node,
+      and its existing pods are considered unhealthy.
 
-How do you drain a node safely?
+8.  When would you use Fargate with EKS?
+    Use Fargate when you want to run pods without managing EC2 nodes.
+
+9.  Limitations of EKS Fargate?
+    No DaemonSets, Limited storage options, Higher cost, Less networking control
+
+10. How do you drain a node safely?
+    You drain a node using kubectl cordon and kubectl drain.
+
+    How it works:
+    First, you cordon the node to stop new pods from being scheduled on it. 
+    Then you drain it, which safely evicts existing pods so they can be rescheduled on other healthy nodes.
+
+    Commands:
+    kubectl cordon <node-name>
+    kubectl drain <node-name> --ignore-daemonsets --delete-emptydir-data
+
+    cordon → prevents new pods
+    drain → evicts running pods safely
+    --ignore-daemonsets → keeps DaemonSet pods (as intended)
+
 
 IAM, Authentication & Authorization
 
-How does IAM authentication work in EKS?
+1.  How does IAM authentication work in EKS?
 
-What is aws-auth ConfigMap?
+2.  What is aws-auth ConfigMap?
 
-Difference between IAM authentication and Kubernetes RBAC?
+3.  Difference between IAM authentication and Kubernetes RBAC?
 
-How do you give cluster access to a new user?
+4.  How do you give cluster access to a new user?
 
-How do you restrict namespace-level access?
+5.  How do you restrict namespace-level access?
 
-What is IRSA (IAM Roles for Service Accounts)?
+6.  What is IRSA (IAM Roles for Service Accounts)?
 
-Why is IRSA preferred over node IAM roles?
+7.  Why is IRSA preferred over node IAM roles?
 
-How does pod-level IAM work internally?
+8.  How does pod-level IAM work internally?
 
-Common IAM misconfigurations in EKS?
+9.  Common IAM misconfigurations in EKS?
 
-How do you audit access to an EKS cluster?
+10. How do you audit access to an EKS cluster?
+
 
 Deployments & Workloads
 
