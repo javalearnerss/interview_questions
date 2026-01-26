@@ -29,7 +29,7 @@
         Allocates secondary IPs from the VPC subnet
         Assigns one VPC IP per pod
         So every pod becomes directly reachable inside the VPC, without overlays or tunnels.
-    he AWS VPC CNI plugin assigns VPC subnet IPs directly to EKS pods using ENIs, enabling
+    The AWS VPC CNI plugin assigns VPC subnet IPs directly to EKS pods using ENIs, enabling
      native VPC networking without overlays.
 
 3. How VPC and VPC CNI are connected?
@@ -54,3 +54,49 @@
     “VPC provides the network, and the AWS VPC CNI plugin assigns VPC subnet IPs to EKS 
     pods so they participate directly in that network.”
 
+
+4. What is Subnet in VPC?
+   In Amazon Virtual Private Cloud, a subnet is a smaller IP range carved out of your VPC where you place AWS resources like EC2, EKS nodes, and load balancers.
+
+    What subnets do
+      A subnet:
+        Uses a CIDR block (subset of the VPC CIDR)
+        Lives in one Availability Zone only
+        Controls where resources are launched
+        Inherits routing and security behavior
+
+    Public vs Private subnets
+      Public subnet: has a route to an Internet Gateway
+        → used for ALB, bastion hosts
+
+      Private subnet: no direct internet route
+        → used for app servers, EKS nodes, databases
+
+    Why subnets matter
+    Enable high availability (multiple AZs)
+    Control security and exposure
+    Affect IP availability (important for EKS pods)
+
+    Simple mental model
+    VPC = your city
+    Subnet = neighborhoods inside the city
+
+    How this fits with VPC and subnets
+        A VPC spans an entire Region
+        A Subnet lives in exactly one Availability Zone(created per AZ)
+        A subnet is always tied to a single Availability Zone.
+
+    Asia Pacific (Mumbai) — ap-south-1 has 3 Availability Zones.
+    So a VPC in Asia pacific will have three public and private subnets each.
+
+    Since a subnet is specific to one AZ, a VPC in each India region 
+    can have at least 3 subnets (one per AZ), but you can create many more
+     subnets per AZ as you need. There isn’t a fixed AWS-imposed “number of subnets”; 
+     you choose them inside each AZ based on your IP design.
+
+    For an EKS cluster across 3 Availability Zones, the recommended and standard setup is:
+    Recommended setup
+        3 private subnets → one in each AZ (for EKS worker nodes & pods)
+        3 public subnets → one in each AZ (for ALB, NAT Gateway, bastion)
+
+        
