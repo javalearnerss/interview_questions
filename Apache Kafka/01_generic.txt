@@ -2,25 +2,42 @@ Kafka Fundamentals (Experienced-Level)
 
 1. Why did your organization choose Kafka over traditional messaging systems?
 
-What problems does Kafka solve well—and what does it not solve?
+2. What problems does Kafka solve well—and what does it not solve?
 
-How does Kafka guarantee message ordering?
+3. How does Kafka guarantee message ordering?
 
-What is the role of partitions in Kafka scalability?
+4. What is the role of partitions in Kafka scalability?
 
-How do producers decide which partition a message goes to?
+5. How do producers decide which partition a message goes to?
 
-What happens if a partition leader fails?
+6. What happens if a partition leader fails?
 
-How does Kafka ensure durability?
+7. How does Kafka ensure durability?
 
-What are ISR (In-Sync Replicas)?
+8. What are ISR (In-Sync Replicas)?
 
-What happens when ISR shrinks?
+9. What happens when ISR shrinks?
 
-How does Kafka handle backpressure?
+10. How does Kafka handle backpressure?
 
 Producers (Deep Dive)
+
+0. When are Producer ID (PID) and sequence numbers assigned?
+    Producer ID (PID)
+        Assigned once, when the producer starts and idempotence is enabled
+        Happens on the first request to the broker (InitProducerId request)
+        Broker returns a unique PID for that producer instance
+    Sequence numbers
+        Assigned by the producer client, not the broker
+        Start at 0 per (PID + topic-partition)
+        Incremented for every record sent to that partition
+    Flow (simple):
+        Producer starts with enable.idempotence=true
+        Producer contacts broker → broker assigns PID
+        Producer sends records:
+        Each record gets a sequence number per partition
+        Broker tracks (PID, partition, sequence)
+        If a retry arrives with the same sequence number → broker drops it as duplicate
 
 1.  What delivery guarantees does Kafka provide?
     Kafka supports at-most-once, at-least-once, and exactly-once delivery semantics, 
@@ -80,15 +97,17 @@ Producers (Deep Dive)
     request instead of sending each message individually. It is reducing network and broker overhead.
 
 8.  What are common causes of producer latency?
-    High acks setting (especially acks=all) → producer waits for replica confirmations
-    Large batch wait time (linger.ms) → producer delays send to fill batches
-    Broker load or slow disk I/O → brokers take longer to write and acknowledge
-    Network latency / throttling → slow producer–broker communication
-    ISR issues (slow or shrinking replicas) → delays acknowledgments
-    Retries due to transient errors → resend adds extra time
-    Large message size → more time to serialize, transfer, and write
+    Latency = the time taken for a request to go from sender → processing → response.
+        High acks setting (especially acks=all) → producer waits for replica confirmations
+        Large batch wait time (linger.ms) → producer delays send to fill batches
+        Broker load or slow disk I/O → brokers take longer to write and acknowledge
+        Network latency / throttling → slow producer–broker communication
+        ISR issues (slow or shrinking replicas) → delays acknowledgments
+        Retries due to transient errors → resend adds extra time
+        Large message size → more time to serialize, transfer, and write
 
 9.  How do you tune producer performance?
+    Latency is how long something takes; throughput is how much you can do per unit time.
     To tune Kafka producer performance, focus on throughput vs latency trade-offs:
     - Throughput (maximize)
         Increase batch.size (bigger batches)
@@ -182,23 +201,45 @@ Producers (Deep Dive)
 
 
 Consumers (Deep Dive)
+0. What is heartbeat concept for consumer.
+    Heartbeat in Kafka is how a consumer tells Kafka:
+    👉 “I’m alive and still part of the consumer group.”
+
+    How it works:
+        - Each consumer periodically sends heartbeats to the Group Coordinator broker.
+        - As long as heartbeats arrive on time, the consumer keeps its partition assignment.
+        - If heartbeats stop (crash, GC pause, network issue):
+            - Coordinator marks the consumer dead
+            - Triggers a rebalance
+            - Partitions are reassigned to other consumers
+
+    Important configs (interview favorites):
+        - heartbeat.interval.ms → how often heartbeats are sent
+        - session.timeout.ms → max time without heartbeat before consumer is considered dead
+        - max.poll.interval.ms → max time between poll() calls (processing watchdog)
 
 1. How does Kafka consumer group coordination work?
-    A consumer group allows multiple consumers to share the work of reading from a topic. 
-    Kafka ensures that each partition is consumed by only one consumer within the group.
-    When consumers start, they register with a Group Coordinator (a broker chosen by Kafka). 
-    One consumer becomes the group leader. The leader gathers metadata (partitions, members) and 
-    decides how partitions should be assigned (using a partition assignment strategy). 
-    This assignment is then sent to all consumers.
-    If a consumer joins, leaves, crashes, or times out, Kafka triggers a rebalance.
-     During a rebalance, partitions are revoked and reassigned so the group stays consistent. 
-     Consumers then resume reading from their last committed offsets.
-    Heartbeats from consumers keep them active in the group; if heartbeats stop, 
-    Kafka assumes failure and reassigns partitions.
+    - When a consumer starts, it joins a consumer group and discovers the Group Coordinator 
+       (a Kafka broker responsible for that group).
+    - Consumers send JoinGroup requests; the coordinator collects all members.
+    - A leader consumer (chosen by the coordinator) runs the partition assignment strategy 
+       (range, round-robin, sticky).
+    - The coordinator distributes assignments to all consumers.
+    - Consumers start polling only their assigned partitions and send heartbeats to stay active.
+    - If a consumer joins, leaves, or fails, the coordinator triggers a rebalance.
+    Note : A consumer group is created on the Kafka broker (Group Coordinator) automatically 
+    when the first consumer with a new group.id joins.
+        - There is no explicit “create consumer group” command.
+        - When a consumer starts with a new group.id:
+        - It sends a JoinGroup request to the broker acting as the Group Coordinator.
+        - The coordinator creates group metadata in memory.
+        - Offsets and group state are stored in the internal topic __consumer_offsets.
+        - From then on, that group.id exists and is managed by the broker.
 
 2. What causes consumer rebalancing?
     Consumer rebalancing in Kafka happens when the membership or assignment of a consumer group changes.
-    Common causes include a consumer joining or leaving the group, a consumer failure or missed heartbeats, topic partition changes, or configuration changes (like assignment strategy).
+    Common causes include a consumer joining or leaving the group, a consumer failure or missed heartbeats, 
+      topic partition changes, or configuration changes (like assignment strategy).
     When this happens, Kafka pauses consumption and redistributes partitions among active consumers.
 
 3. Why are frequent rebalances dangerous?
@@ -209,11 +250,25 @@ Consumers (Deep Dive)
      - They indicate an unstable consumer group, often due to bad configs or slow consumers
 
 4. What is the role of poll() in Kafka consumers?
+    while (running) {
+        ConsumerRecords<String, String> records =
+                consumer.poll(Duration.ofMillis(100));
+        for (ConsumerRecord<String, String> record : records) {
+            process(record);
+        }
+        consumer.commitSync(); // or async
+    }
     - poll() is the core method that drives a Kafka consumer.
     - It fetches records from the broker and sends heartbeats to the group coordinator to 
             keep the consumer alive.
     - If poll() is not called within the configured interval, Kafka assumes the consumer 
         is dead and triggers a rebalance.
+    Key configs tied to poll()
+        max.poll.interval.ms → max time between poll() calls
+        max.poll.records → how many records returned per poll()
+        session.timeout.ms & heartbeat.interval.ms → liveness checks
+    In Spring Boot, you usually don’t call poll() yourself. Spring Kafka runs a background 
+    consumer loop that continuously calls poll() for you.
 
 5. What happens if poll() is delayed too long?
     If poll() is delayed too long:
@@ -250,7 +305,8 @@ Consumers (Deep Dive)
     - External system failure: Kafka offset is committed, but DB/API update fails.
 
 9. How do you design idempotent consumers?
-    To design idempotent consumers, make your processing safe to run more than once for the same message (because Kafka is often at-least-once).
+    To design idempotent consumers, make your processing safe to run more than once for the same message 
+    (because Kafka is often at-least-once).
 
     Common patterns (used in production)
     1) Use a unique event id + dedup store
@@ -288,113 +344,113 @@ Consumers (Deep Dive)
 
 Offset Management & Delivery Semantics
 
-What does “at-least-once” delivery really mean?
+1. What does “at-least-once” delivery really mean?
 
-Why is “exactly-once” often misunderstood in Kafka?
+2. Why is “exactly-once” often misunderstood in Kafka?
 
-How does Kafka implement exactly-once semantics?
+3. How does Kafka implement exactly-once semantics?
 
-When is exactly-once not worth the complexity?
+4. When is exactly-once not worth the complexity?
 
-What happens if offsets are committed before DB writes?
+5. What happens if offsets are committed before DB writes?
 
-How do you safely replay Kafka messages?
+6. How do you safely replay Kafka messages?
 
-How do you handle duplicate events?
+7. How do you handle duplicate events?
 
-How do you reset offsets in production safely?
+8. How do you reset offsets in production safely?
 
-How do you reprocess historical data?
+9. How do you reprocess historical data?
 
-What offset-related outages have you seen?
+10. What offset-related outages have you seen?
 
 Topic & Partition Design
 
-How do you decide the number of partitions?
+1. How do you decide the number of partitions?
 
-What happens if you under-partition a topic?
+2. What happens if you under-partition a topic?
 
-Can you change partition count later? What are the risks?
+3. Can you change partition count later? What are the risks?
 
-How does partition count affect consumer scaling?
+4. How does partition count affect consumer scaling?
 
-How do keys impact data distribution?
+5. How do keys impact data distribution?
 
-What happens with hot partitions?
+6. What happens with hot partitions?
 
-How do you design topics for multi-tenant systems?
+7. How do you design topics for multi-tenant systems?
 
-Topic-per-event vs shared-topic — trade-offs?
+8. Topic-per-event vs shared-topic — trade-offs?
 
-How do you handle topic explosion?
+9. How do you handle topic explosion?
 
-What topic design mistakes have you fixed?
+10. What topic design mistakes have you fixed?
 
 Kafka Storage & Retention
 
-How does Kafka store messages on disk?
+1. How does Kafka store messages on disk?
 
-What is log compaction?
+2. What is log compaction?
 
-When would you use log compaction over retention?
+3. When would you use log compaction over retention?
 
-How does Kafka clean up old data?
+4. How does Kafka clean up old data?
 
-What happens when disks fill up?
+5. What happens when disks fill up?
 
-How do you size Kafka storage?
+6. How do you size Kafka storage?
 
-How does retention impact performance?
+7. How does retention impact performance?
 
-How do you handle large messages?
+8. How do you handle large messages?
 
-Why is Kafka not a database?
+9. Why is Kafka not a database?
 
-What data-loss scenarios exist in Kafka?
+10. What data-loss scenarios exist in Kafka?
 
 Schema & Data Evolution
 
-How do you manage schema evolution in Kafka?
+1. How do you manage schema evolution in Kafka?
 
-What happens when producers and consumers use different schemas?
+2. What happens when producers and consumers use different schemas?
 
-How do you handle backward and forward compatibility?
+3. How do you handle backward and forward compatibility?
 
-Schema Registry — why and when?
+4. Schema Registry — why and when?
 
-What schema mistakes cause outages?
+5. What schema mistakes cause outages?
 
-How do you version events safely?
+6. How do you version events safely?
 
-How do you deprecate fields in events?
+7. How do you deprecate fields in events?
 
-What happens if schema compatibility rules are ignored?
+8. What happens if schema compatibility rules are ignored?
 
-How do you test schema changes?
+9. How do you test schema changes?
 
-What real schema evolution failures have you handled?
+10. What real schema evolution failures have you handled?
 
 Error Handling & Reliability
 
-How do you handle poison messages?
+1. How do you handle poison messages?
 
-Retry topics vs dead-letter topics — when to use what?
+2. Retry topics vs dead-letter topics — when to use what?
 
-How do you avoid infinite retry loops?
+3. How do you avoid infinite retry loops?
 
-How do you detect stuck partitions?
+4. How do you detect stuck partitions?
 
-What happens when a consumer crashes mid-processing?
+5. What happens when a consumer crashes mid-processing?
 
-How do you monitor consumer lag correctly?
+6. How do you monitor consumer lag correctly?
 
-How do you design failure isolation?
+7. How do you design failure isolation?
 
-How do you prevent cascading failures via Kafka?
+8. How do you prevent cascading failures via Kafka?
 
-How do you pause and resume consumption safely?
+9. How do you pause and resume consumption safely?
 
-What reliability trade-offs have you made?
+10. What reliability trade-offs have you made?
 
 Performance & Tuning
 
