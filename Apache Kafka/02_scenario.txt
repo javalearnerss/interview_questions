@@ -297,46 +297,280 @@
 ⚖️ Offset & Delivery Semantics Scenarios
 
 1. Offsets are committed but database records are missing. How did this happen?
+    The consumer can commit the offset even though the DB insert didn’t actually make it.
+    Common real causes:
+    - Committed before processing finishes
+        Auto-commit enabled, or manual commit placed too early
+        → crash after commit, before DB write.
+    - DB write failed but you still committed
+        Exception swallowed / wrong try-catch
+        You commit in finally or always-commit logic.
+    - Async DB write
+        You enqueue an async DB call, commit offset, then app crashes / async call fails.
+    - Transaction rollback
+        You committed offset, but DB transaction later rolled back (or connection dropped).
+    - Rebalance during processing
+        Consumer lost partitions, but your code still committed offsets (or commit happened for records not 
+        fully processed).
 
 2. You need exactly-once processing but still see duplicates. Why?
+    -You’re only “exactly-once” inside Kafka, not end-to-end
+        Kafka EOS guarantees apply to Kafka→Kafka with transactions. If you write to a DB/HTTP/Elastic, 
+        duplicates can still happen unless the sink is idempotent.
+    - Consumer retries / crash after side-effect
+        App writes to DB, then crashes before committing offset → on restart it reprocesses → duplicate DB rows/events.
+    - Not actually using transactions correctly
+        Missing/unstable transactional.id
+         Not calling sendOffsetsToTransaction() + commitTransaction() in the right place (Kafka Streams/Exactly-once 
+         pattern)
+    - Consumers reading uncommitted data
+        isolation.level not set to read_committed → you may read aborted transactional writes and see 
+        “duplicates/weirdness”.
+    - Multiple instances producing the same logical event
+        Two app instances emit the same business event (at-least-once upstream, retry at API gateway, etc.). 
+        Kafka EOS doesn’t dedupe different producers.
+    - No idempotency at the sink
+        If your DB insert isn’t protected by a unique key / upsert, any reprocessing becomes a duplicate.
 
 3. Business asks to replay last 3 days of data without breaking systems. How do you do it?
+    Replay into a new consumer group
+        Create group.id=replay-2026-01-27 so existing consumers aren’t affected.
+
+    Limit the window to last 3 days
+        Seek by timestamp: use offsetsForTimes(now-3days) (or kafka-consumer-groups --reset-offsets 
+        --by-duration P3D --to-earliest/--to-latest as needed).
+
+    Throttle + control blast radius
+        Rate-limit the replay consumer (sleep/token bucket), cap concurrency, and keep batch sizes small.
+
+    Make processing idempotent
+        Ensure downstream writes are safe: upsert/unique keys, dedupe by eventId, or exactly-once patterns.
+
+    Isolate outputs
+        Optionally write replay results to separate topics / DB tables first, then merge.
+
+    Monitor + rollback plan
+        Track lag, error rate, and downstream load; be able to pause/stop quickly.
 
 4. A consumer accidentally resets offsets to earliest in production. What do you do next?
+    1. Stop / pause the consumer group
+        Scale deployment to 0 or pause listeners so it stops re-reading.
+
+    2. Assess blast radius
+        Which group.id and topics/partitions?
+        How far did it rewind (lag jump)?
+        Any downstream impact (DB writes, APIs, emails)?
+
+    3. Protect downstream from duplicates
+        Enable/verify idempotency (unique keys/upserts/dedupe by eventId).
+        Temporarily disable side effects (emails/notifications) or route to DLQ.
+
+    4. Restore offsets to the correct point
+        If you have a known “good” checkpoint: set offsets back to that timestamp/offset.
+        Use kafka-consumer-groups --reset-offsets with:
+            --to-datetime <timestamp> or --by-duration or --to-offset
+            --execute (after a dry-run)
+
+    5. Controlled restart
+        Restart with throttling (lower concurrency / max.poll.records) and monitor.
+
+    6. Post-incident prevention
+        Restrict offset reset permissions (ACLs), separate admin creds, add guardrails/runbooks, 
+        alerts on sudden lag drops/rewinds.
 
 5. Duplicate messages corrupt downstream systems. How do you redesign?
+    - Make consumers idempotent (primary fix)
+        Include eventId (or (topic,partition,offset)) in every message
+        Downstream writes use unique constraint + upsert / “insert if not exists”
+        Track processed IDs in a dedupe table/cache with TTL if needed
+
+    - Transactional boundaries
+        If writing to DB: DB transaction = (apply change + store eventId/offset) atomically
+        Use Outbox / Inbox pattern for DB↔Kafka consistency
+
+    - Handle ordering + concurrency
+        Use keys so related events go to same partition
+        Ensure per-key processing is serialized if required
+
+    - Producer-side safety
+        Enable enable.idempotence=true
+        Use transactions if producing to multiple topics or doing read→process→write
+
+    - Operational guardrails
+        DLQ for poison messages, retry with backoff, and metrics/alerts on dedupe rate
 
 6. Offset commits fail intermittently. What are the consequences?
+    - Duplicates / reprocessing: after restart or rebalance, consumer may read old offsets again → 
+        same messages processed again (at-least-once).
+
+    - Higher lag & slower recovery: consumer keeps working but can’t “advance” committed offsets → 
+        lag looks worse, catch-up after restart takes longer.
+
+    - Possible downstream side-effects: if processing isn’t idempotent, reprocessing can create 
+        duplicate DB rows / repeated emails.
+
+    - Rebalance instability: repeated commit failures can coincide with coordinator/network issues → 
+        more rebalances, more repeat work.
+
+    - Rare case: if your app treats commit failure as fatal and stops, you get a processing halt 
+        (but still no data loss in Kafka).
 
 7. How do you safely pause consumption during incidents?
+    Stop the consumer group (hard stop)
+        Scale the consumer deployment to 0 / stop the service. No polling, no commits.
+
+    Pause partitions (soft stop, keep membership)
+        consumer.pause(assignedPartitions) / in Spring Kafka use pause the listener container. 
+        Keeps the consumer alive but stops fetching new records.
+
+    Backpressure throttling (degrade mode)
+        Reduce concurrency, lower max.poll.records, add rate-limit/sleeps so downstream isn’t overwhelmed.
+
+    Protect downstream
+        Temporarily disable side effects (emails/external calls) or route to DLQ/holding topic.
 
 8. A rollback requires reprocessing messages already consumed. How do you handle it?
+    Create a dedicated “rollback replay” consumer group (don’t disturb prod group).
+    
+    Reset that group’s offsets back to the rollback point:
+        by timestamp (best) or exact offsets.
+
+    Reprocess with idempotency:
+        use eventId + DB upsert/unique constraint (or a dedupe table) so replay won’t corrupt data.
+
+    Control blast radius:
+        throttle concurrency / max.poll.records, and optionally write results to a staging topic/table first.
+
+    Resume prod safely:
+        once data is corrected, switch traffic/consumers back and monitor.
 
 9. Messages arrive out of order. Why?
+    Different partitions: same “business entity” events go to different partitions (wrong/nullable key) → 
+        order not guaranteed.
+    Multiple producers: two producers write related events → Kafka can’t enforce cross-producer ordering.
+    Retries without idempotence: retries can reinsert and appear out of order (especially with max.in.flight > 1).
+    Consumer-side parallelism: processing records concurrently (threads/reactive) finishes in a different 
+        order than polled.
+    Rebalances / restarts: reprocessing + async processing can make observed order look wrong.
 
 10. Consumers reprocess messages after scaling down. Is this expected?
+    Why it happens:
+        When you scale down, consumers leave the group.
+        Kafka triggers a rebalance.
+        Partitions move to remaining consumers.
+        New consumers resume from the last committed offset, not the last processed record.
+        If some records were processed but offsets weren’t committed yet → they get reprocessed.
+
+    Common reasons it shows up more during scale-down:
+        In-flight messages when the consumer shuts down
+        Async processing with late commits
+        Auto-commit interval not reached yet
 
 🧱 Topic & Partition Design Scenarios
 
 1. Topic was created with too few partitions and now can’t keep up. What are your options?
+    Increase partitions (most common)
+        kafka-topics --alter --topic X --partitions N
+        Pros: more parallelism (more consumers/throughput)
+        Cons: order per key changes, key→partition mapping changes, can increase rebalancing
+
+    Scale consumers + tune processing
+        Works only if you already have enough partitions (max parallelism = partitions)
+        Optimize handler, batch processing, async IO, max.poll.records, etc.
+
+    Split the topic
+        Create X.v2 (or shard topics like X-0..X-7) and route producers by key/tenant
+        Pros: clean sharding + better isolation
+        Cons: app changes, migration complexity
+
+    Add broker capacity
+        More brokers / faster disks / better network if brokers are saturated
+
+    Reduce data volume
+        Compression, smaller payloads, drop non-critical events, sampling
 
 2. One partition becomes a hotspot. How do you fix it without downtime?
+    Fix a hotspot without downtime by reducing skew and moving load while keeping consumers running:
+
+    Confirm it’s key skew
+        Check if most records share the same/low-cardinality key (or null key).
+
+    Add partitions + rolling update (no downtime)
+        Increase partitions for the topic. Consumers will rebalance, but service stays up.
+
+    Change partitioning to spread the hot key
+        Add a shard suffix: key = userId + ":" + (hash(orderId) % N)
+        Or custom partitioner that splits only hot keys
+        Do this via a rolling deploy of producers.
+
+    Split traffic gradually
+        Create a new topic topic.v2 with more partitions and dual-write (or route a % of keys) → then cut over consumers.
+
+    Short-term mitigations
+        Throttle that producer, compress, batch more, or scale brokers if IO-bound.
 
 3. Increasing partitions breaks message ordering. Why?
+    Partition is chosen by: hash(key) % numPartitions
+    When numPartitions increases, the modulo result changes
+    So the same key can start landing on a different partition
+    Then events for that key are split across partitions → no global ordering for that key anymore
 
 4. Too many topics exist and Kafka becomes hard to manage. How do you fix governance?
 
 5. A topic grows faster than expected and disk fills up. What do you do?
+    Immediate containment
+        Stop/reduce the producer (feature flag / rate-limit) to stop the bleed.
+        Add disk/capacity fast: expand volume / add brokers (if you can quickly).
+        Lower retention temporarily:
+            reduce retention.ms / retention.bytes
+            if safe, use cleanup.policy=delete (not compact-only)
+        Run preferred leader / rebalancing only if needed (avoid making it worse during crisis).
+
+    Find the cause
+        Which producer/app is spiking? (client.id, ACL user, metrics)
+        Is it larger messages, higher rate, or retention misconfig?
+        Any stuck consumers causing retries/dup publishes upstream?
 
 6. Retention cleanup causes performance degradation. Why?
+    Segment deletions trigger lots of disk IO (delete + metadata updates).
+    Log compaction (if enabled) scans and rewrites segments → very IO/CPU intensive.
+    Frequent cleanup (small segment.ms / aggressive retention.ms) runs too often.
+    Slow disks (HDD / saturated SSD) amplify the impact.
+    Large partitions mean bigger segments to scan/delete.
 
 7. Compacted topic loses data unexpectedly. How?
+    Only the latest value per key is kept
+        Older records with the same key are deleted during compaction.
+
+    Tombstones (null values)
+        Producing key + null value marks the key for deletion → after delete.retention.ms, the key disappears completely.
+
+    Misunderstood retention vs compaction
+        If cleanup.policy=compact,delete, old segments can still be deleted by time/size retention.
+
+    Wrong / missing keys
+        Records with null keys are not compacted (can be deleted by retention), or changing keys makes data look “lost”.
+
+    Aggressive compaction settings
+        Small segment.ms/bytes or frequent cleaner runs → faster removal than expected.
 
 8. Partition reassignment causes lag spikes. Why?
+    Partition reassignment causes lag spikes because it temporarily steals resources and pauses normal flow.
+    Why it happens:
+        Data copying: replicas are moved between brokers → heavy disk + network IO.
+        Throttling kicks in: Kafka slows replication to protect the cluster, delaying fetch/produce.
+        Leader movement: leadership changes force consumers to reconnect and catch up.
+        Cache cold starts: new leaders don’t have data in page cache → slower reads.
+        Extra coordination: metadata updates and ISR changes add overhead.
 
 9. Multi-tenant topics cause noisy-neighbor issues. How do you isolate?
 
 10. What happens if partition leaders move frequently?
+    Produce/consume latency spikes (clients must discover new leader + retry).
+    More request errors/timeouts (NotLeaderForPartition, LeaderNotAvailable) → extra retries.
+    Consumer lag increases (fetch pauses during leader change, then catch-up).
+    Higher broker load (metadata updates, controller work, replica sync/ISR churn).
+    Risk of reduced durability if ISR shrinks often (replicas falling out of sync).
 
 🧬 Schema & Data Evolution Scenarios
 
