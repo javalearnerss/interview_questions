@@ -543,31 +543,23 @@ Topic & Partition Design
     Topic-per-event
     Pros
         Simple consumers (no filtering)
-
         Different retention/ACLs per event type
-
         Easier to scale “hot” event independently
 
     Cons
         Topic explosion → ops overhead (partitions, configs, ACLs, monitoring)
-
         More metadata/controller load
-
         Harder governance and schema sprawl
 
     Shared topic (domain topic with eventType field/header)
     Pros
         Fewer topics → easier governance/ops
-
         Better batching/compression
-
         Easier to add new event types without provisioning
 
     Cons
         Consumers must filter (wasted reads)
-
         Mixed retention/priority needs (hard to tune)
-
         No per-event isolation; noisy event can affect others
 
 9. How do you handle topic explosion?
