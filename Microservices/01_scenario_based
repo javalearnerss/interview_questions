@@ -1,0 +1,120 @@
+Microservices – 50 Scenario-Based Interview Questions
+Service design & boundaries
+
+You’re breaking a monolith into microservices. How do you decide service boundaries?
+
+Two services share the same database tables. What problems will this cause and how do you fix it?
+
+A service grows too large and becomes a “mini-monolith.” What refactoring steps do you take?
+
+How do you identify whether a service is too chatty?
+
+When do you merge services instead of splitting them further?
+
+Data ownership & consistency
+
+Each service owns its database. How do you implement cross-service queries?
+
+How do you handle eventual consistency in user-facing flows?
+
+A transaction spans multiple services. How do you ensure consistency without 2PC?
+
+How do you design idempotent APIs in distributed systems?
+
+How do you deal with duplicate requests caused by retries?
+
+Communication patterns
+
+When do you use sync (REST/gRPC) vs async (events) communication?
+
+How do you avoid cascading failures in synchronous calls?
+
+A downstream service is slow but not failing. How do you protect upstream services?
+
+How do you version APIs without breaking consumers?
+
+How do you evolve an API that is used by many teams?
+
+Reliability & resilience
+
+One service failure brings down multiple services. What design mistake was made?
+
+How do you design timeouts, retries, and circuit breakers correctly?
+
+What is the risk of aggressive retries and how do you mitigate it?
+
+How do you design graceful degradation in microservices?
+
+What does a good health check look like in microservices?
+
+Observability & debugging
+
+A request flows through multiple services and fails intermittently. How do you debug it?
+
+How do you design distributed tracing?
+
+Logs show success but users see failures. What could be wrong?
+
+How do you correlate logs across services?
+
+How do you monitor SLA/SLOs across multiple services?
+
+Security & access control
+
+How do you handle authentication and authorization across microservices?
+
+How do you secure service-to-service communication?
+
+One service is compromised. How do you limit blast radius?
+
+How do you manage secrets without hard-coding them?
+
+How do you prevent data leakage between services?
+
+Deployment & versioning
+
+How do you deploy microservices with zero downtime?
+
+A new version of a service breaks older consumers. How do you fix and prevent this?
+
+How do you handle database schema changes in live systems?
+
+How do you safely roll back a failed deployment?
+
+How do you deploy changes independently without coordination hell?
+
+Scaling & performance
+
+One service needs to scale rapidly while others don’t. How do you handle this?
+
+How do you handle hot spots caused by uneven traffic?
+
+Where do you apply caching in microservices and why?
+
+How do you avoid over-scaling due to noisy neighbors?
+
+How do you design for predictable latency under load?
+
+Governance & team practices
+
+How do you enforce contract discipline between teams?
+
+How do you prevent tight coupling between microservices?
+
+How do you handle shared libraries without creating version lock-in?
+
+How do you measure whether microservices are actually successful?
+
+When does microservices architecture become a liability?
+
+Architecture judgment
+
+When would you choose a modular monolith instead of microservices?
+
+What signals tell you your microservices architecture is over-engineered?
+
+How do you decide what belongs in an API gateway vs a service?
+
+How do you design systems for failure as a normal state?
+
+What architectural trade-off are you most careful about in microservices?

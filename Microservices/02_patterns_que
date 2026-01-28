@@ -1,0 +1,120 @@
+Microservices Patterns – Interview Questions
+Decomposition & design patterns
+
+When would you use the Strangler Fig Pattern and what can go wrong with it?
+
+How do you apply DDD bounded contexts in real microservices (not theory)?
+
+When do you choose Service per Team vs Service per Domain?
+
+What problems does the Anti-Corruption Layer (ACL) solve?
+
+How do you prevent a shared library from becoming a distributed monolith?
+
+Data & consistency patterns
+
+When do you use the Database per Service pattern and when is it impractical?
+
+Explain Saga Pattern with a real rollback example.
+
+Saga orchestration vs choreography — how do you choose?
+
+What is the Transactional Outbox Pattern and why is it needed?
+
+How does CQRS help in microservices, and when does it add too much complexity?
+
+Communication patterns
+
+When do you use API Composition instead of calling multiple services?
+
+Explain Event-Driven Architecture using domain events vs integration events.
+
+What is the Request–Response vs Event Notification trade-off?
+
+When is Publish–Subscribe a bad idea?
+
+How do you implement idempotent consumers?
+
+Resilience & fault-tolerance patterns
+
+How does the Circuit Breaker Pattern actually prevent cascading failures?
+
+When should you use Bulkhead Pattern?
+
+What is the difference between Retry Pattern and Compensating Action?
+
+How do you design Timeouts correctly in a microservices chain?
+
+When does Fail Fast hurt more than help?
+
+API & gateway patterns
+
+What problem does the API Gateway Pattern solve?
+
+When should you use Backend for Frontend (BFF) instead of a single gateway?
+
+What logic must never go into an API gateway?
+
+How do you handle API versioning without /v1, /v2 chaos?
+
+How do you enforce contracts using the Consumer-Driven Contract (CDC) pattern?
+
+Observability patterns
+
+How does the Correlation ID Pattern work end-to-end?
+
+What’s the difference between Technical logs and Business logs?
+
+How do you design Distributed Tracing without huge overhead?
+
+What metrics matter more than CPU/memory in microservices?
+
+How do you implement Centralized Logging safely?
+
+Deployment & release patterns
+
+Explain Blue-Green Deployment vs Canary Deployment — when to use which?
+
+How does Feature Toggle Pattern help in microservices?
+
+What is the Expand–Contract Pattern for DB changes?
+
+How do you deploy incompatible changes safely?
+
+How do you prevent config changes from breaking all services at once?
+
+Security patterns
+
+How does the Zero Trust model apply to microservices?
+
+JWT vs opaque tokens — which fits microservices better?
+
+How do you implement Service-to-Service Authentication?
+
+How do you safely propagate user identity across services?
+
+What is the Sidecar Pattern and how does it help security?
+
+Data access & integration patterns
+
+When do you use Event Sourcing instead of CRUD?
+
+What are the risks of Shared Database Pattern?
+
+How do you build Read Models for reporting services?
+
+How do you integrate legacy systems using microservices?
+
+How do you handle schema evolution in event-driven systems?
+
+Anti-patterns (very important in interviews)
+
+What is the Distributed Monolith anti-pattern?
+
+How does a Chatty Service anti-pattern appear in production?
+
+Why is the Shared Library Hell an anti-pattern?
+
+What is the Smart Gateway / Dumb Services smell?
+
+What microservices pattern did you regret using—and why?
