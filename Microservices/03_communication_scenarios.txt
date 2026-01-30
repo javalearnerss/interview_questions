@@ -1,0 +1,139 @@
+1) Sync REST vs Async Messaging
+
+	Checkout calls Inventory + Pricing + User. Under load, Inventory becomes slow.
+
+	What happens to the overall latency? How do you prevent cascading failures?
+
+	You have 3 downstream services; one is optional (recommendations).
+
+	How do you design so the core flow succeeds even if optional fails?
+
+	You must expose a single API to clients, but internally you have 8 services.
+
+	Would you use API Gateway, BFF, or aggregation service? Why?
+
+	A synchronous chain is causing timeouts and retries.
+
+	When do you switch to async, and what changes in data consistency?
+
+2) Timeouts, Retries, Circuit Breakers (Resilience4j)
+
+	A service call fails intermittently (5xx spikes).
+
+	Do you retry? How many times? Backoff? Jitter? What are you protecting?
+
+	Retries increased load and made outage worse.
+
+	What would you change (retry budget, circuit breaker, bulkhead, rate limit)?
+
+	Circuit breaker is open, but business wants “best effort”.
+
+	How do you implement fallbacks without hiding real failures?
+
+	You see timeout=2s on client but server logs show requests running 10s.
+
+	Where do you fix it? Server thread pool? DB? client timeouts? cancellation?
+
+3) Service Discovery & Load Balancing
+
+	You deploy more pods, but traffic still hits only a few pods.
+
+	What would you check (LB, service discovery cache, keep-alive, DNS, client LB)?
+
+	One zone has higher latency; cross-zone calls are expensive.
+
+	How do you influence routing (zone-aware LB, topology hints, locality)?
+
+4) Feign / WebClient / RestTemplate Choices
+
+	You’re using Feign and need request correlation + auth propagation.
+
+	Where do you implement interceptors/filters?
+
+	Your downstream returns large payloads; memory spikes with RestTemplate.
+
+	Would WebClient help? How do you stream safely?
+
+	You need idempotency for “place order” API.
+
+	How do you design idempotency keys + dedupe across retries?
+
+5) Distributed Transactions & Sagas
+
+	Booking flow: hold inventory → create booking → notify.
+
+	If notify fails after booking succeeds, what’s the correct state? How to recover?
+
+	Inventory hold expires in 5 minutes. Payment can take longer.
+
+	How do you model saga timeouts and compensations?
+
+	Two users try to book the last seat concurrently across services.
+
+	Where do you enforce correctness (inventory service lock/optimistic versioning)?
+
+6) Event-Driven Communication (Kafka/RabbitMQ)
+
+	You publish BookingCreated. Consumers sometimes process twice.
+
+	How do you make consumers idempotent?
+
+	An event schema changes (new field / renamed field).
+
+	How do you do backward/forward compatible changes?
+
+	Consumer lag grows; business asks to “just scale consumers”.
+
+	When does scaling not help (partition limits, slow downstream, DB bottleneck)?
+
+	Exactly-once is requested.
+
+	What do you answer realistically (EOS in Kafka vs business exactly-once)?
+
+7) Ordering, Duplicates, and Consistency
+
+	You receive BookingCancelled before BookingCreated (out of order).
+
+	How do you handle it (versioning, state machine, buffering, ignore)?
+
+	The same command gets sent twice due to client retry.
+
+	Where do you dedupe (API gateway, service layer, DB unique constraint)?
+
+8) Observability: Tracing, Metrics, Logs
+
+	A request crosses 6 services; users report slowness.
+
+	How do you pinpoint which hop is slow (OpenTelemetry tracing, correlation IDs)?
+
+	Logs show different IDs per service, hard to correlate.
+
+	How do you propagate traceId/spanId in Spring?
+
+	You want SLIs/SLOs for inter-service calls.
+
+	What metrics do you emit (latency percentiles, error rate, saturation)?
+
+9) Security Between Services
+
+	Internal calls must be authenticated/authorized.
+
+	Do you use mTLS, JWT propagation, OAuth2 client credentials—where in Spring?
+
+	A service calls another on behalf of a user.
+
+	How do you prevent confused-deputy / privilege escalation?
+
+	Secrets for service-to-service auth rotate.
+
+	How do you handle rotation without downtime?
+
+10) Versioning, Backward Compatibility, Deployments
+
+	You deploy v2 of a service, v1 clients still exist.
+
+	How do you version APIs/events safely?
+
+	Canary deploy causes 1% errors only on new version.
+
+	What signals do you check and how do you roll back safely?
