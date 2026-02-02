@@ -1,0 +1,592 @@
+Microservices Security Scenario-Based Interview Questions (Experienced)
+🔐 1️⃣ Service-to-Service Authentication Scenario
+✅ Scenario
+
+You have 25 Spring Boot microservices communicating internally.
+
+Questions
+
+How will services authenticate each other?
+
+JWT propagation OR OAuth Client Credentials OR mTLS — when to use what?
+
+Where do you validate tokens — Gateway OR each service?
+
+👉 What interviewer expects
+
+Zero trust mindset
+
+Defense in depth
+
+Gateway + service-level validation
+
+🚨 2️⃣ Token Leakage Production Incident
+✅ Scenario
+
+Access tokens appeared in logs in production.
+
+Questions
+
+How do you immediately mitigate?
+
+How do you prevent in future?
+
+How do you rotate compromised tokens?
+
+👉 Expected Thinking
+
+Mask logs
+
+Reduce token TTL
+
+Rotate signing keys
+
+Audit access
+
+🔥 3️⃣ Public API vs Internal API Security
+✅ Scenario
+
+Public clients + internal services both call same service.
+
+Questions
+
+Same auth mechanism or different?
+
+How do you separate internal vs external traffic?
+
+👉 Expected
+
+API Gateway for external
+
+mTLS / private network for internal
+
+Different scopes / audiences
+
+💣 4️⃣ Compromised Microservice Scenario
+✅ Scenario
+
+One microservice is compromised by attacker.
+
+Questions
+
+How do you stop lateral movement?
+
+What should already be in place?
+
+👉 Expected
+
+mTLS
+
+Network policies
+
+Least privilege tokens
+
+Service identity
+
+🧱 5️⃣ Secrets Management Scenario
+✅ Scenario
+
+Developer stored DB password in application.yml.
+
+Questions
+
+Why is this dangerous?
+
+How should secrets be stored?
+
+👉 Expected
+
+Vault / AWS Secrets Manager
+
+K8s Secrets (encrypted at rest)
+
+Short lived credentials
+
+🌐 6️⃣ API Gateway Bypass Scenario
+✅ Scenario
+
+Attacker directly calls internal service URL bypassing gateway.
+
+Questions
+
+How do you prevent?
+
+Is gateway alone enough?
+
+👉 Expected
+
+Service-level auth
+
+Private networking
+
+Mutual TLS
+
+Network firewall rules
+
+🧵 7️⃣ Async Security Scenario (Kafka / Events)
+✅ Scenario
+
+Events contain sensitive data.
+
+Questions
+
+Do you encrypt payload?
+
+How do you authenticate producer?
+
+👉 Expected
+
+Message encryption
+
+Topic ACL
+
+Service identity auth
+
+🧪 8️⃣ Zero Trust Migration Scenario
+✅ Scenario
+
+Company moving from trusted internal network → Zero Trust.
+
+Questions
+
+What changes in microservices security model?
+
+What becomes mandatory?
+
+👉 Expected
+
+Every call authenticated
+
+Every call authorized
+
+No implicit trust
+
+⚡ 9️⃣ Performance vs Security Tradeoff Scenario
+✅ Scenario
+
+Security team wants token validation on every service call → latency increase.
+
+Questions
+
+How do you optimize?
+
+Cache tokens? Risk?
+
+👉 Expected
+
+Token introspection cache
+
+Short cache TTL
+
+Risk vs performance tradeoff
+
+🔑 🔥 10️⃣ Key Rotation Scenario (Very Common)
+✅ Scenario
+
+JWT signing key rotated.
+
+Questions
+
+How do services handle old tokens?
+
+How do you do zero downtime key rotation?
+
+👉 Expected
+
+Multiple keys support (kid header)
+
+Grace period
+
+JWKS endpoint
+
+⭐ Ultra Senior Scenarios (Architect Level)
+🚨 11️⃣ Multi-Region Security
+
+How do you manage identity across regions?
+
+How do you sync revocation lists?
+
+🚨 12️⃣ Insider Threat Scenario
+
+Employee with valid access abusing system.
+
+Questions:
+
+How detect?
+
+How limit blast radius?
+
+Expected:
+
+Audit trails
+
+Behavior anomaly detection
+
+Least privilege
+
+🚨 13️⃣ Supply Chain Attack Scenario
+
+Dependency compromised.
+
+Questions:
+
+How do you protect build pipeline?
+
+Runtime protection?
+
+🚨 14️⃣ Data Classification Scenario
+
+PII + Non-PII data mixed.
+
+Questions:
+
+How do you enforce encryption rules?
+
+Field-level encryption?
+
+🚨 15️⃣ Session vs Token Debate
+
+Mobile + Web + Microservices.
+
+Questions:
+
+When session still valid?
+
+When token mandatory?
+
+
+-----------------
+
+Below is a Microservices Security Design Round in system-design interview style (what senior/lead engineers get). I’ll frame it as a realistic problem, then list the exact questions interviewers ask, and finally give a reference “good design” you can speak through.
+
+Problem statement (what the interviewer gives)
+
+You’re designing security for a platform with:
+
+30+ microservices (Spring Boot)
+
+Public clients: Web + Mobile
+
+Internal traffic: service-to-service + async events (Kafka)
+
+Running on Kubernetes
+
+Requirements: Zero Trust, least privilege, auditable, key rotation, multi-tenant, no gateway bypass, handles compromised service
+
+1) Requirements & Threat Model (Interviewer will push here)
+Questions they ask
+
+What are your security goals? (CIA + audit + compliance)
+
+What are the main threats?
+
+stolen tokens, gateway bypass, lateral movement, SSRF, insider misuse
+
+What’s considered “internal”? (Answer: nothing is trusted by default)
+
+What should happen if 1 service is compromised?
+
+Where do you enforce authn/authz: gateway only, or every service?
+
+Strong answers mention
+
+Defense in depth
+
+Assume breach
+
+Service identity + user identity
+
+Least privilege everywhere
+
+Audit trails as first-class
+
+2) Identity Model (User identity vs Service identity)
+Interview questions
+
+How do you represent users vs services?
+
+Do internal calls carry user context? If yes, how?
+
+How do you prevent services from forging user identity?
+
+Reference design
+
+✅ Two identities:
+
+User identity: end-user JWT from IdP (OAuth2/OIDC)
+
+Service identity: mTLS SPIFFE/SPIRE or Kubernetes workload identity
+
+✅ Token strategy:
+
+External client → Gateway gets user JWT.
+
+Gateway → services:
+
+Option A: JWT propagation (with “aud”, scopes, tenant)
+
+Option B (stronger): Token exchange (gateway exchanges user token for an internal token)
+
+Service-to-service (no user) → client credentials or service-to-service mTLS identity
+
+Key interview line:
+
+“A service should never be able to mint/forge user identity. It can only forward or exchange through an IdP.”
+
+3) API Gateway + Service-level Controls
+Interview questions
+
+Is the gateway enough?
+
+How do you prevent bypass (calling service directly)?
+
+What checks happen at gateway vs service?
+
+Reference design
+
+✅ Gateway responsibilities:
+
+TLS termination (optionally pass-through)
+
+Rate limiting / WAF
+
+Authn for public clients
+
+Request normalization (headers, request IDs)
+
+Coarse authz (scope checks), tenant validation
+
+✅ Service responsibilities:
+
+Always validate token / identity
+
+Fine-grained authz (method-level, resource-level)
+
+Input validation
+
+Data access enforcement (tenant boundary)
+
+✅ Prevent bypass:
+
+Services only on private network (ClusterIP)
+
+NetworkPolicies (only gateway + allowed services can talk)
+
+mTLS required between services (service mesh or sidecars)
+
+Optional: L7 authorization in mesh (RBAC policies)
+
+4) Service-to-Service Auth (mTLS vs JWT vs both)
+Interview questions
+
+When do you use mTLS?
+
+Is JWT enough for internal calls?
+
+How do you do service authorization?
+
+Reference design (the “gold” approach)
+
+✅ mTLS for all service-to-service traffic
+
+Provides service identity + encryption + prevents MITM
+
+Use service mesh (Istio/Linkerd) or direct mTLS via Spring (less common at scale)
+
+✅ JWT for user context (optional)
+
+For calls that need user permissions, propagate/exchange user token.
+
+✅ Service authorization model
+
+Allowlist based on identity:
+
+“inventory-service can call reservation-service /hold”
+
+Enforce via:
+
+Mesh policy (preferred)
+
+Or Spring Security at service edge
+
+5) Authorization Model (Scopes vs RBAC vs ABAC)
+Interview questions
+
+How do you do fine-grained permissions?
+
+How do you enforce multi-tenant isolation?
+
+Do you store roles in token?
+
+Reference design
+
+✅ Layers:
+
+Scopes for coarse access (booking:write)
+
+RBAC for org roles (ADMIN/OPERATOR)
+
+ABAC for resource-level checks:
+
+tenantId must match
+
+user must own bookingId
+
+region constraints
+
+✅ Multi-tenant enforcement
+
+Token contains tenant_id claim
+
+Every service enforces:
+
+tenant_id in token == tenant_id of resource
+
+DB level:
+
+partition by tenant
+
+or add tenantId column + enforced query filter
+
+Key line:
+
+“Tenant isolation is enforced at multiple layers: token claim, service checks, and data layer constraints.”
+
+6) Secrets Management & Key Rotation
+Interview questions
+
+Where do you store DB creds / API keys?
+
+How do you rotate keys?
+
+What happens when JWT signing key rotates?
+
+Reference design
+
+✅ Secrets:
+
+Vault / AWS Secrets Manager / GCP Secret Manager
+
+K8s Secrets only if encrypted at rest + restricted RBAC
+
+Never store in Git
+
+✅ JWT keys:
+
+Use JWKS endpoint (public keys)
+
+Support multiple active keys using kid
+
+Rotation plan:
+
+publish new key
+
+accept both keys during grace period
+
+retire old key
+
+7) Async Security (Kafka) — Often Forgotten
+Interview questions
+
+How do you authenticate producers/consumers?
+
+How do you prevent one service from publishing to all topics?
+
+Do you encrypt events?
+
+Reference design
+
+✅ Kafka controls:
+
+TLS + SASL (service identity)
+
+Topic ACLs:
+
+Only booking-service can publish booking-events
+
+Only specific consumers can read
+
+Avoid sensitive data in events (prefer references)
+
+If sensitive fields required:
+
+encrypt payload or field-level encryption
+
+key management (KMS)
+
+✅ Idempotency + replay protection
+
+eventId + consumer dedupe store
+
+retention + audit
+
+8) Observability & Audit (Must-have in security design)
+Interview questions
+
+How do you audit who did what?
+
+How do you trace security incidents?
+
+Reference design
+
+✅ Must have:
+
+Correlation IDs / trace IDs across services
+
+Security audit logs:
+
+principal, tenant, action, resource, decision, reason
+
+Centralized logs + immutable storage for audit (where required)
+
+Alerts for anomalies (token abuse, auth failures spikes)
+
+9) Incident Response / “Assume Breach” Design
+Interview questions
+
+Service is compromised — what now?
+
+How do you reduce blast radius?
+
+How do you revoke access quickly?
+
+Reference design
+
+✅ Blast-radius controls:
+
+Least privilege scopes + short TTL tokens
+
+mTLS identity with allowlists
+
+NetworkPolicy segmentation
+
+Rate limits between services
+
+Secrets: short-lived + rotate quickly
+
+✅ Revocation:
+
+Short token TTL + refresh token control
+
+For high-risk: token introspection or revocation list (tradeoff)
+
+Kill switch:
+
+disable client credential for compromised service
+
+rotate certs/identity
+
+10) A clean “2-minute answer” you can say in interviews
+
+“I design microservices security with zero trust and defense-in-depth. Public 
+clients authenticate via OAuth2/OIDC at the gateway; internal services still 
+validate identity and enforce fine-grained authorization. Service-to-service 
+uses mTLS for strong workload identity and encryption; user context is propagated 
+or exchanged into internal tokens so services can do ABAC checks like tenant
+ isolation and ownership. Gateway is not trusted alone—bypass is prevented via 
+ private networking + NetworkPolicies + mTLS requirements. Secrets come from a 
+ manager like Vault/Secrets Manager with rotation. JWT signing keys are rotated via 
+ JWKS using kid. For Kafka, we enforce TLS/SASL + topic ACLs and avoid sensitive
+  data in events. Everything is observable with audit logs and distributed tracing, 
+  and we design for compromise by limiting blast radius and enabling rapid revocation.”
+  

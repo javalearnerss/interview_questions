@@ -1,0 +1,747 @@
+Spring Boot Annotations Interview Questions (Experienced)
+🧱 Core Spring Boot Annotations
+✅ @SpringBootApplication
+
+Questions
+
+What annotations does it internally include?
+
+Can you replace it with individual annotations?
+
+What happens if component scan base package is wrong?
+
+Follow-up (Senior Level)
+
+How does auto-configuration actually work internally?
+
+How does Spring decide which auto-config to apply?
+
+✅ @Configuration
+
+Questions
+
+Difference between @Configuration vs @Component?
+
+Why are @Bean methods inside @Configuration class proxied?
+
+What happens if you remove @Configuration and keep @Bean?
+
+✅ @Bean
+
+Questions
+
+When do you prefer @Bean vs @Component?
+
+Can @Bean methods be private?
+
+Lifecycle of bean created via @Bean?
+
+🌐 Dependency Injection Annotations
+✅ @Autowired
+
+Questions
+
+Constructor vs Field vs Setter injection — which is best and why?
+
+What happens if multiple beans of same type exist?
+
+How does Spring resolve injection at runtime?
+
+Advanced
+
+How does @Autowired(required = false) work internally?
+
+✅ @Qualifier
+
+Questions
+
+When do you need @Qualifier?
+
+Difference between @Primary and @Qualifier?
+
+✅ @Value
+
+Questions
+
+How does property resolution work?
+
+What is loading order of properties (env, yaml, config server, etc)?
+
+🌍 Web Layer Annotations
+✅ @RestController
+
+Questions
+
+Difference between @Controller and @RestController?
+
+How does Spring convert Java object → JSON?
+
+✅ @RequestMapping, @GetMapping, @PostMapping
+
+Questions
+
+Can two methods have same path but different params?
+
+How does Spring choose correct handler?
+
+✅ @RequestBody
+
+Questions
+
+How does Spring deserialize JSON?
+
+What happens if request JSON has extra fields?
+
+🧵 Transaction & Data Annotations
+✅ @Transactional
+
+Most Important for Interviews
+
+Questions
+
+Why does @Transactional fail in self-invocation?
+
+What is proxy-based transaction management?
+
+Difference between REQUIRED, REQUIRES_NEW, NESTED?
+
+Production Scenario
+
+Why transaction not rolling back on checked exception?
+
+✅ @EnableJpaRepositories
+
+Questions
+
+What does it actually do internally?
+
+When do you need to explicitly define it?
+
+⚡ Async & Resilience Annotations
+✅ @Async
+
+Questions
+
+Why does @Async fail if method is called internally?
+
+How do you configure thread pool for @Async?
+
+✅ @EnableAsync
+
+Questions
+
+What happens if you forget it?
+
+✅ @Scheduled
+
+Questions
+
+What happens if scheduled job runs longer than interval?
+
+How do you prevent overlapping executions?
+
+🔐 Security Related
+✅ @PreAuthorize
+
+Questions
+
+How is it evaluated internally?
+
+Difference vs @Secured?
+
+📊 Observability & Actuator
+✅ @Timed (Micrometer)
+
+Questions
+
+Where are metrics stored?
+
+How do you export metrics to Prometheus?
+
+🧪 Testing Annotations
+✅ @SpringBootTest
+
+Questions
+
+Difference vs @WebMvcTest?
+
+Why are tests slow with @SpringBootTest?
+
+✅ @MockBean
+
+Questions
+
+Difference vs Mockito @Mock?
+
+⭐ Ultra-Senior Annotation Questions
+🔥 Proxy Mechanism Questions
+
+Which annotations depend on AOP proxy?
+
+@Transactional
+
+@Async
+
+@Cacheable
+
+@Retryable
+
+🔥 Ordering Questions
+
+What loads first?
+
+Environment
+
+Config files
+
+Auto configuration
+
+User beans
+
+
+1) Why does @Transactional not work when you call the method from the same class?
+
+What’s “self-invocation”?
+
+How do Spring proxies apply transactions?
+
+2) @Transactional on a private / final method—will it work?
+
+Why/why not?
+
+What about final classes?
+
+3) @Transactional doesn’t roll back—why?
+
+Checked vs unchecked exceptions
+
+rollbackFor / noRollbackFor
+
+Catching exception and not rethrowing
+
+4) @Async “works” but still blocks the request—what happened?
+
+Self-invocation again
+
+Wrong executor (sync fallback)
+
+Calling .get() on Future/CompletableFuture
+
+5) @Async + @Transactional together—what’s the trap?
+
+Transaction context doesn’t propagate across threads
+
+What is actually transactional: caller or async method?
+
+6) @Scheduled runs in parallel unexpectedly—why?
+
+Default scheduler vs custom scheduler
+
+Multiple instances/pods (Kubernetes) → job runs N times
+
+7) How do you prevent @Scheduled from running concurrently across pods?
+
+Distributed lock patterns (ShedLock etc.)
+
+Leader election / single-runner deployment
+
+8) Why does @Cacheable not cache at all?
+
+Same-class call (proxy not used)
+
+Key generation mismatch
+
+Cache manager not configured / wrong cache name
+
+9) @Cacheable caches “wrong” results—what’s the common cause?
+
+Missing key → same key for all calls
+
+Mutable keys / arrays
+
+Caching null vs not caching null
+
+10) @Configuration vs @Component for config classes—what breaks?
+
+@Configuration uses CGLIB proxying
+
+Without it, @Bean method calls create new instances
+
+11) @Bean method calling another @Bean method—why does it sometimes create 2 objects?
+
+Happens when class isn’t proxied (@Configuration missing or proxyBeanMethods disabled)
+
+12) @SpringBootApplication scanning issue: why aren’t beans detected?
+
+Component scan starts from the package of the main class
+
+Main class placed in wrong package
+
+13) @Profile confusion: why is a bean created even when profile isn’t active?
+
+Where @Profile is applied (class vs method)
+
+Default profiles / profile groups
+
+14) @Value injects null or fails—why?
+
+Property not loaded
+
+Wrong property key
+
+Using it too early (static fields / before environment)
+
+Prefer @ConfigurationProperties
+
+15) @ConfigurationProperties binds nothing—most common reasons?
+
+Missing @EnableConfigurationProperties / not registered as bean
+
+Wrong prefix
+
+Missing setters / constructor binding mismatch
+
+Using records without proper setup
+
+16) @ConditionalOnProperty behaves opposite of what you expect—how?
+
+matchIfMissing=true
+
+Property exists but empty vs missing
+
+Relaxed binding names (my.prop vs MY_PROP)
+
+17) @Primary + @Qualifier together—who wins?
+
+@Qualifier wins (it’s explicit)
+
+Where @Primary helps: ambiguous injection without qualifiers
+
+18) @Autowired with multiple constructors—what happens?
+
+Modern Spring prefers single constructor, autowires it implicitly
+
+If multiple constructors exist: ambiguity unless @Autowired marks one
+
+19) @Order doesn’t seem to affect your filters/interceptors—why?
+
+@Order affects some types (e.g., FilterRegistrationBean, Ordered)
+
+Security filter chain ordering has its own rules
+
+20) @ControllerAdvice not catching exceptions—why?
+
+Exception thrown before controller (filter/security)
+
+Response already committed
+
+Wrong exception type / handler method signature mismatch
+
+Story 1 — Transaction Didn’t Roll Back (Money Lost)
+🧨 Production Incident
+
+Payment deducted. Booking failed. No rollback.
+
+🔍 Root Cause
+
+@Transactional method caught exception and didn’t rethrow.
+
+@Transactional
+public void createBooking() {
+   try {
+      paymentService.pay();
+      bookingRepo.save();
+   } catch(Exception e) {
+      log.error("failed", e);
+   }
+}
+
+🎯 Interview Questions
+
+Why transaction didn’t rollback?
+
+How does Spring decide rollback?
+
+How to fix?
+
+✅ Expected Answer
+
+Spring rolls back only on unchecked exceptions by default
+
+Exception swallowed → transaction commits
+
+Fix → rethrow or use rollbackFor
+
+🚨 Story 2 — @Async Didn’t Run Async (System Slow)
+🧨 Production Incident
+
+Email sending blocking API response.
+
+🔍 Root Cause
+
+Self-invocation.
+
+public void createBooking() {
+   sendEmailAsync(); // ❌ same class call
+}
+
+@Async
+public void sendEmailAsync() {}
+
+🎯 Interview Questions
+
+Why async didn’t work?
+
+How does proxy work?
+
+Fix?
+
+✅ Expected
+
+Proxy not used in internal call
+
+Move async method to another bean
+
+🚨 Story 3 — Cache Not Working (DB Overloaded)
+🧨 Incident
+
+Cache annotation present but DB still hit every time.
+
+@Cacheable("users")
+public User getUser(String id) {}
+
+🔍 Root Cause
+
+Method called internally OR cache key issue.
+
+🎯 Questions
+
+When cache won’t work?
+
+How key generated?
+
+How to debug cache?
+
+🚨 Story 4 — Scheduled Job Ran 6 Times (Data Corruption)
+🧨 Incident
+
+Cron job executed once per pod in Kubernetes.
+
+🎯 Questions
+
+Why did it run multiple times?
+
+How to make singleton execution?
+
+✅ Expected
+
+@Scheduled runs per instance
+
+Use distributed lock / leader election
+
+🚨 Story 5 — Two Beans Created Instead of One
+🧨 Incident
+
+Connection pool created twice → DB exhaustion.
+
+@Component
+public class AppConfig {
+
+   @Bean
+   public DataSource ds() { return new HikariDataSource(); }
+
+   @Bean
+   public Service service() { return new Service(ds()); } // ❌
+}
+
+🎯 Questions
+
+Why two instances?
+
+Difference if using @Configuration?
+
+✅ Expected
+
+No CGLIB proxy → direct method call → new instance
+
+🚨 Story 6 — Transaction Ignored (Self Invocation)
+🧨 Incident
+
+Audit record saved even when main transaction failed.
+
+@Transactional
+public void main() {
+   saveAudit(); // ❌
+}
+
+@Transactional
+public void saveAudit() {}
+
+🎯 Questions
+
+Why second transaction not applied?
+
+🚨 Story 7 — @Value Null in Production Only
+🧨 Incident
+
+Local works, prod fails.
+
+Root Causes
+
+Env variable naming mismatch
+
+Property not loaded
+
+Early bean initialization
+
+🚨 Story 8 — @ConfigurationProperties Not Binding
+🧨 Incident
+
+Config values always default.
+
+🎯 Questions
+
+Why binding may fail?
+
+Difference vs @Value?
+
+🚨 Story 9 — Security Annotation Ignored
+🧨 Incident
+
+@PreAuthorize not enforced.
+
+Root Cause
+
+Method called internally OR security not enabled.
+
+🚨 Story 10 — @ConditionalOnProperty Wrong Behavior
+🧨 Incident
+
+Feature disabled but bean still created.
+
+Root Cause
+
+matchIfMissing=true
+
+🚨 Story 11 — Multiple Bean Injection Crash
+🧨 Incident
+
+NoUniqueBeanDefinitionException
+
+🎯 Questions
+
+When to use @Primary vs @Qualifier?
+
+🚨 Story 12 — @Lazy Caused Runtime Failure
+🧨 Incident
+
+Bean initialized late → config missing → crash later.
+
+🚨 Story 13 — @Profile Wrong Bean Loaded
+🧨 Incident
+
+Dev DB used in production.
+
+🚨 Story 14 — @ControllerAdvice Not Catching Exceptions
+Root Cause
+
+Exception thrown in filter OR response committed.
+
+🚨 Story 15 — @RestController Returning HTML
+Root Cause
+
+Content negotiation / Accept header mismatch.
+
+🚨 Story 16 — @RequestBody Deserialization Failure
+Root Causes
+
+Missing default constructor
+
+Jackson config mismatch
+
+🚨 Story 17 — @Transactional(readOnly=true) Still Writing
+Root Cause
+
+Some DBs ignore read-only flag.
+
+🚨 Story 18 — @EnableAsync Missing
+Root Cause
+
+Async silently runs sync.
+
+🚨 Story 19 — @Order Not Working
+Root Cause
+
+Not all components respect @Order.
+
+🚨 Story 20 — Annotation Works Locally But Not In Prod
+Root Causes
+
+Proxy disabled
+
+Different bean lifecycle
+
+Missing config class scanning
+
+Top 10 Spring Boot Annotation Trick MCQs
+🧠 MCQ 1 — @Transactional Self Invocation
+
+Code
+
+@Service
+public class BookingService {
+
+    @Transactional
+    public void createBooking() {
+        saveAudit();
+    }
+
+    @Transactional
+    public void saveAudit() {}
+}
+
+
+Question
+Will saveAudit() run in a separate transaction?
+
+A. Yes
+B. No
+C. Depends on DB
+D. Depends on isolation level
+
+✅ Answer: B
+👉 Proxy not used → self invocation → same transaction only
+
+🧠 MCQ 2 — Checked Exception Rollback
+@Transactional
+public void pay() throws Exception {
+    throw new Exception("fail");
+}
+
+
+What happens?
+
+A. Rollback
+B. Commit
+C. Partial commit
+D. Random behavior
+
+✅ Answer: B
+👉 Default rollback only on RuntimeException
+
+🧠 MCQ 3 — @Async Without @EnableAsync
+@Async
+public void sendEmail() {}
+
+
+A. Runs async
+B. Runs sync
+C. Compile error
+D. Runtime error
+
+✅ Answer: B
+👉 Annotation ignored silently
+
+🧠 MCQ 4 — @Configuration vs @Component
+@Component
+public class AppConfig {
+
+   @Bean
+   public A a() { return new A(); }
+
+   @Bean
+   public B b() { return new B(a()); }
+}
+
+
+How many A objects created?
+
+A. 1
+B. 2
+C. 0
+D. Depends on JVM
+
+✅ Answer: B
+👉 No proxy → direct method call → new instance
+
+🧠 MCQ 5 — @Cacheable Same Class Call
+public User getUser() {
+   return getUserFromDB();
+}
+
+@Cacheable("users")
+public User getUserFromDB() {}
+
+
+A. Cache works
+B. Cache ignored
+C. Compile error
+D. Depends on cache type
+
+✅ Answer: B
+👉 Proxy bypassed
+
+🧠 MCQ 6 — @Scheduled In Kubernetes
+
+App running in 3 pods.
+
+How many times job runs?
+
+A. 1
+B. 3
+C. Depends on cron
+D. Depends on CPU
+
+✅ Answer: B
+👉 Each instance runs scheduler
+
+🧠 MCQ 7 — @Primary vs @Qualifier
+
+Both present — which wins?
+
+A. Primary
+B. Qualifier
+C. Random
+D. First loaded bean
+
+✅ Answer: B
+👉 Qualifier is explicit selection
+
+🧠 MCQ 8 — @Value On Static Field
+@Value("${app.name}")
+static String name;
+
+
+A. Works
+B. Null value
+C. Compile error
+D. JVM crash
+
+✅ Answer: B
+👉 Spring injects into instance fields only
+
+🧠 MCQ 9 — @Transactional On Private Method
+@Transactional
+private void save() {}
+
+
+A. Works
+B. Ignored
+C. Compile error
+D. Works only in Boot 3
+
+✅ Answer: B
+👉 Proxy cannot intercept private methods
+
+🧠 MCQ 10 — @ConditionalOnProperty
+@ConditionalOnProperty(name="feature.x", matchIfMissing=true)
+
+
+Property missing → Bean created?
+
+A. Yes
+B. No
+C. Random
+D. Depends on profile
+
+✅ Answer: A
