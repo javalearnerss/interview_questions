@@ -1,0 +1,171 @@
+Q1️⃣ What happens when an Angular application starts?
+
+Answer (Senior-level)
+When Angular starts, the main.ts file bootstraps the root module or root standalone component. Angular creates the root injector, initializes providers, loads the root component, and starts change detection using Zone.js (unless zoneless mode is enabled). From there, component trees are created based on routing or templates.
+
+Q2️⃣ What is the difference between constructor and ngOnInit?
+
+Answer
+The constructor is used only for dependency injection. No business logic should go there.
+ngOnInit is a lifecycle hook called after Angular initializes input properties and is the correct place for initialization logic like API calls or subscriptions.
+
+Q3️⃣ Why would you use ChangeDetectionStrategy.OnPush?
+
+Answer
+OnPush reduces unnecessary change detection by running it only when:
+
+An @Input reference changes
+
+An event originates from the component
+
+An observable emits via async pipe
+
+It improves performance in large applications by avoiding full tree checks.
+
+Q4️⃣ A component UI is not updating even though data changed. Why?
+
+Answer
+Common reasons:
+
+Using OnPush and mutating an object instead of changing its reference
+
+Updating data outside Angular’s zone
+
+Missing markForCheck() or detectChanges()
+
+Angular relies on reference changes, not deep mutation.
+
+Q5️⃣ How do you communicate between two unrelated components?
+
+Answer
+Use a shared service with RxJS (Subject or BehaviorSubject).
+For complex state, use NgRx or Signals.
+Avoid using EventEmitter in services.
+
+Q6️⃣ Why is switchMap preferred for search APIs?
+
+Answer
+switchMap cancels the previous API call when a new value arrives.
+This prevents race conditions and ensures only the latest request result is processed—ideal for user-driven events like typing.
+
+Q7️⃣ Difference between mergeMap, concatMap, and switchMap?
+
+Answer
+
+mergeMap: Parallel execution, no order guarantee
+
+concatMap: Sequential execution, order preserved
+
+switchMap: Cancels previous observable
+
+Choice depends on concurrency and ordering requirements.
+
+Q8️⃣ How do you prevent multiple components from making duplicate API calls?
+
+Answer
+Cache data at the service level using shareReplay(1) or maintain state in NgRx/Signals.
+This ensures a single API call and multiple subscribers reuse the same response.
+
+Q9️⃣ How does lazy loading improve performance?
+
+Answer
+Lazy loading loads feature modules only when required, reducing initial bundle size and improving startup time. It’s implemented using route-level code splitting.
+
+Q1️⃣0️⃣ Difference between CanActivate and CanLoad?
+
+Answer
+
+CanActivate: Controls route access after module is loaded
+
+CanLoad: Prevents module from loading at all (legacy)
+
+CanMatch: Modern replacement for CanLoad
+
+Q1️⃣1️⃣ Reactive Forms vs Template-driven Forms?
+
+Answer
+Reactive Forms are preferred in large apps because they are:
+
+Predictable and immutable
+
+Easier to test
+
+Better for dynamic and complex validation
+
+Template-driven forms are suitable for simple forms.
+
+Q1️⃣2️⃣ How do you handle dynamic form fields?
+
+Answer
+Use FormArray. Controls can be added or removed dynamically, and validations can be applied programmatically.
+
+Q1️⃣3️⃣ What problems does NgRx solve?
+
+Answer
+NgRx provides predictable state management, centralized state, time-travel debugging, and separation of side effects. It prevents inconsistent state across components.
+
+Q1️⃣4️⃣ When should you NOT use NgRx?
+
+Answer
+Avoid NgRx for:
+
+Small applications
+
+Local UI state
+
+Simple parent-child communication
+
+It adds boilerplate and learning overhead.
+
+Q1️⃣5️⃣ What are Angular Signals?
+
+Answer
+Signals are synchronous reactive primitives that automatically track dependencies and trigger updates without subscriptions. They simplify state management and improve performance by eliminating unnecessary reactivity.
+
+Q1️⃣6️⃣ Signals vs Observables?
+
+Answer
+
+Signals: synchronous, pull-based, simple state
+
+Observables: async, push-based, streams/events
+
+Use Signals for UI state, Observables for async flows.
+
+Q1️⃣7️⃣ How does Angular prevent XSS?
+
+Answer
+Angular sanitizes values before rendering them in the DOM. It escapes unsafe HTML, URLs, and styles unless explicitly bypassed.
+
+Q1️⃣8️⃣ Where should JWT tokens be stored?
+
+Answer
+Prefer HTTP-only secure cookies.
+Avoid localStorage due to XSS risk.
+Frontend should never handle secrets.
+
+Q1️⃣9️⃣ How do you implement global error handling?
+
+Answer
+Use:
+
+ErrorHandler for global UI errors
+
+HTTP interceptors for API errors
+
+Central logging services for monitoring
+
+Q2️⃣0️⃣ How do you debug a blank screen in production?
+
+Answer
+Check:
+
+Browser console errors
+
+Network failures
+
+Incorrect base-href
+
+Lazy-loaded module errors
+
+Cache/version mismatch

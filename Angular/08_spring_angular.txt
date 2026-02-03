@@ -1,0 +1,291 @@
+1. Authentication + Token Flow
+✅ Scenario 1 — JWT + Refresh Token
+
+System:
+
+Angular SPA
+
+Spring Boot OAuth/JWT backend
+
+Access token = 15 min
+
+Refresh token = 7 days
+
+👉 Questions:
+
+Where will you store tokens in Angular? Why?
+
+How will interceptor attach token?
+
+How will you prevent multiple refresh calls?
+
+How backend will invalidate refresh tokens?
+
+What happens if refresh token is stolen?
+
+📡 2. API Load + UI Load
+✅ Scenario 2 — Dashboard Polling Problem
+
+System:
+
+Angular dashboard calls 8 APIs every 5 sec
+
+Backend CPU spikes
+
+👉 Questions:
+
+Would you reduce polling or change architecture?
+
+Would WebSocket help?
+
+Backend side — how reduce DB load?
+
+Would caching help? Where? (Redis / API / UI)
+
+🔁 3. Transaction Consistency
+✅ Scenario 3 — Booking Flow (Very Real)
+
+Flow:
+1️⃣ Angular → Booking API
+2️⃣ Booking → Inventory → Payment
+3️⃣ Booking saved → Notification async
+
+👉 Problem:
+Payment succeeds
+Booking save fails
+
+👉 Questions:
+
+How frontend should handle?
+
+Backend compensation strategy?
+
+Saga pattern or 2PC?
+
+How UI show final state?
+
+⚡ 4. Real-Time Data System
+✅ Scenario 4 — Live Trading Screen
+
+System:
+
+Angular live price updates
+
+Spring Boot WebSocket gateway
+
+Kafka → Price service → WebSocket → UI
+
+👉 Questions:
+
+How Angular handle 100 updates/sec?
+
+Should every update trigger change detection?
+
+Backend — how avoid WebSocket overload?
+
+Where apply backpressure?
+
+🧠 5. Caching Strategy
+✅ Scenario 5 — Product Catalog
+
+Problem:
+Same catalog API called from 6 components.
+
+👉 Questions:
+
+Angular caching vs backend caching?
+
+When to use shareReplay vs Redis?
+
+Cache invalidation strategy?
+
+ETag / If-Modified-Since?
+
+🔐 6. Security Production Scenario
+✅ Scenario 6 — XSS + Token Leak Risk
+
+Problem:
+Backend returns HTML content.
+
+👉 Questions:
+
+Angular sanitization default behavior?
+
+When to bypass sanitizer?
+
+Backend — should send HTML or structured JSON?
+
+🏗 7. Microservices Aggregation
+✅ Scenario 7 — API Gateway Aggregation
+
+Problem:
+UI needs:
+
+User data
+
+Orders
+
+Payments
+
+Rewards
+
+👉 Questions:
+
+Should Angular call 4 APIs or gateway aggregate?
+
+GraphQL vs REST?
+
+Backend BFF pattern?
+
+🧨 8. Production Bug Scenario
+✅ Scenario 8 — Duplicate Order Creation
+
+Bug:
+User double clicks submit → two orders created.
+
+👉 Questions:
+
+Angular prevention?
+
+Backend idempotency?
+
+DB unique constraint vs token?
+
+📦 9. Deployment Scenario
+✅ Scenario 9 — Version Mismatch
+
+Problem:
+New Angular UI deployed
+Old backend still running
+
+👉 Questions:
+
+How ensure backward compatibility?
+
+Feature flags?
+
+Contract versioning?
+
+🧮 10. Performance Bottleneck Investigation
+✅ Scenario 10 — Slow Page Load
+
+Problem:
+Angular loads fast locally
+Slow in production
+
+👉 Questions:
+
+What will you check?
+
+CDN? Compression? Bundle splitting?
+
+Backend latency tracing?
+
+🔥 Senior-Level Cross Stack Scenarios
+🧠 11. Multi-Tenant SaaS
+
+👉 Questions:
+
+Tenant isolation — UI or backend?
+
+Per tenant config loading?
+
+DB strategy?
+
+⚡ 12. Event Driven UI
+
+Backend publishes events → Angular updates UI.
+
+👉 Questions:
+
+WebSocket vs SSE?
+
+Event ordering guarantee?
+
+UI consistency vs eventual consistency?
+
+🧨 13. Memory Leak Full Stack
+
+Problem:
+UI memory increases
+Backend thread pool stuck
+
+👉 Questions:
+
+How debug both sides?
+
+Tools used?
+
+🧩 14. File Upload at Scale
+
+System:
+Angular upload → Spring Boot → S3
+
+👉 Questions:
+
+Direct S3 upload vs backend proxy?
+
+Chunk upload?
+
+Resume upload?
+
+🔁 15. Retry + Failure Handling
+
+👉 Questions:
+
+Angular retry logic vs backend retry?
+
+Idempotent APIs?
+
+Circuit breaker backend?
+
+⭐ Ultra Real Fintech Style
+💰 16. Trade Execution Flow
+
+👉 Questions:
+
+UI optimistic update?
+
+Backend execution confirmation?
+
+Partial failure UI state?
+
+📊 17. Large Report Generation
+
+👉 Questions:
+
+Sync vs async generation?
+
+Notification pattern?
+
+Download security?
+
+⚡ 18. Rate Limiting
+
+👉 Questions:
+
+UI throttling?
+
+API Gateway rate limiting?
+
+Per user vs per token?
+
+🧨 19. Session Expiry While User Working
+
+👉 Questions:
+
+Silent refresh?
+
+Force logout UX?
+
+Unsaved form handling?
+
+🧠 20. Observability Full Stack
+
+👉 Questions:
+
+Correlation ID?
+
+Distributed tracing?
+
+UI error logging strategy?

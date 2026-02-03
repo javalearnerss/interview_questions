@@ -1,0 +1,231 @@
+1. Angular Fundamentals
+Core Concepts
+
+What is Angular and how is it different from AngularJS?
+
+Explain Angular architecture (Modules, Components, Services, etc.).
+
+What is TypeScript and why Angular uses it?
+
+What is Ahead-of-Time (AOT) vs Just-in-Time (JIT)?
+
+What is Ivy renderer?
+
+Components
+
+What is a component lifecycle?
+
+Difference between constructor and ngOnInit?
+
+When do you use ngOnChanges?
+
+What causes ngDoCheck to run?
+
+When would you use OnPush change detection?
+
+🧠 2. Data Binding & Templates
+
+Explain interpolation vs property binding vs event binding.
+
+What is two-way binding and how does it work internally?
+
+Difference between attribute binding and property binding?
+
+What is template reference variable?
+
+What is structural directive vs attribute directive?
+
+👉 Scenario:
+
+If template is slow, how will you optimize it?
+
+📦 3. Modules & Dependency Injection
+
+What is NgModule?
+
+What is lazy loading?
+
+What is hierarchical DI?
+
+Difference between providers in root vs module vs component?
+
+Difference between useClass, useValue, useFactory, useExisting?
+
+👉 Advanced:
+
+How Angular resolves dependencies at runtime?
+
+What happens if two providers provide same token?
+
+🔁 4. Change Detection
+
+How change detection works internally?
+
+Zone.js role in Angular?
+
+Default vs OnPush strategy?
+
+When change detection does NOT run?
+
+👉 Scenario:
+
+App is slow with large list → how to optimize?
+
+Expected answers:
+
+trackBy
+
+OnPush
+
+Virtual scrolling
+
+detach change detector
+
+🌐 5. Routing
+
+What is RouterModule.forRoot vs forChild?
+
+What are route guards?
+
+Difference between CanActivate vs CanLoad?
+
+What is Resolver?
+
+👉 Scenario:
+
+How do you preload lazy modules?
+
+🔐 6. Security
+
+What is XSS and how Angular prevents it?
+
+What is DomSanitizer?
+
+What is Content Security Policy?
+
+👉 Scenario:
+
+Backend returns HTML → how safely render?
+
+📡 7. HTTP & API Communication
+
+How HttpClient works?
+
+What is interceptor?
+
+How to handle global errors?
+
+👉 Scenario:
+
+Add auth token to every request?
+
+Retry failed requests automatically?
+
+🧮 8. RxJS (Very Important for Experienced)
+Core
+
+What is Observable?
+
+Observable vs Promise?
+
+Hot vs Cold Observables?
+
+Subject vs BehaviorSubject vs ReplaySubject?
+
+Operators
+
+switchMap vs mergeMap vs concatMap vs exhaustMap?
+
+debounceTime vs throttleTime?
+
+shareReplay use case?
+
+👉 Scenario:
+
+Cancel previous API call on new search input?
+
+🏗 9. State Management
+
+What is state management?
+
+When do you need NgRx?
+
+What is Store, Action, Reducer, Effect?
+
+👉 Scenario:
+
+Multiple components need same data → best approach?
+
+⚡ 10. Performance Optimization
+
+Lazy loading
+
+Preloading strategies
+
+Tree shaking
+
+Bundle optimization
+
+trackBy
+
+OnPush
+
+Memoization
+
+👉 Scenario:
+
+App bundle is 10MB → how to reduce?
+
+🧪 11. Testing
+
+Jasmine vs Karma?
+
+What is TestBed?
+
+What is mocking?
+
+Component vs service testing?
+
+👉 Scenario:
+
+How do you test HTTP calls?
+
+🏛 12. Architecture & Design (Senior Level)
+
+Smart vs Dumb components?
+
+Facade pattern?
+
+Core vs Shared module?
+
+Microfrontend with Angular?
+
+👉 Scenario:
+
+Large enterprise Angular app → folder structure?
+
+🎯 13. Real Company-Level Questions
+
+These are asked in product companies:
+
+How Angular compiles templates internally?
+
+How DI tree is created?
+
+How change detection tree works?
+
+How Angular bootstraps application?
+
+How Angular handles zones + async tasks?
+
+🧨 14. Hard Angular Questions (Where Candidates Fail)
+
+Why subscribe inside subscribe is bad?
+
+Why not use async pipe everywhere?
+
+When NOT to use NgRx?
+
+Why OnPush sometimes doesn’t update UI?
+
+Memory leak scenarios in Angular?

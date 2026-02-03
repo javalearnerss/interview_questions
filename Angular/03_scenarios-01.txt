@@ -1,0 +1,332 @@
+1. Change Detection & Performance
+Scenario 1
+
+Your Angular app becomes slow after loading a dashboard with 1000+ rows.
+
+Questions
+
+How does Angular change detection work?
+
+How do you identify unnecessary change detection cycles?
+
+When would you use ChangeDetectionStrategy.OnPush?
+
+How do trackBy and immutable data structures help?
+
+Expected Discussion
+
+Default vs OnPush
+
+ngFor trackBy
+
+Avoiding function calls in templates
+
+Using async pipe
+
+Scenario 2
+
+A child component updates data, but the parent UI doesn’t refresh.
+
+Questions
+
+Why might the UI not update?
+
+How do @Input() references affect OnPush?
+
+How do you manually trigger change detection?
+
+Key Concepts
+
+Reference vs mutation
+
+ChangeDetectorRef.markForCheck()
+
+detectChanges()
+
+🔹 2. Component Communication
+Scenario 3
+
+You need to communicate between two unrelated components (no parent-child relation).
+
+Questions
+
+What are your options?
+
+When would you avoid @Input/@Output?
+
+How would you implement this using RxJS?
+
+Expected Solutions
+
+Shared service with Subject / BehaviorSubject
+
+State management (NgRx)
+
+Signals (Angular 16+)
+
+Scenario 4
+
+Multiple components need the same API data, but API calls are duplicated.
+
+Questions
+
+How do you prevent duplicate API calls?
+
+Where do you cache the data?
+
+How do you handle refresh logic?
+
+Expected Answer
+
+Service-level caching
+
+shareReplay(1)
+
+Centralized data store
+
+🔹 3. RxJS & Async Programming
+Scenario 5
+
+A user types in a search box; API is called on every keystroke.
+
+Questions
+
+How do you optimize this?
+
+Which RxJS operators do you use?
+
+How do you cancel in-flight requests?
+
+Expected Operators
+
+debounceTime
+
+distinctUntilChanged
+
+switchMap
+
+takeUntil
+
+Scenario 6
+
+Multiple API calls are needed before showing a page.
+
+Questions
+
+When do you use forkJoin, combineLatest, or zip?
+
+What happens if one API fails?
+
+Expected Knowledge
+
+Error handling with catchError
+
+Parallel vs sequential calls
+
+🔹 4. Routing & Lazy Loading
+Scenario 7
+
+Your Angular app’s initial load is very slow.
+
+Questions
+
+How do you reduce bundle size?
+
+How does lazy loading work internally?
+
+How do you detect unused modules?
+
+Expected Discussion
+
+Lazy-loaded feature modules
+
+Standalone components
+
+Route-level code splitting
+
+Scenario 8
+
+User directly opens a protected route via URL.
+
+Questions
+
+How do you prevent unauthorized access?
+
+Difference between CanActivate, CanLoad, and CanMatch?
+
+Expected Answer
+
+Route guards
+
+Preloading strategies
+
+Auth state handling
+
+🔹 5. Forms (Reactive Focus)
+Scenario 9
+
+You need dynamic forms (add/remove fields at runtime).
+
+Questions
+
+How do you design this using Reactive Forms?
+
+How do you validate dynamically added controls?
+
+Expected Concepts
+
+FormArray
+
+Custom validators
+
+Cross-field validation
+
+Scenario 10
+
+Form validation errors appear before user interaction.
+
+Questions
+
+How do you control validation display?
+
+What is touched, dirty, pristine?
+
+🔹 6. State Management (NgRx / Signals)
+Scenario 11
+
+App state becomes inconsistent across components.
+
+Questions
+
+When do you introduce NgRx?
+
+What problems does it solve?
+
+How do actions, reducers, and effects work together?
+
+Expected Discussion
+
+Unidirectional data flow
+
+Side effects with Effects
+
+Store vs local state
+
+Scenario 12
+
+You migrate from NgRx to Signals.
+
+Questions
+
+Why would you prefer Signals?
+
+How do Signals differ from Observables?
+
+Where would you still use RxJS?
+
+🔹 7. Error Handling & Debugging
+Scenario 13
+
+Production errors are hard to reproduce.
+
+Questions
+
+How do you implement global error handling?
+
+How do you capture errors centrally?
+
+Expected Tools
+
+ErrorHandler
+
+HTTP interceptors
+
+Logging services (Sentry, Datadog)
+
+Scenario 14
+
+One API fails but the UI should still partially render.
+
+Questions
+
+How do you design graceful degradation?
+
+How do you isolate failures?
+
+🔹 8. Security
+Scenario 15
+
+Sensitive data appears in browser dev tools.
+
+Questions
+
+What should never be stored on frontend?
+
+How do you secure tokens?
+
+XSS prevention strategies?
+
+Expected Answers
+
+Avoid localStorage for JWT
+
+HTTP-only cookies
+
+Angular sanitization
+
+🔹 9. Build, Deployment & Environment
+Scenario 16
+
+Different configs are needed for dev, QA, and prod.
+
+Questions
+
+How does Angular environment configuration work?
+
+How do you prevent secrets leakage?
+
+Scenario 17
+
+After deployment, users see a blank screen.
+
+Questions
+
+How do you debug production builds?
+
+How do you handle version mismatches and cache issues?
+
+🔹 10. Architecture & Best Practices
+Scenario 18
+
+Your Angular app grows to 50+ modules.
+
+Questions
+
+How do you structure the project?
+
+How do you enforce boundaries?
+
+How do you avoid cyclic dependencies?
+
+Scenario 19
+
+UI logic starts creeping into services.
+
+Questions
+
+What belongs in a component vs service?
+
+How do you keep components thin?
+
+🔹 11. Testing Scenarios
+Scenario 20
+
+A critical bug escaped to production.
+
+Questions
+
+What type of test would have caught it?
+
+Unit vs integration vs e2e?
+
+How do you mock HTTP and services?

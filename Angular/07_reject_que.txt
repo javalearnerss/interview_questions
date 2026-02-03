@@ -1,0 +1,92 @@
+These are common “rejection” topics.
+
+1) switchMap vs mergeMap vs exhaustMap in UI actions
+
+Fail: using mergeMap everywhere.
+Pass:
+
+search box: switchMap
+
+pay button: exhaustMap
+
+background parallel loads: mergeMap
+
+2) OnPush + mutation bug
+
+Question: “Why UI didn’t update?”
+Pass: Because OnPush checks references; need immutable updates or markForCheck().
+
+3) Memory leaks
+
+Fail: “Angular handles it.”
+Pass:
+
+unsubscribe patterns (takeUntilDestroyed)
+
+avoid manual subscriptions when async pipe works
+
+clear timers, event listeners, fromEvent
+
+4) shareReplay footguns
+
+Question: “Why app shows stale data forever?”
+Pass:
+
+shareReplay(1) caches forever unless invalidated
+
+handle refresh triggers
+
+know when to avoid caching errors
+
+be careful with refCount behavior
+
+5) Wrong operator causing race conditions
+
+Scenario: route change triggers API; old response overwrites new.
+Pass: use switchMap to cancel old one.
+
+6) Change detection triggers
+
+Question: “What triggers change detection?”
+Pass:
+
+async events, promises, setTimeout, XHR, user events via Zone
+
+with zoneless, you must manage updates
+
+7) TrackBy and template function calls
+
+Fail: calling heavy functions directly in template.
+Pass:
+
+memoize / precompute
+
+use pure pipes
+
+trackBy + OnPush
+
+8) Router guards vs resolvers vs interceptors
+
+Fail: using guards to fetch data.
+Pass:
+
+guards for authorization
+
+resolvers for pre-fetching (when justified)
+
+interceptors for cross-cutting concerns
+
+9) Forms edge cases
+
+Cross-field validation + async validators + dynamic controls.
+They fail people who only know basic required.
+
+10) SSR / hydration basics (in modern Angular)
+
+If company uses SSR:
+
+hydration mismatch causes flicker
+
+avoid direct DOM access
+
+use isPlatformBrowser

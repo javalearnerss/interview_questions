@@ -1,0 +1,80 @@
+Core Angular Concepts (1–10)
+
+1. How Angular bootstraps an application internally?
+2. What happens internally when a component is created?
+3. Constructor vs ngOnInit — real difference (not textbook)?
+4. Explain Angular component lifecycle with real use cases.
+5. How Angular template compilation works internally?
+6. What is Ivy and why it improved performance?
+7. What is Zone.js and why Angular needs it?
+8. What triggers change detection cycle?
+9. What is AOT vs JIT and why AOT is preferred in production?
+10. What is Angular workspace architecture?
+
+🔁 Change Detection (11–18) ⭐ VERY IMPORTANT
+
+11. How Angular change detection tree works?
+12. Default vs OnPush — internal working difference?
+13. Why OnPush sometimes fails to update UI?
+14. How Angular detects object mutation vs reference change?
+15. How to manually trigger change detection?
+16. When Angular does NOT run change detection?
+17. How async pipe affects change detection?
+18. How would you optimize change detection for high-frequency UI updates?
+
+📡 RxJS (19–28) ⭐ PRODUCT COMPANIES LOVE THIS
+
+19. Observable vs Promise — real production difference?
+20. Hot vs Cold observable — real examples?
+21. Subject vs BehaviorSubject vs ReplaySubject — when to use each?
+22. switchMap vs mergeMap vs concatMap vs exhaustMap — real scenarios?
+23. Why nested subscribe is bad?
+24. How to cancel previous API request?
+25. What causes memory leaks in RxJS?
+26. What is shareReplay and when it becomes dangerous?
+27. How to design API caching using RxJS?
+28. How would you handle WebSocket streaming data using RxJS?
+
+📦 Dependency Injection (29–34)
+
+29. How Angular DI works internally?
+30. What is hierarchical DI tree?
+31. providedIn: root vs module providers vs component providers?
+32. What happens if two providers provide same token?
+33. When do you use InjectionToken?
+34. How Angular resolves dependencies at runtime?
+
+🌐 Routing (35–38)
+
+35. CanActivate vs CanLoad — real security difference?
+36. How Angular lazy loading works internally?
+37. How to preload lazy modules intelligently?
+38. How Angular decides which route to match?
+
+🔐 Security (39–41)
+
+39. How Angular prevents XSS internally?
+40. When should you use DomSanitizer?
+41. How would you implement token refresh securely?
+
+🏗 Architecture & Design (42–46) ⭐ SENIOR LEVEL
+
+42. Smart vs Dumb components — real enterprise usage?
+43. When NOT to use NgRx?
+44. How to structure large enterprise Angular app?
+45. How to design reusable Angular component library?
+46. How to implement microfrontend architecture with Angular?
+
+🧨 Production Debugging (47–50) ⭐ REAL COMPANY QUESTIONS
+
+47. Why API sometimes gets called twice in Angular apps?
+48. How would you debug Angular memory leak in production?
+49. How to reduce Angular bundle size drastically?
+50. Angular app is slow after 30 minutes — how will you debug?
+
+⭐ Bonus — Questions Companies Ask When They Want to Reject
+These are depth-check questions:
+Why async pipe is safer than manual subscribe?
+Why OnPush + immutability works well together?
+Why global state sometimes harms performance?
+Why too many interceptors slow HTTP calls?

@@ -1,0 +1,309 @@
+1. Performance & Change Detection Scenarios
+✅ Scenario 1 — Slow Dashboard
+
+Your Angular dashboard has:
+
+20 widgets
+
+Each widget calls API every 10 sec
+
+UI becomes laggy after 5 minutes
+
+👉 Questions:
+
+What will you check first?
+
+Would OnPush help? Why?
+
+How will you reduce API load?
+
+Would you use WebSocket instead?
+
+✅ Scenario 2 — Large Table Rendering
+
+You render 10,000 rows using *ngFor.
+
+👉 Questions:
+
+Why UI freezes?
+
+How will trackBy help?
+
+Would virtual scrolling help?
+
+Would OnPush alone fix it?
+
+✅ Scenario 3 — UI Not Updating with OnPush
+
+Component uses OnPush but UI doesn’t refresh when object property changes.
+
+👉 Questions:
+
+Why?
+
+How Angular checks reference vs value?
+
+How will you fix?
+
+📡 2. RxJS Real Scenarios
+✅ Scenario 4 — Search API Flooding Server
+
+Search box calls API on every key press.
+
+👉 Questions:
+
+Which operator will you use?
+
+Why switchMap over mergeMap?
+
+How to cancel previous request?
+
+✅ Scenario 5 — Multiple API Dependency Chain
+
+Flow:
+
+Get user
+
+Get accounts
+
+Get transactions
+
+👉 Questions:
+
+How will you avoid nested subscribe?
+
+Which operator best?
+
+How to handle partial failure?
+
+✅ Scenario 6 — Shared Data Across Components
+
+Multiple components need same API data but you don’t want multiple calls.
+
+👉 Questions:
+
+BehaviorSubject vs shareReplay?
+
+When shareReplay becomes dangerous?
+
+Where should caching live (service / store)?
+
+🧩 3. Dependency Injection & Architecture
+✅ Scenario 7 — Two Services Need Different Config
+
+Same service but different API base URLs per module.
+
+👉 Questions:
+
+How will you configure DI?
+
+Would you use InjectionToken?
+
+Would you provide service at component level?
+
+✅ Scenario 8 — Circular Dependency Between Services
+
+Service A needs Service B
+Service B needs Service A
+
+👉 Questions:
+
+What happens internally?
+
+How to break cycle?
+
+Would Event bus help?
+
+🌐 4. Routing & Navigation
+✅ Scenario 9 — Secure Lazy Module
+
+Admin module must:
+
+Load only if user is admin
+
+Not be downloaded otherwise
+
+👉 Questions:
+
+CanActivate vs CanLoad?
+
+Which is safer?
+
+How to prevent preloading?
+
+✅ Scenario 10 — Preloading Strategy
+
+App has 15 lazy modules but user navigates only 3 mostly.
+
+👉 Questions:
+
+Would you preload all?
+
+Would you create custom preloader?
+
+How measure improvement?
+
+🔐 5. Security Real Scenarios
+✅ Scenario 11 — Rendering Backend HTML
+
+Backend sends formatted HTML content.
+
+👉 Questions:
+
+Why Angular blocks it?
+
+When to use DomSanitizer?
+
+Security risks?
+
+✅ Scenario 12 — Token Expiry Handling
+
+API token expires every 15 min.
+
+👉 Questions:
+
+Where implement refresh logic?
+
+Interceptor vs Guard?
+
+How avoid multiple refresh calls simultaneously?
+
+🏗 6. State Management Scenarios
+✅ Scenario 13 — When NOT to Use NgRx
+
+App:
+
+5 screens
+
+Limited shared state
+
+👉 Questions:
+
+Why NgRx might be overkill?
+
+Alternative?
+
+✅ Scenario 14 — Multiple Tabs State Sync
+
+User opens app in 3 browser tabs.
+
+👉 Questions:
+
+How sync state?
+
+LocalStorage events?
+
+BroadcastChannel?
+
+⚡ 7. Real Production Debugging
+✅ Scenario 15 — Memory Leak in Angular App
+
+App memory keeps increasing after navigation.
+
+👉 Questions:
+
+Where to check?
+
+Async pipe vs manual subscribe?
+
+takeUntil pattern?
+
+✅ Scenario 16 — Random Duplicate API Calls
+
+Sometimes API is called twice.
+
+👉 Questions:
+
+Multiple subscriptions?
+
+shareReplay misuse?
+
+Multiple interceptors?
+
+📦 8. Build & Deployment Scenarios
+✅ Scenario 17 — Bundle Size Too Large
+
+Bundle = 12MB
+
+👉 Questions:
+
+What will you check first?
+
+How to find heavy dependency?
+
+Would lazy loading solve everything?
+
+🧠 9. Enterprise Architecture Scenarios
+✅ Scenario 18 — Reusable Component Library
+
+You must build internal UI library.
+
+👉 Questions:
+
+How structure modules?
+
+How version components?
+
+How avoid breaking apps?
+
+✅ Scenario 19 — Microfrontend Integration
+
+Angular app must integrate React microfrontend.
+
+👉 Questions:
+
+iframe vs module federation?
+
+Shared auth?
+
+Shared state?
+
+🧨 10. Hard Real Interview Scenarios
+✅ Scenario 20 — Zone-less Angular
+
+Team wants to remove zone.js for performance.
+
+👉 Questions:
+
+What breaks?
+
+How trigger change detection manually?
+
+Worth it?
+
+✅ Scenario 21 — SSR + Hydration Issues
+
+SSR page loads but flickers on client load.
+
+👉 Questions:
+
+Why mismatch happens?
+
+How debug?
+
+When avoid SSR?
+
+⭐ Ultra Real Fintech/Product Company Style
+✅ Scenario 22 — Live Trading Dashboard
+
+Updates every 200ms.
+
+👉 Questions:
+
+RxJS strategy?
+
+Change detection strategy?
+
+WebSocket buffering?
+
+✅ Scenario 23 — Form with 200 Controls
+
+Reactive form with heavy validation.
+
+👉 Questions:
+
+How optimize?
+
+Split into sub forms?
+
+Lazy load validation?

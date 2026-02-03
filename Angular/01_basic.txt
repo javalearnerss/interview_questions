@@ -1,0 +1,115 @@
+Angular Fundamentals
+    What is Angular and how is it different from AngularJS?
+    What are the main building blocks of Angular?
+    Explain the role of NgModule.
+    What is a standalone component?
+    How does Angular bootstrap an application?
+    Difference between component and directive?
+    What is a pipe? Difference between pure and impure pipes?
+    How does data binding work in Angular?
+
+Component Lifecycle
+    Explain Angular component lifecycle hooks.
+    Difference between ngOnInit and constructor?
+    When is ngAfterViewInit used?
+    When would you use ngOnDestroy?
+    What happens if you don’t unsubscribe from Observables?
+
+Change Detection
+    How does Angular change detection work?
+    Difference between Default and OnPush change detection?
+    What triggers change detection?
+    How does trackBy improve performance?
+    How do you manually trigger change detection?
+
+Component Communication
+    How do components communicate with each other?
+    When to use @Input / @Output?
+    How do you communicate between unrelated components?
+    What is content projection (ng-content)?
+    How does ViewChild work?
+
+Routing & Navigation
+    What is Angular Router?
+    How does lazy loading work?
+    Difference between CanActivate, CanLoad, and CanMatch?
+    How do you pass data between routes?
+    How do you protect routes?
+    What is a resolver and when do you use it?
+
+Forms
+    Difference between Template-driven and Reactive forms?
+    Why are Reactive Forms preferred in large apps?
+    What is FormGroup, FormControl, FormArray?
+    How do you implement custom validators?
+    What is cross-field validation?
+    How do you handle dynamic forms?
+
+RxJS & Observables
+    What is an Observable?
+    Difference between Observable and Promise?
+    What are Subjects? Types of Subjects?
+    Difference between switchMap, mergeMap, and concatMap?
+    What is shareReplay?
+    How do you cancel HTTP requests?
+    How do you handle errors in RxJS?
+
+HTTP & Interceptors
+    How does HttpClient work?
+    What is an HTTP interceptor?
+    How do you add auth headers globally?
+    How do you handle API errors centrally?
+    Difference between retry and retryWhen?
+
+State Management
+    What problems does NgRx solve?
+    Explain actions, reducers, selectors, and effects.
+    When should you NOT use NgRx?
+    Difference between NgRx and Signals?
+    How do Signals improve performance?
+
+Security
+    How does Angular prevent XSS?
+    What is DOM sanitization?
+    Where should JWT tokens be stored?
+    How do you protect against CSRF?
+    What security data should never be on frontend?
+
+Performance Optimization
+    How do you improve Angular app performance?
+    What is lazy loading and preloading?
+    How do you reduce bundle size?
+    What causes memory leaks in Angular?
+    How do you detect performance bottlenecks?
+
+Testing
+    Difference between unit, integration, and e2e tests?
+    How do you test components?
+    How do you mock services and HTTP calls?
+    What is TestBed?
+    What is Karma and Jasmine?
+    What is Cypress?
+
+Build & Deployment
+    What are Angular environments?
+    How does AOT compilation work?
+    Difference between JIT and AOT?
+    What is tree shaking?
+    How do you debug production issues?
+    What causes a blank screen after deployment?
+
+Architecture & Best Practices
+    How do you structure a large Angular app?
+    Smart vs dumb components?
+    What belongs in a service vs component?
+    How do you enforce coding standards?
+    How do you avoid tight coupling?
+    How do you handle shared modules?
+
+Angular 15+ / 16+ / 17+
+    What are standalone components?
+    What are Angular Signals?
+    Signals vs Observables?
+    What is zoneless Angular?
+    What is hydration in Angular?
+    What is deferred loading?
