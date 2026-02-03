@@ -1,120 +1,358 @@
 Microservices – 50 Scenario-Based Interview Questions
+
 Service design & boundaries
-
-You’re breaking a monolith into microservices. How do you decide service boundaries?
-
-Two services share the same database tables. What problems will this cause and how do you fix it?
-
-A service grows too large and becomes a “mini-monolith.” What refactoring steps do you take?
-
-How do you identify whether a service is too chatty?
-
-When do you merge services instead of splitting them further?
+    1. You’re breaking a monolith into microservices. How do you decide service boundaries?
+    2. Two services share the same database tables. What problems will this cause and how do you fix it?
+    3. A service grows too large and becomes a “mini-monolith.” What refactoring steps do you take?
+    4. How do you identify whether a service is too chatty?
+    5. When do you merge services instead of splitting them further?
 
 Data ownership & consistency
-
-Each service owns its database. How do you implement cross-service queries?
-
-How do you handle eventual consistency in user-facing flows?
-
-A transaction spans multiple services. How do you ensure consistency without 2PC?
-
-How do you design idempotent APIs in distributed systems?
-
-How do you deal with duplicate requests caused by retries?
+    1. Each service owns its database. How do you implement cross-service queries?
+    2. How do you handle eventual consistency in user-facing flows?
+    3. A transaction spans multiple services. How do you ensure consistency without 2PC?
+    4. How do you design idempotent APIs in distributed systems?
+    5. How do you deal with duplicate requests caused by retries?
 
 Communication patterns
-
-When do you use sync (REST/gRPC) vs async (events) communication?
-
-How do you avoid cascading failures in synchronous calls?
-
-A downstream service is slow but not failing. How do you protect upstream services?
-
-How do you version APIs without breaking consumers?
-
-How do you evolve an API that is used by many teams?
+    1. When do you use sync (REST/gRPC) vs async (events) communication?
+    2. How do you avoid cascading failures in synchronous calls?
+    3. A downstream service is slow but not failing. How do you protect upstream services?
+    4. How do you version APIs without breaking consumers?
+    5. How do you evolve an API that is used by many teams?
 
 Reliability & resilience
-
-One service failure brings down multiple services. What design mistake was made?
-
-How do you design timeouts, retries, and circuit breakers correctly?
-
-What is the risk of aggressive retries and how do you mitigate it?
-
-How do you design graceful degradation in microservices?
-
-What does a good health check look like in microservices?
+    1. One service failure brings down multiple services. What design mistake was made?
+    2. How do you design timeouts, retries, and circuit breakers correctly?
+    3. What is the risk of aggressive retries and how do you mitigate it?
+    4. How do you design graceful degradation in microservices?
+    5. What does a good health check look like in microservices?
 
 Observability & debugging
-
-A request flows through multiple services and fails intermittently. How do you debug it?
-
-How do you design distributed tracing?
-
-Logs show success but users see failures. What could be wrong?
-
-How do you correlate logs across services?
-
-How do you monitor SLA/SLOs across multiple services?
+    1. A request flows through multiple services and fails intermittently. How do you debug it?
+    2. How do you design distributed tracing?
+    3. Logs show success but users see failures. What could be wrong?
+    4. How do you correlate logs across services?
+    5. How do you monitor SLA/SLOs across multiple services?
 
 Security & access control
-
-How do you handle authentication and authorization across microservices?
-
-How do you secure service-to-service communication?
-
-One service is compromised. How do you limit blast radius?
-
-How do you manage secrets without hard-coding them?
-
-How do you prevent data leakage between services?
+    1. How do you handle authentication and authorization across microservices?
+    2. How do you secure service-to-service communication?
+    3. One service is compromised. How do you limit blast radius?
+    4. How do you manage secrets without hard-coding them?
+    5. How do you prevent data leakage between services?
 
 Deployment & versioning
-
-How do you deploy microservices with zero downtime?
-
-A new version of a service breaks older consumers. How do you fix and prevent this?
-
-How do you handle database schema changes in live systems?
-
-How do you safely roll back a failed deployment?
-
-How do you deploy changes independently without coordination hell?
+    How do you deploy microservices with zero downtime?
+    A new version of a service breaks older consumers. How do you fix and prevent this?
+    How do you handle database schema changes in live systems?
+    How do you safely roll back a failed deployment?
+    How do you deploy changes independently without coordination hell?
 
 Scaling & performance
-
-One service needs to scale rapidly while others don’t. How do you handle this?
-
-How do you handle hot spots caused by uneven traffic?
-
-Where do you apply caching in microservices and why?
-
-How do you avoid over-scaling due to noisy neighbors?
-
-How do you design for predictable latency under load?
+    One service needs to scale rapidly while others don’t. How do you handle this?
+    How do you handle hot spots caused by uneven traffic?
+    Where do you apply caching in microservices and why?
+    How do you avoid over-scaling due to noisy neighbors?
+    How do you design for predictable latency under load?
 
 Governance & team practices
-
-How do you enforce contract discipline between teams?
-
-How do you prevent tight coupling between microservices?
-
-How do you handle shared libraries without creating version lock-in?
-
-How do you measure whether microservices are actually successful?
-
-When does microservices architecture become a liability?
+    How do you enforce contract discipline between teams?
+    How do you prevent tight coupling between microservices?
+    How do you handle shared libraries without creating version lock-in?
+    How do you measure whether microservices are actually successful?
+    When does microservices architecture become a liability?
 
 Architecture judgment
+    When would you choose a modular monolith instead of microservices?
+    What signals tell you your microservices architecture is over-engineered?
+    How do you decide what belongs in an API gateway vs a service?
+    How do you design systems for failure as a normal state?
+    What architectural trade-off are you most careful about in microservices?
 
-When would you choose a modular monolith instead of microservices?
 
-What signals tell you your microservices architecture is over-engineered?
 
-How do you decide what belongs in an API gateway vs a service?
 
-How do you design systems for failure as a normal state?
+***********************************************************************************************************************************************
+**********Data ownership & consistency**********
 
-What architectural trade-off are you most careful about in microservices?
+1. Each service owns its database. How do you implement cross-service queries?
+    1. Scenario:
+    A user wants to view their booking history, including event details and payment status.
+    Data needed:
+        Booking details (from Booking Service, with userId, eventId, bookingId)
+        Event/inventory details (from Inventory Service, with eventId, seat info)
+        User info (from User Service, with userId)
+        Payment status (from Payment Service, with bookingId or paymentId)
+
+    2. Cross-service query need:
+        To show a user’s booking history with event name, seat, and payment status, you need to join data from all these services.
+        Since each service has its own database, you cannot do a direct SQL join.
+        Instead, you must:
+        Query Booking Service for all bookings by userId.
+        For each booking, call Inventory Service for event details, and Payment Service for payment status.
+        Optionally, get user info from User Service.
+
+***********************************************************************************************************************************************
+
+2. How do you handle eventual consistency in user-facing flows?
+    Eventual consistency is a consistency model used in distributed systems where updates to data will propagate to all nodes/services, 
+    but not instantly. Over time, all nodes will have the same data, but temporary inconsistencies are allowed.
+
+    How it works:
+        When data is updated in one service/database, other services may not see the change immediately.
+        The system guarantees that, given enough time and no new updates, all services will eventually reflect the latest data.
+
+    Example scenario:
+        Booking Service marks a seat as booked.
+        Inventory Service is notified via an event/message.
+        There may be a short delay before Inventory Service updates its database.
+        During this delay, another service querying Inventory may see stale data.
+        Eventually, all services will show the seat as booked.
+
+    How to handle:
+
+    1. UI/UX Patterns for Temporary Inconsistencies:
+     - When a user books a ticket, immediately show a “Booking in progress…” or loading indicator, so the user knows the system is processing their 
+       request.
+     - Display the last known status of the booking (e.g., “Pending”, “Processing”) and add a note such as “This may take a few moments to update.”
+     - Provide a “Refresh” or “Retry” button so users can manually check for updates if they wish.
+     - Once the booking is confirmed or failed, notify the user with an in-app notification or send an email to inform them of the final status.
+
+    2. Backend Patterns:
+     - Ensure all booking operations are idempotent, so if the user retries (due to network issues or refresh), the backend can safely handle 
+       repeated requests without creating duplicate bookings.
+     - The backend should poll or subscribe to events from other services (like inventory or payment) to get real-time updates on booking status.
+     - As events arrive (e.g., payment completed, inventory reserved), cache and update the booking status in the database, so the latest status 
+       is always available for the user.
+
+    Example: Booking Confirmation Flow
+        Booking Service publishes events to Kafka for Inventory and Payment.
+        Inventory and Payment Services process events and update their own DBs.
+        After processing, Inventory and Payment Services publish "InventoryUpdated" and "PaymentCompleted" events to Kafka.
+        Booking Service subscribes to these events.
+        When Booking Service receives both confirmations for a booking, it updates the booking status to "CONFIRMED" (or "FAILED" if any failed).
+        Client polls Booking Service for status.
+
+***********************************************************************************************************************************************
+3. A transaction spans multiple services. How do you ensure consistency without 2PC?
+    2PC is a distributed transaction protocol used to ensure all-or-nothing outcomes across multiple services or databases.
+    It coordinates a transaction across several participants (e.g., services or databases) so that either all commit or all abort, 
+    maintaining consistency.
+
+    Phases:
+    1. Prepare Phase (Voting):
+        The coordinator asks all participants if they can commit.
+        Each participant does necessary checks and replies:
+        "Yes" (ready to commit)
+        "No" (cannot commit)
+
+    2. Commit Phase:
+        If all participants replied "Yes", the coordinator tells everyone to commit.
+        If any participant replied "No", the coordinator tells everyone to abort/rollback.
+
+    In a booking system:
+        If booking, inventory, and payment services all support 2PC, the coordinator (e.g., Booking Service) would:
+        Ask Inventory and Payment if they can reserve resources and process payment.
+        If both agree → commit. Otherwise → abort transaction.
+
+    - In 2PC, if all participants say "yes" in the prepare phase but a commit fails in one service during the commit phase, 
+        the system enters an inconsistent state. This is a known limitation of 2PC:
+    - The coordinator tells all participants to commit.
+    - If one participant fails to commit (e.g., due to a crash or network issue), but others have already committed, some services have
+         the transaction while others do not.
+    - Recovery is complex: the failed participant must recover and try to complete the commit when it comes back online, but if it cannot, 
+        manual intervention may be needed.
+
+    How do you ensure consistency?
+        Use eventual consistency with event-driven architecture.
+        Booking Service creates a booking with status PENDING.
+        Booking Service publishes events to Inventory and Payment Services (via Kafka).
+        Inventory and Payment Services process events and publish result events (success/failure).
+        Booking Service listens for result events and updates booking status to CONFIRMED or FAILED.
+        If any service fails, Booking Service can trigger compensating actions (e.g., refund payment, release inventory).
+        Ensure all operations are idempotent to handle retries.
+        Client polls Booking Service for booking status.
+
+***********************************************************************************************************************************************
+4. How do you design idempotent APIs in distributed systems?
+
+    Assign a unique idempotency key to each client request (e.g., UUID, client-generated token).
+    API receives the request with the idempotency key in a header or body.
+    On first request:
+        Process the operation.
+        Store the idempotency key and response/result in a persistent store (e.g., database, cache).
+        On repeated requests with the same idempotency key:
+        Detect the key in the store.
+        Return the previously stored response/result without re-processing.
+        Ensure all side effects (DB writes, events) are only performed once per idempotency key.
+
+    - When a user books a ticket, the Booking Service receives the request and creates a booking record with status "PENDING".
+    - The Booking Service sends asynchronous requests (events) to the Inventory Service (to reserve a seat) and the Payment Service 
+        (to process payment).
+    - The Booking Service does not wait for these services to finish; it immediately responds to the client that the booking is being processed.
+    - The Inventory and Payment Services process their tasks independently and send back results (success or failure) to the Booking Service 
+        via events.
+    - The Booking Service listens for these results. When both are successful, it updates the booking status to "CONFIRMED". If either fails, 
+        it updates the status to "FAILED" and may trigger compensating actions (like refunding payment or releasing the seat).
+    - The client can check the booking status by polling the Booking Service or receiving a notification when the status changes.
+    - All operations are designed to be idempotent, so repeated requests (due to retries or network issues) do not cause duplicate bookings 
+        or payments.
+    - This approach ensures consistency without using 2PC, by relying on eventual consistency, event-driven updates, and compensating actions
+     for failures.
+
+***********************************************************************************************************************************************
+******************** Communication patterns *******************
+1. How do you version APIs without breaking consumers?
+2. How do you evolve an API that is used by many teams?
+
+    Decide on versioning strategy:
+        URI versioning (e.g., /api/v1/resource)
+        Header versioning (e.g., Accept: application/vnd.company.v1+json)
+        Query parameter versioning (e.g., /api/resource?version=1)
+        Implement new versions as separate controllers or endpoints.
+        Maintain old versions for backward compatibility.
+        Deprecate old versions gradually, with clear communication.
+        Document versioning in API docs.
+
+
+***********************************************************************************************************************************************
+*************** Reliability & resilience *****************
+
+1. One service failure brings down multiple services. What design mistake was made?
+
+    - In a booking system, services like Booking, Inventory, Payment, and User should be loosely coupled.
+    - If one service failure (e.g., Payment Service is down) causes all other services (Booking, Inventory, User) to fail or 
+       become unavailable, the design mistake is tight coupling and lack of fault isolation.
+    - Common mistakes:
+        Synchronous/blocking calls between services (e.g., Booking waits for Payment to respond before replying to client).
+        No timeouts, retries, or circuit breakers.
+        No fallback or compensation logic.
+        Direct database access across services.
+        No asynchronous/event-driven communication.
+
+Note : In a booking system, if Booking Service synchronously calls Inventory and Payment Services and waits for their responses, 
+any failure or slowness in those services will block the Booking Service. This can lead to cascading failures: one service outage
+ propagates and brings down the entire system.
+
+    Correct design:
+        1. Use asynchronous communication (e.g., events, messaging) so Booking Service does not block waiting for other services.
+        2. Implement timeouts and circuit breakers for remote calls.
+        3. Design for graceful degradation: if Payment Service is down, Booking can mark the booking as "PENDING" and notify the user, 
+          rather than failing completely.
+        4. Avoid direct database access between services.
+        5. Use compensation logic to handle failures (e.g., release reserved inventory if payment fails).
+
+***********************************************************************************************************************************************
+2. How do you design timeouts, retries, and circuit breakers correctly?
+
+    1. Timeout:
+        Set a maximum duration for the Booking Service’s HTTP/gRPC call to Inventory Service.
+        If Inventory does not respond within the timeout, abort the call and handle as a failure.
+
+    2. Retry:
+        On timeout or transient error, retry the call a limited number of times.
+        Use exponential backoff between retries to avoid overwhelming Inventory Service.
+
+    3. Circuit Breaker:
+        Track the success/failure rate of calls to Inventory Service.
+        If failures exceed a threshold, open the circuit and block further calls for a period.
+        After cooldown, allow a few test calls (half-open); if successful, close the circuit.
+
+***********************************************************************************************************************************************
+
+
+3. What is the risk of aggressive retries and how do you mitigate it?
+    When Booking service calls Inventory service (to lock/hold a seat/room), aggressive retries are dangerous because they multiply load 
+    exactly when Inventory is already unhealthy, and they can also create incorrect inventory state.
+    
+    Risks (Booking → Inventory)
+    1) Retry storm → Inventory collapse
+        If Inventory is slow/down:
+        Booking requests time out
+        Booking retries immediately (and often multiple times)
+        Now Inventory gets N× traffic while it’s already struggling
+        Result: Inventory stays down longer, and Booking starts failing too (cascading failure).
+
+        Example: 5,000 bookings/min × 3 retries = 15,000 extra lock attempts/min.
+
+    2) Thundering herd
+        If many bookings fail at the same time, and all retry with the same schedule (e.g., every 1s),
+        they “sync up” and hit Inventory in waves, causing repeated spikes and continued timeouts.
+
+    3) Duplicate locks / inconsistent inventory (double hold)
+        Inventory “lock/hold” is a state-changing operation.
+        If Booking retries after a timeout, the first request may have actually succeeded but the response was lost.
+        So Booking sends another lock:
+            Inventory may create multiple holds for the same booking attempt
+            Inventory gets artificially reduced
+            You get “sold out” incorrectly, or holds leak until expiry
+            This is a correctness bug, not just performance.
+
+    4) Holding threads and resources in Booking
+        Each retry keeps Booking threads busy waiting on Inventory.
+        Thread pools saturate → Booking becomes slow/unavailable even for requests that don’t need Inventory yet.
+
+***********************************************************************************************************************************************
+
+4. How do you design graceful degradation in microservices?
+    1. Identify critical flows in the booking system: booking creation, payment, inventory reservation.
+    2. For each dependency (e.g., Payment Service, Inventory Service), implement fallback logic in Booking Service.
+    3. Use timeouts, retries, and circuit breakers to detect failures quickly.
+    4. If a dependency fails, Booking Service should:
+    5. Mark booking as "PENDING" or "FAILED" (not crash).
+    6. Notify the user that confirmation/payment/seat assignment is delayed.
+    7. Allow the user to check status later or receive notification when resolved.
+    8. Log degraded operations for monitoring and alerting.
+
+Example: Booking Service graceful degradation
+    - If Inventory Service is unavailable, Booking Service creates booking with status "PENDING" and informs user that seat assignment will be 
+    processed later.
+    - If Payment Service is unavailable, Booking Service marks payment as "PENDING" and notifies user that payment confirmation will follow.
+    - Booking Service uses circuit breakers and fallback methods to implement this logic.
+    - UI displays intermediate states ("Processing", "Pending") and allows user to refresh or receive notifications.
+
+***********************************************************************************************************************************************
+Observability & debugging
+1. A request flows through multiple services and fails intermittently. How do you debug it?
+    First, I trace a single failing request using trace/correlation ID to find which service or dependency is failing. 
+    Then I check metrics like p99 latency, error rate, and resource saturation to see patterns like peak-load issues or 
+    instance-specific failures. I classify whether it’s timeout, retry storm, or resource exhaustion. Finally, I stabilize
+    quickly using tighter timeouts, limited retries with backoff, and circuit breakers while investigating root cause.
+        
+***********************************************************************************************************************************************
+3. Logs show success but users see failures. What could be wrong?
+    Where this could occur in a booking system:
+
+    Booking Creation:
+    If the Booking Service logs "Booking created successfully" after writing a record to the database, but before confirming payment or 
+    inventory reservation, the log shows success. If payment or inventory fails later, the user sees a failed booking.
+
+    Asynchronous Processing:
+    If the Booking Service logs success after publishing an event (e.g., to reserve inventory or process payment), but the downstream 
+    service fails to process the event, the log shows success but the user sees failure.
+
+    Partial Failure:
+    If the Booking Service logs success after one step (e.g., payment processed), but inventory reservation fails, the log shows success 
+    for payment, but the overall booking fails for the user.
+
+    Error Handling:
+    If exceptions are caught and not logged after a success log, or if the log is written before all steps complete, logs may show success 
+    while the user sees an error.
+
+    User Notification:
+    If the system logs that a notification/email was sent, but the email service fails after logging, the user does not receive confirmation.
+
+***********************************************************************************************************************************************
+
+5. How do you monitor SLA/SLOs across multiple services?
+    1. Define SLOs/SLAs for each booking system service (e.g., Booking, Inventory, Payment):
+        Example: 99.9% availability, 95% of requests < 200ms, <1% error rate.
+    2. Instrument each service to expose metrics (latency, error rate, availability) using Spring Boot Actuator.
+    3. Use Prometheus to scrape metrics from all services.
+    4. Use Grafana to visualize metrics and create SLO/SLA dashboards.
+    5. Set up Prometheus alert rules for SLO/SLA breaches.
+    6. Aggregate metrics for end-to-end booking flow monitoring.
+
+***********************************************************************************************************************************************
+
