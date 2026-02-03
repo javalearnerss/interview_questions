@@ -106,19 +106,71 @@ Default properties	            Set in code	                     6
 ******Web Layer Annotations******
 @RestController
 1. Difference between @Controller and @RestController?
+   @Controller is used for Spring MVC web apps and typically returns views (HTML/JSP).
+   @RestController is used for REST APIs and automatically returns JSON/XML response body (@Controller + @ResponseBody).
 2. How does Spring convert Java object → JSON?
+   1. Spring Boot uses the Jackson library by default for JSON serialization and deserialization.
+   2. When a Java object needs to be returned as JSON (e.g., from a @RestController), Spring uses an 
+      HttpMessageConverter (specifically, MappingJackson2HttpMessageConverter).
+   3. The converter uses Jackson’s ObjectMapper to convert Java objects to JSON and vice versa.
+   4. You can customize serialization by configuring the ObjectMapper bean or using Jackson annotations 
+      (@JsonProperty, @JsonIgnore, etc.) on your model classes.
 
+   In Spring Boot, conversion of Java objects to JSON (serialization) is triggered when:
+      1. A controller method returns a Java object (not a String or ResponseEntity with a raw body).
+      2. The method is annotated with @ResponseBody or is in a @RestController.
+      3. The request expects a JSON response (e.g., Accept: application/json header).
+      4. Spring’s DispatcherServlet delegates to an HttpMessageConverter (usually MappingJackson2HttpMessageConverter).
+      5. The converter uses Jackson’s ObjectMapper to serialize the object to JSON.
 ****************************************************************************************************
 
 @RequestMapping, @GetMapping, @PostMapping
 1. Can two methods have same path but different params?
+   Yes, two methods can have the same path if they differ by HTTP method, params, headers, or consumes/produces conditions.
+
+   Example: Same path, different params:
+
+      @GetMapping(value = "/bookings", params = "status")
+      public List<Booking> getByStatus() {}
+
+      @GetMapping(value = "/bookings", params = "userId")
+      public List<Booking> getByUser() {}
+
 2. How does Spring choose correct handler?
+   Spring selects the correct handler by matching request conditions in order: 
+   URL path → HTTP method → params → headers → consumes/produces, and picks the most specific match.
 
 ****************************************************************************************************
 
 @RequestBody
 1. How does Spring deserialize JSON?
-2. What happens if request JSON has extra fields?
+
+   When a request comes with JSON and you use @RequestBody:
+
+      1. Request hits DispatcherServlet
+      2. DispatcherServlet finds controller method
+      3. Spring selects HttpMessageConverter (usually MappingJackson2HttpMessageConverter)
+      4. Converter uses Jackson ObjectMapper
+      5. ObjectMapper maps JSON fields → Java object fields (via reflection + getters/setters / fields)
+
+   Flow:
+   Request JSON → DispatcherServlet → HttpMessageConverter → Jackson ObjectMapper → Java Object
+
+2. What happens if request JSON has extra fields? (Detailed)
+
+   By default:
+
+      1. Jackson ignores unknown JSON fields
+      2. Only matching fields are mapped to Java object
+      3. No exception is thrown
+
+         Example:
+
+         {
+         "id": 1,
+         "name": "Booking1",
+         "extraField": "ignored"
+         }
 
 
 ****************************************************************************************************
