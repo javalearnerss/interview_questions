@@ -1,0 +1,381 @@
+Tricky @Transactional Questions (With What Interviewers Are Testing)
+✅ 1. Self Invocation Problem
+
+Q: Why does @Transactional not work when one method calls another method inside the same class?
+
+Expected Insight
+
+Spring uses proxy-based AOP
+
+Internal method call → bypasses proxy → no transaction
+
+Follow-up Trap
+
+How to fix?
+
+Move method to another bean
+
+Use self-injection
+
+Use AspectJ mode
+
+✅ 2. Private Method Trap
+
+Q: Does @Transactional work on private methods?
+
+Answer
+❌ No — proxy cannot intercept private methods
+
+Testing
+
+Understanding of proxy mechanism
+
+✅ 3. Checked vs Unchecked Exception Rollback
+
+Q: Which exceptions trigger rollback by default?
+
+Answer
+
+✅ RuntimeException → rollback
+
+❌ Checked Exception → no rollback
+
+Follow-up
+How to rollback for checked exception?
+
+@Transactional(rollbackFor = Exception.class)
+
+✅ 4. Transaction Lost in Async Call
+
+Q: If you call an @Async method from a @Transactional method, does transaction propagate?
+
+Answer
+❌ No — different thread → different transaction context
+
+✅ 5. ReadOnly Transaction Reality Check
+
+Q: What does @Transactional(readOnly = true) actually do?
+
+Expected Deep Answer
+
+Hint to ORM (Hibernate skips dirty checking)
+
+Database may optimize
+
+Does NOT enforce read-only at DB level always
+
+✅ 6. Nested Transaction Confusion
+
+Q: Difference between:
+
+REQUIRED
+
+REQUIRES_NEW
+
+NESTED
+
+Trap
+Most devs confuse NESTED and REQUIRES_NEW.
+
+Correct Understanding
+
+Type	Behavior
+REQUIRED	Join existing or create
+REQUIRES_NEW	Suspend parent + new TX
+NESTED	Savepoint inside parent TX
+✅ 7. Transaction + External API Call
+
+Q: Should you call external payment API inside DB transaction?
+
+Expected Answer
+❌ No
+Reason:
+
+Locks held longer
+
+Timeout risk
+
+Distributed transaction complexity
+
+Better → Saga / Outbox Pattern
+
+✅ 8. Transaction Not Working on Interface Default Method
+
+Q: Why sometimes @Transactional works on interface but not always?
+
+Answer
+Depends on proxy type:
+
+JDK proxy → interface methods only
+
+CGLIB → class methods also
+
+✅ 9. Multiple Transaction Managers
+
+Q: What happens if you have 2 datasources?
+
+Expected
+Must specify:
+
+@Transactional("orderTxManager")
+
+✅ 10. LazyInitializationException Despite Transaction
+
+Q: Why LazyInitializationException occurs even inside transaction sometimes?
+
+Testing
+
+Transaction ended before lazy fetch
+
+Detached entity scenario
+
+Wrong propagation
+
+✅ 11. Transaction Boundary in Controller
+
+Q: Should you put @Transactional on Controller?
+
+Expected
+❌ No — business logic layer only
+
+✅ 12. Transaction Timeout Production Scenario
+
+Q: What happens if transaction timeout occurs?
+
+Expected
+
+Marked rollback only
+
+DB resources released
+
+Exception thrown at commit
+
+✅ 13. Transaction + Kafka Publish
+
+Q: If DB transaction commits but Kafka publish fails, what happens?
+
+Testing
+Event consistency problem → Outbox pattern needed
+
+✅ 14. Rollback Only Marker Trap
+
+Q: Why do you see:
+
+Transaction silently rolled back because it has been marked as rollback-only
+
+Cause
+Inner method threw exception → caught → but TX already marked rollback-only
+
+✅ 15. Transaction Propagation Interview Killer
+
+Scenario
+Method A → REQUIRED
+Method B → REQUIRES_NEW
+B fails → Does A rollback?
+
+Answer
+❌ No — B independent
+
+💀 Ultra Tricky (Architect Level)
+⚠️ 16. Transaction + Connection Pool Exhaustion
+
+Long transaction → holds connection → pool starvation → cascading failure.
+
+⚠️ 17. Transaction + Distributed Lock
+
+DB TX + Redis lock → deadlock risk if ordering inconsistent.
+
+⚠️ 18. Transaction + Retry
+
+Retry inside transaction = ❌
+Retry outside transaction = ✅
+
+Top 10 Production Failure Stories Caused by Wrong @Transactional Usage
+💥 1. Self Invocation → Transactions Silently Not Applied
+🧨 Incident
+
+Booking service had:
+
+createBooking() -> validatePayment()
+
+
+Both had @Transactional.
+
+But validatePayment() was called internally → transaction never applied.
+
+🔥 Result
+
+Partial DB updates
+
+Payment validated but booking row missing
+
+Reconciliation nightmare
+
+🧠 Lesson
+
+Spring AOP proxy ≠ internal calls.
+
+💥 2. Transaction + External API Call = Database Lock Explosion
+🧨 Incident
+
+Inside transaction:
+
+1. Insert Order
+2. Call Payment Gateway (3–5 sec latency)
+3. Update Order Status
+
+🔥 Result
+
+DB row locks held for seconds
+
+Connection pool exhausted
+
+Entire system slowed
+
+🧠 Lesson
+
+Never keep transaction open during network call.
+
+💥 3. Checked Exception → No Rollback → Silent Data Corruption
+🧨 Incident
+@Transactional
+public void createOrder() throws IOException
+
+
+IOException happened → transaction committed.
+
+🔥 Result
+
+Half-written orders
+
+Inventory deducted but order missing
+
+🧠 Lesson
+
+Default rollback only for RuntimeException.
+
+💥 4. @Async + @Transactional → Lost Transaction Context
+🧨 Incident
+
+Order created → async notification → notification failed → expected rollback.
+
+🔥 Result
+
+Order committed
+
+Notification lost
+
+Customer never got confirmation
+
+🧠 Lesson
+
+Transactions are thread-bound.
+
+💥 5. Transaction Too Large → Connection Pool Starvation
+🧨 Incident
+
+Transaction wrapped:
+
+DB updates
+
+Kafka publish
+
+Cache update
+
+Audit logging
+
+Email sending
+
+🔥 Result
+
+Threads waiting for DB connection
+
+Latency spike → cascading failure
+
+🧠 Lesson
+
+Transaction scope must be minimal.
+
+💥 6. Wrong Propagation → Parent Transaction Marked Rollback
+🧨 Incident
+OrderService (REQUIRED)
+ └ PaymentService (REQUIRED)
+
+
+Payment failed → caught exception → still rollback happened later.
+
+🔥 Result
+
+Debugging nightmare
+
+“Rollback-only” exception at commit time
+
+🧠 Lesson
+
+Catching exception does NOT clear rollback flag.
+
+💥 7. readOnly = true Misunderstood → Data Updated But Not Flushed
+🧨 Incident
+
+Developer assumed readOnly prevents updates.
+
+Hibernate skipped flush optimization → data inconsistency observed.
+
+🔥 Result
+
+Updates lost
+
+Cache inconsistent with DB
+
+🧠 Lesson
+
+readOnly = hint, not enforcement.
+
+💥 8. Missing Isolation Level → Double Booking Bug
+🧨 Incident
+
+Two users booked same seat simultaneously.
+
+Default isolation = READ_COMMITTED → race condition.
+
+🔥 Result
+
+Oversold inventory
+
+Refund handling cost
+
+🧠 Lesson
+
+Sometimes need:
+
+SERIALIZABLE
+SELECT FOR UPDATE
+Optimistic locking
+
+💥 9. Transaction Around Batch Processing → Massive Rollback
+🧨 Incident
+
+10,000 records processed in single transaction.
+
+Record 9,999 failed → everything rolled back.
+
+🔥 Result
+
+Hours of processing wasted
+
+DB redo logs huge
+
+🧠 Lesson
+
+Chunk transactions.
+
+💥 10. DB Transaction + Kafka Publish Without Outbox → Data Drift
+🧨 Incident
+DB commit success
+Kafka publish failed
+
+🔥 Result
+
+Downstream services never got event
+
+Data mismatch across microservices
