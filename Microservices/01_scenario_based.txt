@@ -56,20 +56,6 @@ Scaling & performance
     How do you avoid over-scaling due to noisy neighbors?
     How do you design for predictable latency under load?
 
-Governance & team practices
-    How do you enforce contract discipline between teams?
-    How do you prevent tight coupling between microservices?
-    How do you handle shared libraries without creating version lock-in?
-    How do you measure whether microservices are actually successful?
-    When does microservices architecture become a liability?
-
-Architecture judgment
-    When would you choose a modular monolith instead of microservices?
-    What signals tell you your microservices architecture is over-engineered?
-    How do you decide what belongs in an API gateway vs a service?
-    How do you design systems for failure as a normal state?
-    What architectural trade-off are you most careful about in microservices?
-
 
 
 
@@ -355,4 +341,124 @@ Observability & debugging
     6. Aggregate metrics for end-to-end booking flow monitoring.
 
 ***********************************************************************************************************************************************
+*********************** Security & access control ****************
+1. How do you handle authentication and authorization across microservices?
 
+
+
+
+
+***********************************************************************************************************************************************
+2. How do you secure service-to-service communication?
+    Use HTTPS (TLS) for all service-to-service communication.
+    Implement authentication between services, commonly with mutual TLS (mTLS) or tokens (JWT/OAuth2).
+    Authorize requests using scopes/roles.
+    Rotate and manage secrets/keys securely.
+    Optionally, use a service mesh (e.g., Istio) for automated mTLS and policy enforcement.
+
+    1. Use HTTPS (TLS) for all service-to-service communication
+        • All internal REST/gRPC calls between microservices (e.g., Booking Service and Payment Service) use HTTPS endpoints.
+        • Example:
+        Booking Service calls https://payment-service.internal/pay instead of http://payment-service.internal/pay.
+        • TLS encrypts data in transit, preventing eavesdropping.
+
+    2. Implement authentication between services (mTLS or JWT/OAuth2)
+        • Each service must prove its identity to others.
+        • Example with JWT/OAuth2:
+        Booking Service obtains a JWT token from an Auth Service, attaches it as
+        Authorization: Bearer <token> when calling Payment Service.
+
+        • Example with mTLS:
+        Both Booking and Payment services have client/server certificates. When Booking Service connects, both sides verify each other’s certificates.
+
+    3. Authorize requests using scopes/roles
+        • Services only allow actions if the caller has the right permissions.
+        • Example:
+        Payment Service checks the JWT token’s scopes/roles. Only services with ROLE_BOOKING can initiate payments; only ROLE_ADMIN can issue refunds.
+
+    4. Rotate and manage secrets/keys securely
+        • Store secrets (JWT signing keys, TLS certs) in a secure vault (e.g., HashiCorp Vault, Azure Key Vault).
+        • Example:
+        Regularly rotate the TLS certificates used by Booking and Payment services. Update JWT signing keys and distribute them securely.
+
+    5. Use a service mesh (e.g., Istio) for automated mTLS and policy enforcement
+        • Service mesh injects sidecar proxies to handle mTLS, authentication, and authorization automatically.
+        • Example:
+        Istio ensures all traffic between Booking and Payment services is encrypted with mTLS, and enforces policies (e.g., only Booking Service can call Payment Service’s /pay endpoint).
+
+***********************************************************************************************************************************************
+
+3. One service is compromised. How do you limit blast radius?
+
+
+***********************************************************************************************************************************************
+
+4. How do you manage secrets without hard-coding them?
+    In a booking system, we never hard-code secrets like database passwords, payment gateway keys, or JWT signing keys. Instead, we store them in a 
+    centralized secrets manager like Vault or a cloud secret manager. Each microservice, like Booking or Payment, retrieves secrets at runtime using 
+    its identity, such as a Kubernetes service account or IAM role. We also use short-lived credentials, automatic rotation, and strict access 
+    policies to reduce risk.
+
+    I don’t put secrets in code or Git. I store them in a secure place like a secrets manager or encrypted config. The application reads them 
+    at runtime using environment variables or secure files. I make sure only required services can access them, and I rotate them regularly.
+
+
+***********************************************************************************************************************************************
+*********** Deployment & versioning *************
+1. How do you deploy microservices with zero downtime?
+    Deployment Strategy:
+    Use rolling updates to replace service instances one at a time, or blue-green deployments to run old and new versions in parallel 
+    and switch traffic when ready. Canary releases can route a small percentage of traffic to the new version first.
+
+    Stateless Services:
+    Design booking, payment, and inventory services so they do not store session or user data locally. Store all state in external 
+    systems (databases, distributed caches) so any instance can handle any request.
+
+    Health Checks:
+    Configure readiness and liveness checks for each service. The orchestrator only sends traffic to instances that pass these checks, 
+    preventing users from hitting unhealthy or starting/stopping services.
+
+    Traffic Management:
+    Use a load balancer or orchestrator to distribute requests. During deployment, new instances are started and added to the load balancer 
+    only after passing health checks. Old instances are removed only after new ones are ready.
+
+    Overlap and Gradual Replacement:
+    Ensure new and old versions run simultaneously during deployment. This overlap allows uninterrupted service as traffic shifts from old to new.
+
+    Monitoring and Rollback:
+    Continuously monitor application health and user experience during deployment. If issues are detected, automatically or manually rollback 
+    to the previous version.
+
+    Automation:
+    Use CI/CD tools to automate build, test, and deployment steps. Automation reduces human error and speeds up the process, making zero-downtime 
+    deployments more reliable.
+
+    Summary:
+    Zero-downtime deployment in a booking system is achieved by gradually replacing service instances, ensuring only healthy instances 
+    serve traffic, externalizing state, and automating the process for reliability and speed.
+
+***********************************************************************************************************************************************
+2. How do you handle database schema changes in live systems?
+    1. Design schema changes to be backward compatible
+        Add new columns/tables, avoid removing or renaming existing fields.
+        If you must remove/rename, plan a phased migration.
+
+    2. Use a migration tool
+        Use Liquibase or Flyway to version and automate schema changes.
+
+    3. Phased deployment steps:
+        Step 1: Deploy schema changes that work with both old and new service versions.
+        Step 2: Deploy new Inventory Service code that uses the new schema.
+        Step 3: After all consumers are updated, remove deprecated schema elements.
+
+    4. Test migration in staging
+        Apply schema changes in a test environment first.
+
+    5. Monitor after deployment
+        Check application and database logs for errors.
+
+    6. Rollback plan
+        Prepare scripts to revert schema changes if needed.
+
+
+***********************************************************************************************************************************************
