@@ -1,85 +1,339 @@
-Q1️⃣ What happens when an Angular application starts?
+1. What happens when an Angular application starts?
+When Angular starts, the main.ts file bootstraps the root module or root standalone component. Angular creates the root injector, 
+initializes providers, loads the root component, and starts change detection using Zone.js (unless zoneless mode is enabled). 
+From there, component trees are created based on routing or templates.
 
-Answer (Senior-level)
-When Angular starts, the main.ts file bootstraps the root module or root standalone component. Angular creates the root injector, initializes providers, loads the root component, and starts change detection using Zone.js (unless zoneless mode is enabled). From there, component trees are created based on routing or templates.
+When Angular starts it creates:
+1. Root Injector 
+2. Root Component
+3. Change detection system
 
-Q2️⃣ What is the difference between constructor and ngOnInit?
+The root injector is the top-level container that holds globally available services.
+Think of it like:
 
-Answer
+Root Injector (Global Services)
+   ├── Feature Injector
+   │      ├── Component Injector
+   │      └── Component Injector
+   └── Lazy Module Injector
+
+    Service provided in root
+    @Injectable({
+    providedIn: 'root'
+    })
+    export class AuthService {}
+
+    ➡ Angular registers this inside the root injector
+    ➡ One single shared instance across app
+
+Root injector gets services from:
+    @Injectable({ providedIn: 'root' }) → Most common, auto-registered
+    AppModule providers: [] → If using NgModule apps
+    Standalone bootstrap providers → In bootstrapApplication()
+    Environment providers → New Angular provider pattern
+
+Angular starts → root injector created → booking, inventory, payment, user services registered → root component loads → 
+components created via routing → services injected → change detection starts → booking app becomes interactive.
+
+Root injector is the container, but providers tell the injector how to create services.
+Without providers, the root injector wouldn’t know how to create or supply services.
+
+Angular initializes providers means Angular reads provider configurations, registers them in the injector, 
+and prepares how services will be created and given when needed.
+-------------------------------------------------------------------------------------------
+Angular Start Process — Booking Application (Interview Ready, Pointwise)
+ - Browser loads index.html and Angular bundles
+ - main.ts executes and bootstraps root module / root standalone component
+ - Angular creates platform (browser runtime setup)
+ - Angular creates root injector
+ - Root injector collects app-level services:
+    BookingService
+    InventoryService
+    PaymentService
+    UserService
+
+ - Angular initializes providers (registers service creation rules)
+ - Angular creates root component (AppComponent)
+ - Angular router loads feature components based on route:
+    BookingComponent
+    InventoryComponent
+    PaymentComponent
+    UserComponent
+
+ - Angular injects required services into each component
+ - Angular builds component tree
+ - Angular starts change detection (Zone.js / zoneless)
+ - Application becomes interactive (Booking flow ready)
+----------------------------------------------------------------------------
+
+***********************************************************************************************************************************
+2. What is the difference between constructor and ngOnInit?
+
 The constructor is used only for dependency injection. No business logic should go there.
-ngOnInit is a lifecycle hook called after Angular initializes input properties and is the correct place for initialization logic like API calls or subscriptions.
+ngOnInit is a lifecycle hook called after Angular initializes input properties and is the correct place for initialization logic 
+like API calls or subscriptions.
 
-Q3️⃣ Why would you use ChangeDetectionStrategy.OnPush?
+***********************************************************************************************************************************
 
-Answer
-OnPush reduces unnecessary change detection by running it only when:
+3. Why would you use ChangeDetectionStrategy.OnPush?
+    ChangeDetectionStrategy.OnPush is an Angular (TypeScript) feature used in component decorators to optimize change detection. 
+    When a component uses OnPush, Angular will only check the component and its subtree for changes if:
+         Input property reference changes (@Input())
+        ➡ When parent sends a new object/array reference to child, Angular runs change detection for the OnPush component.
 
-An @Input reference changes
+        Event happens in component subtree
+        ➡ When a DOM event (click, input, output event, etc.) occurs inside the component or its children, Angular triggers change detection.
 
-An event originates from the component
+        Observable (async pipe) emits
+        ➡ When an Observable bound using async pipe emits a new value, Angular automatically marks the component for change detection.
 
-An observable emits via async pipe
+        You manually trigger change detection
+        ➡ When you explicitly call markForCheck() or detectChanges(), you force Angular to re-check the component.
+        
 
-It improves performance in large applications by avoiding full tree checks.
+    Benefits:
+        Improves performance by reducing unnecessary checks
+        Useful for components with immutable inputs or heavy templates
 
-Q4️⃣ A component UI is not updating even though data changed. Why?
+    Example:
+        import { Component, ChangeDetectionStrategy } from '@angular/core';
 
-Answer
-Common reasons:
+        @Component({
+        selector: 'app-example',
+        template: `...`,
+        changeDetection: ChangeDetectionStrategy.OnPush
+        })
+        export class ExampleComponent {
+        // Component logic
+        }
 
-Using OnPush and mutating an object instead of changing its reference
+Note : Angular checks all components when:
+    Click event happens
+    HTTP response comes - Booking App calls API: Inventory Service for seat availability, When server returns result → That is HTTP response.
+    Timer runs - a scheduled async task executes, and Angular runs change detection to update the UI.
+    Any async task happens - Booking app sends seat check request → server responds asynchronously → seats data updates → Angular runs change detection and updates UI.
+    
+    Even if component data didn’t change → Angular still checks it.
 
-Updating data outside Angular’s zone
+***********************************************************************************************************************************
+4. A component UI is not updating even though data changed. Why?
+    UI may not update because Angular didn’t detect the change due to : Object mutation instead of new reference
 
-Missing markForCheck() or detectChanges()
+    Common reasons:
+        Using OnPush and mutating an object instead of changing its reference
+        Updating data outside Angular’s zone
+        Missing markForCheck() or detectChanges()
+        Angular relies on reference changes, not deep mutation.
 
-Angular relies on reference changes, not deep mutation.
+***********************************************************************************************************************************
+5. How do you communicate between two unrelated components?
 
-Q5️⃣ How do you communicate between two unrelated components?
+    1. Use a shared service with RxJS (Subject or BehaviorSubject).
+        @Injectable({
+        providedIn: 'root'
+        })
+        export class SharedService {
+        
+        private messageSource = new BehaviorSubject<string>('Initial Message');
 
-Answer
-Use a shared service with RxJS (Subject or BehaviorSubject).
-For complex state, use NgRx or Signals.
-Avoid using EventEmitter in services.
+        message$ = this.messageSource.asObservable();
 
-Q6️⃣ Why is switchMap preferred for search APIs?
+        sendMessage(message: string) {
+            this.messageSource.next(message);
+        }
 
-Answer
+        }
+
+
+    2. For complex state, use NgRx or Signals.
+
+
+Note : Avoid using EventEmitter in services.
+
+
+***********************************************************************************************************************************
+6. Why is switchMap preferred for search APIs?
 switchMap cancels the previous API call when a new value arrives.
 This prevents race conditions and ensures only the latest request result is processed—ideal for user-driven events like typing.
 
-Q7️⃣ Difference between mergeMap, concatMap, and switchMap?
 
-Answer
+Mobile App → API Server
+    Request A (Search: "abc")
+    Request B (Search: "abcd")
 
-mergeMap: Parallel execution, no order guarantee
+    Response B (Fast: 200ms)
+    Response A (Slow: 500ms)
 
-concatMap: Sequential execution, order preserved
+Problem
+User sees results for "abc", despite typing "abcd". Because Response A arrived last and overwrote the correct results
 
-switchMap: Cancels previous observable
+Solution
+Track request sequence numbers, Only process responses from the most recent request, discard outdated responses
+
+Request A ❌ cancelled
+Request B ✅ active
+
+switchMap cancels previous requests and ensures only the latest search result is processed.
+
+<h3>Search Products</h3>
+
+    <input
+    type="text"
+    [formControl]="searchControl"
+    placeholder="Type to search..."
+    />
+
+    <ul>
+    <li *ngFor="let item of results">
+        {{ item.name }}
+    </li>
+    </ul>
+
+
+    export class SearchComponent {
+
+    searchControl = new FormControl('');
+    results: any[] = [];
+
+    constructor(private http: HttpClient) {
+
+        this.searchControl.valueChanges.pipe(
+
+        debounceTime(300),
+        distinctUntilChanged(),
+
+        switchMap(term =>
+            this.http.get<any[]>(`https://api.example.com/search?q=${term}`)
+        )
+
+        ).subscribe(data => {
+        this.results = data;
+        });
+
+    }
+
+    }
+
+***********************************************************************************************************************************
+7. Difference between mergeMap, concatMap, and switchMap?
+
+    mergeMap: Parallel execution, no order guarantee -> User clicks 5 times → 5 API calls → All run
+    concatMap: Sequential execution, order preserved -> User clicks 5 times → Queue → Run 1 → Then 2 → Then 3...
+    switchMap: Cancels previous observable -> User types → Only latest request survives
+
+
+    mergeMap :
+        from([1, 2, 3]).pipe(
+
+        mergeMap(id =>
+            this.http.get(`/api/products/${id}`).pipe(
+            map(response => ({ id, response }))   // attach id
+            )
+        )
+
+        ).subscribe(result => {
+
+        console.log("Response for ID:", result.id);
+        console.log("Data:", result.response);
+
+        });
+
+    concatmap :
+        from([101, 102, 103]).pipe(
+        concatMap(id =>
+            this.http.get<Product>(`/api/products/${id}`).pipe(
+            map(res => ({ id, res }))   // attach id
+            )
+        )
+        ).subscribe(({ id, res }) => {
+        console.log('Response belongs to id:', id, 'data:', res);
+        });  
+
+
+        Does Response Return In Same Order As Request?
+
+        Depends on which operator you use
+
+        Operator	Response Order Same As Request?
+        mergeMap	❌ No
+        concatMap	✅ Yes
+        switchMap	❌ Only latest kept  
 
 Choice depends on concurrency and ordering requirements.
 
-Q8️⃣ How do you prevent multiple components from making duplicate API calls?
+***********************************************************************************************************************************
+
+8. How do you prevent multiple components from making duplicate API calls?
 
 Answer
 Cache data at the service level using shareReplay(1) or maintain state in NgRx/Signals.
 This ensures a single API call and multiple subscribers reuse the same response.
 
-Q9️⃣ How does lazy loading improve performance?
+To stop multiple components from firing the same API call, you make the API call once in a shared place and share/cache the result.
 
-Answer
-Lazy loading loads feature modules only when required, reducing initial bundle size and improving startup time. It’s implemented using route-level code splitting.
+    @Injectable({ providedIn: 'root' })
+    export class ProductsService {
+    private products$?: Observable<Product[]>;
 
-Q1️⃣0️⃣ Difference between CanActivate and CanLoad?
+    constructor(private http: HttpClient) {}
 
-Answer
+    getProducts(): Observable<Product[]> {
+        if (!this.products$) {
+        this.products$ = this.http.get<Product[]>('/api/products').pipe(
+            shareReplay({ bufferSize: 1, refCount: true })
+        );
+        }
+        return this.products$;
+    }
 
-CanActivate: Controls route access after module is loaded
+    // optional: to refresh cache
+    refreshProducts() {
+        this.products$ = undefined;
+    }
+    }
 
-CanLoad: Prevents module from loading at all (legacy)
+products$ = this.productsService.getProducts(); // use async pipe
 
-CanMatch: Modern replacement for CanLoad
+shareReplay does two jobs:
+    share: multiple subscribers use the same underlying HTTP request (prevents duplicate calls)
+    replay: it remembers the last emitted value and gives it immediately to late subscribers
+
+    Cache the data for 10 seconds.
+    shareReplay({
+        bufferSize: 1,
+        windowTime: 10000, // 10 seconds
+        refCount: true
+    })
+
+    Subscriber 1 → API Call → Cache saved
+    Subscriber 2 within 10 sec → Gets cached data
+    Subscriber after 10 sec → New API call
+
+    Question:
+    If data is cached in the frontend using shareReplay, and another browser updates the data on the server, will subsequent API calls 
+    from the first browser return cached or updated data?
+
+    Short Answer:
+    They will return the cached (old) data, because shareReplay caches data on the client and does not automatically know about 
+    server-side changes unless the cache is refreshed or invalidated.
+
+
+***********************************************************************************************************************************
+
+9. How does lazy loading improve performance?
+    Lazy loading loads feature modules only when required, reducing initial bundle size and improving startup time. 
+    It’s implemented using route-level code splitting.
+
+***********************************************************************************************************************************
+10. Difference between CanActivate and CanLoad?
+
+    CanActivate: Controls route access after module is loaded
+
+    CanLoad: Prevents module from loading at all (legacy)
+
+    CanMatch: Modern replacement for CanLoad
+
+***********************************************************************************************************************************
 
 Q1️⃣1️⃣ Reactive Forms vs Template-driven Forms?
 
@@ -93,6 +347,8 @@ Easier to test
 Better for dynamic and complex validation
 
 Template-driven forms are suitable for simple forms.
+
+***********************************************************************************************************************************
 
 Q1️⃣2️⃣ How do you handle dynamic form fields?
 

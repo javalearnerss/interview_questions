@@ -98,14 +98,6 @@ Build & Deployment
     How do you debug production issues?
     What causes a blank screen after deployment?
 
-Architecture & Best Practices
-    How do you structure a large Angular app?
-    Smart vs dumb components?
-    What belongs in a service vs component?
-    How do you enforce coding standards?
-    How do you avoid tight coupling?
-    How do you handle shared modules?
-
 Angular 15+ / 16+ / 17+
     What are standalone components?
     What are Angular Signals?
@@ -113,3 +105,725 @@ Angular 15+ / 16+ / 17+
     What is zoneless Angular?
     What is hydration in Angular?
     What is deferred loading?
+
+
+
+
+******************************************************************************************************************************************
+********* Component Lifecycle ***************
+1. Explain Angular component lifecycle hooks.
+    Angular creates, updates, and destroys components through a defined sequence of lifecycle events (hooks).
+    Important for initialization, responding to input changes, accessing projected content or child views, 
+    custom change detection, and cleanup.
+
+    Lifecycle hook order (most common)
+
+        1. constructor (not an Angular hook — class instantiation)
+        2. ngOnChanges(changes: SimpleChanges) — whenever input-bound properties change (called before ngOnInit on first change)
+        3. ngOnInit() — once after first ngOnChanges
+        4. ngDoCheck() — developer hook for custom change detection (runs frequently)
+        5. ngAfterContentInit() — after content projection (<ng-content>) is initialized
+        6. ngAfterContentChecked() — after every check of projected content
+        7. ngAfterViewInit() — after the component’s view (and child views) are initialized
+        8. ngAfterViewChecked() — after every check of the component’s view (and child views)
+        9. ngOnDestroy() — just before Angular destroys the component
+
+    Detailed description of each hook
+
+        constructor()
+
+        Runs when the class is instantiated.
+            Use it to inject dependencies. Avoid side effects or DOM/Angular-dependent logic.
+        
+        ngOnChanges(changes: SimpleChanges)
+            ngOnChanges runs whenever an @Input() value changes.
+            It tells you:
+                What was the old value
+                What is the new value
+            -  Runs before ngOnInit (first time)
+            -  Runs every time parent updates input
+
+            @Input() age!: number;
+
+            ngOnChanges(changes: SimpleChanges) {
+                console.log(changes['age'].previousValue);
+                console.log(changes['age'].currentValue);
+            }
+        -------------------------------------------------------------------------
+            
+        ngOnInit()
+            Runs once after the first ngOnChanges
+            Runs when component is ready and inputs have values
+        
+        @Input() userId!: number;
+
+        ngOnInit() {
+            console.log('Fetch data for user:', this.userId);
+        }
+
+        -------------------------------------------------------------------------        
+            
+        ngDoCheck()
+            runs every time Angular checks the screen for changes.
+                Runs many times
+                Use only if normal Angular change detection is not enough
+        
+        ngOnChanges → Runs when new book is given
+        ngDoCheck → Teacher checking book again and again
+
+        @Input() user!: { name: string; age: number };
+
+        ngDoCheck() {
+            console.log('Checking...');
+        }
+
+        Parent Changes Age (Wrong Way)
+        this.user.age++; // object same, only value changed
+
+        Hook	            Runs?
+        ngOnChanges	        ❌ No (object reference same)
+        ngDoCheck	        ✅ Yes (runs every check)
+
+        Note : Angular runs change detection whenever something might have changed in your app state.
+
+        -------------------------------------------------------------------------  
+                
+        ngAfterContentInit() : runs once after content from parent is placed inside <ng-content>.
+            1. Runs once
+            2. Runs after projected content is ready
+
+        What is Projected Content?
+        When parent sends HTML inside child component.
+
+        Child Component HTML
+        <div>
+            <h3>User Card</h3>
+            <ng-content></ng-content>   
+        </div>
+
+        Parent Uses Child
+        <app-user-card>
+            <p>This comes from parent</p>
+        </app-user-card>
+
+        Lifecycle
+        Parent content → goes inside <ng-content>  
+        Then → ngAfterContentInit runs
+
+        When To Use (Simple)
+            ✔ Read projected content
+            ✔ Run logic after projected content exists 
+        -------------------------------------------------------------------------  
+        
+        ngAfterContentChecked() : runs every time Angular checks projected content (<ng-content>).
+             1. Runs many times
+             2. Use only for light checks
+
+        Child HTML
+        <ng-content></ng-content>
+
+        Child TS
+        ngAfterContentChecked() {
+            console.log('Content checked');
+        }
+
+        Parent
+        <app-user-card>
+            <p>{{ message }}</p>
+        </app-user-card>
+
+
+        If message changes →
+        - Angular checks content →
+        - ngAfterContentChecked() runs
+
+        -------------------------------------------------------------------------  
+
+        ngAfterViewInit()
+            Called once after the component’s view and child views are initialized.
+            Good for DOM-dependent initialization (e.g., working with @ViewChild, third-party libraries that need elements).
+        
+        ngAfterViewChecked()
+            Called after every change-detection check of the component’s view and child views.
+            Avoid heavy work; can cause infinite loops if you change data that triggers another check.
+
+        -------------------------------------------------------------------------        
+        ngOnDestroy()
+            Called just before Angular destroys the component.
+            Use to clean up: unsubscribe from Observables, remove event listeners, cancel timers, detach resources to avoid memory leaks.
+        
+        Why Use It
+            1. Use it to clean up:
+            2. Unsubscribe Observables
+            3. Remove event listeners
+            4. Clear timers
+            5. Stop background work
+        
+        subscription!: Subscription;
+
+        ngOnInit() {
+            this.subscription = interval(1000).subscribe();
+        }
+
+        ngOnDestroy() {
+            this.subscription.unsubscribe();
+        }
+        Prevents memory leak
+
+        Another Simple Example (Timer)
+        timer!: any;
+
+        ngOnInit() {
+            this.timer = setInterval(() => console.log('Running'), 1000);
+        }
+
+        ngOnDestroy() {
+            clearInterval(this.timer);
+        }
+
+******************************************************************************************************************************************
+2. Difference between ngOnInit and constructor?
+
+    When they run
+    constructor: runs when the class is created (before Angular has set input properties or done any data binding).
+    ngOnInit: runs shortly after construction and after Angular has processed input bindings (and after the first ngOnChanges if any).
+   
+    Primary purpose
+    constructor: inject services, set simple defaults, keep it fast and side-effect free.
+    ngOnInit: perform initialization logic, start async work (HTTP calls, subscriptions), or compute values that require input values.
+
+******************************************************************************************************************************************
+3. When is ngAfterViewInit used?
+
+    When it runs (where it sits in the lifecycle)
+        Sequence around it: constructor → ngOnChanges (if any) → ngOnInit → ngAfterContentInit → ngAfterContentChecked → ngAfterViewInit → ngAfterViewChecked.
+        It runs once, after the view (and child component views) are created and rendered for the first time.
+        
+    Common uses
+        Accessing @ViewChild or @ViewChildren references safely:
+            Read DOM properties (size, position), call nativeElement.getBoundingClientRect(), etc.
+            Call methods on child components.
+        Initializing third-party libraries that need real DOM elements (charts, sliders, maps).
+        Starting animations that require final DOM layout.
+
+******************************************************************************************************************************************
+4. When would you use ngOnDestroy?
+    Use ngOnDestroy to run cleanup logic just before Angular destroys a component or directive. It’s where you release resources so they 
+    don’t leak or keep producing side effects after the component is gone.
+    
+    When ngOnDestroy runs
+        - Called once, synchronously, right before Angular removes the component/directive from the DOM (for route changes, *ngIf false, parent destroyed, etc.).
+        - Child components/directives are destroyed before their parent.
+
+******************************************************************************************************************************************
+5. What happens if you don’t unsubscribe from Observables?
+    If you don’t unsubscribe from long‑lived (non‑completing) Observables, your subscriptions keep receiving values after the component is gone. 
+    That commonly causes memory leaks, unexpected side effects, duplicate handlers, and runtime errors (because callbacks reference destroyed 
+    component state).
+
+******************************************************************************************************************************************
+*********** Component Communication ************
+1. How do components communicate with each other?
+    Components communicate in many ways. Choose depending on relationship:
+        Parent ↔ Child: @Input / @Output (EventEmitter), @ViewChild, template refs
+        Siblings: via the parent (propagate through Inputs/Outputs) or via a shared service
+        Unrelated or distant components: shared service (Subjects/BehaviorSubjects), global state (NgRx/Akita, etc.), Router params, or Signals
+        Projected content: ContentChild / <ng-content>
+        Forms: ControlValueAccessor for custom form controls
+
+    When to use each
+        Use @Input / @Output for simple parent-child data + events (keeps components decoupled and testable).
+        Use @ViewChild when the parent must call methods or access properties on a specific child instance.
+        Use a shared service for cross-tree or sibling communication, especially when components aren’t related by direct nesting.
+        Use a state management library (NgRx, etc.) for large apps with complex state and many subscribers.
+        Use Router params for navigation-driven data.
+        Use Signals (Angular 16+) for reactive state that many components read; services can expose signals.
+
+******************************************************************************************************************************************
+2. When to use @Input / @Output?
+    Use @Input and @Output when parent and child components need to communicate directly.
+
+    Child component : 
+   
+
+
+
+******************************************************************************************************************************************
+3. How do you communicate between unrelated components?
+    Use a shared injectable service (the usual and recommended way) — expose an Observable/Signal for consumers and methods to update it.
+
+    Recommended approach (shared service)
+        Make the service a singleton (providedIn: 'root' or provided in a parent module).
+        Expose a readonly Observable (or Signal) to subscribe/read from.
+        Emit/modify via methods on the service.
+        Consumers either use the async pipe (preferred) or subscribe with proper cleanup (takeUntil / unsubscribe).
+    
+    When to use Subject vs BehaviorSubject vs ReplaySubject
+        Subject: no initial value; subscribers only receive emissions that happen after they subscribe.
+        BehaviorSubject<T>: has a current value and immediately emits the latest value to new subscribers — good for current-state scenarios.
+        ReplaySubject: replays a specified number of past values to new subscribers.
+    
+    Note : Why avoid EventEmitter in services
+            EventEmitter is intended for @Output in components; use Subjects/Observables for services.
+
+    1. message.service.ts
+        import { Injectable } from '@angular/core';
+        import { BehaviorSubject, Observable } from 'rxjs';
+
+        @Injectable({ providedIn: 'root' })
+        export class MessageService {
+        // internal subject keeping the latest message
+        private readonly _message$ = new BehaviorSubject<string | null>(null);
+
+        // public read-only observable
+        readonly message$: Observable<string | null> = this._message$.asObservable();
+
+        send(message: string) {
+            this._message$.next(message);
+        }
+
+        clear() {
+            this._message$.next(null);
+        }
+        }
+    
+    2. sender.component.ts
+        import { Component } from '@angular/core';
+        import { MessageService } from './message.service';
+
+        @Component({
+        selector: 'app-sender',
+        template: `
+            <div style="border:1px solid #cfc; padding:8px">
+            <h4>Sender</h4>
+            <input [(ngModel)]="text" placeholder="Type a message" />
+            <button (click)="send()">Send</button>
+            </div>
+        `
+        })
+        export class SenderComponent {
+        text = '';
+
+        constructor(private msg: MessageService) {}
+
+        send() {
+            if (this.text.trim()) {
+            this.msg.send(this.text.trim());
+            this.text = '';
+            }
+        }
+        }
+    
+    3. receiver.component.ts
+        import { Component } from '@angular/core';
+        import { MessageService } from './message.service';
+
+        @Component({
+        selector: 'app-receiver',
+        template: `
+            <div style="border:1px solid #ccf; padding:8px; margin-top:8px">
+            <h4>Receiver (async pipe)</h4>
+            <div *ngIf="msgService.message$ | async as m; else none">
+                Latest message: <strong>{{ m }}</strong>
+            </div>
+            <ng-template #none><em>No messages</em></ng-template>
+            </div>
+        `
+        })
+        export class ReceiverComponent {
+        constructor(public msgService: MessageService) {}
+        }
+    
+    Key points in this example
+        1. Sender and Receiver are unrelated components (not parent/child) but communicate through the singleton MessageService.
+        2. Receiver uses the async pipe so it doesn’t need to manually unsubscribe.
+        3. Service API encapsulates how messages are produced/consumed.
+
+******************************************************************************************************************************************
+4. What is content projection (ng-content)?
+    Content projection means:
+    - Parent can put HTML/content inside a child component
+    - Child shows that content using <ng-content>
+
+    It helps create reusable wrapper components (card, modal, layout, etc.).
+
+    Simple Example
+    🔹 Child Component
+        <div class="card">
+            <h3>User Card</h3>
+            <ng-content></ng-content>
+        </div>
+
+    🔹 Parent Component
+        <app-user-card>
+            <p>User Name: Sandeep</p>
+        </app-user-card>
+
+    What Happens
+    - Parent writes content inside <app-user-card>
+    - Angular inserts it where <ng-content> is placed
+
+    Output:
+        User Card
+        User Name: Sandeep  
+
+    Why Use It
+        ✔ Create reusable UI wrappers
+        ✔ Flexible layouts
+        ✔ Pass full HTML instead of only data
+
+******************************************************************************************************************************************
+5. How does ViewChild work?
+    ViewChild lets a component access elements or child components inside its own HTML (view).
+
+    1. Access DOM element
+    2. Access child component methods / properties
+
+    Access DOM Element Using ViewChild
+       Parent HTML
+        <input #nameInput type="text" />
+        <button (click)="focusInput()">Focus Input</button>
+
+      Parent TS
+        import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+
+        @Component({
+        selector: 'app-parent',
+        templateUrl: './parent.component.html'
+        })
+        export class ParentComponent implements AfterViewInit {
+
+            @ViewChild('nameInput') input!: ElementRef;
+
+            ngAfterViewInit() {
+                console.log(this.input.nativeElement.value);
+            }
+
+            focusInput() {
+                this.input.nativeElement.focus();
+            }
+        }
+
+        What Happens
+        #nameInput → template reference variable
+        @ViewChild('nameInput') → gets that element
+        ElementRef → gives access to real DOM
+    
+    ----------------------------------------------------------------
+
+    Access Child Component Using ViewChild
+     Child Component
+        @Component({
+        selector: 'app-child',
+        template: `<p>Child Works!</p>`
+        })
+        export class ChildComponent {
+
+            message = "Hello from Child";
+
+            showAlert() {
+                alert("Child Method Called");
+            }
+        }
+
+     Parent HTML
+        <app-child></app-child>
+
+        <button (click)="callChild()">Call Child Method</button>
+
+     Parent TS
+        import { Component, ViewChild, AfterViewInit } from '@angular/core';
+        import { ChildComponent } from './child.component';
+
+        @Component({
+        selector: 'app-parent',
+        templateUrl: './parent.component.html'
+        })
+        export class ParentComponent implements AfterViewInit {
+
+            @ViewChild(ChildComponent) child!: ChildComponent;
+
+            ngAfterViewInit() {
+                console.log(this.child.message);
+            }
+
+            callChild() {
+                this.child.showAlert();
+            }
+        }
+
+        What Happens
+            Angular finds <app-child>
+            Gives parent direct access to child instance
+            Parent can call methods / read properties
+        
+******************************************************************************************************************************************
+******************** RxJS & Observables ***************
+1. What is an Observable?
+    An Observable (from RxJS) is a lazy, push-based stream of values over time — a sequence you can subscribe to in order to receive values, 
+    errors, and a completion signal.
+    
+    Key concepts
+        1. Producer vs consumer: the Observable is the producer; subscribers are consumers.
+        2. Subscription: you call subscribe(...) to start receiving values.
+        3. Notifications: next (value), error (terminal error), complete (terminal success).
+        4. Lazy: nothing runs until you subscribe.
+        5. Cancelable: subscription.unsubscribe() stops receiving values and (usually) cancels the underlying work.
+        6. Operators: pure functions (map, filter, switchMap, debounceTime, catchError, etc.) transform streams via pipe().
+
+    import { Observable } from 'rxjs';
+
+    const obs = new Observable<number>((subscriber) => {
+        subscriber.next(1);
+        subscriber.next(2);
+        subscriber.next(3);
+        subscriber.complete();
+    });
+
+    const sub = obs.subscribe({
+        next: v => console.log('value', v),
+        error: err => console.error('error', err),
+        complete: () => console.log('done'),
+    });
+
+    // unsubscribe if needed
+    sub.unsubscribe();
+
+    two (or more) components can communicate using Observables. The usual pattern is to put an RxJS Subject/BehaviorSubject/etc. 
+    in a shared service that both components inject: one component pushes values (calls next) and the other subscribes 
+    (or uses the async pipe) to receive them.
+
+    1. message.service.ts
+        import { Injectable } from '@angular/core';
+        import { BehaviorSubject, Observable } from 'rxjs';
+
+        @Injectable({ providedIn: 'root' })
+        export class MessageService {
+            // private subject holds the value and allows next()
+            private messageSubject = new BehaviorSubject<string | null>(null);
+
+            // public observable read-only view
+            message$: Observable<string | null> = this.messageSubject.asObservable();
+
+            // call to send a message
+            send(message: string) {
+                this.messageSubject.next(message);
+            }
+
+            // optionally clear
+            clear() {
+                this.messageSubject.next(null);
+            }
+        }
+
+    2. sender.component.ts
+        import { Component } from '@angular/core';
+        import { MessageService } from './message.service';
+
+        @Component({
+        selector: 'app-sender',
+        templateUrl: './sender.component.html'
+        })
+        export class SenderComponent {
+            constructor(private msg: MessageService) {}
+
+            sendHello() {
+                this.msg.send('Hello from Sender at ' + new Date().toLocaleTimeString());
+            }
+        }
+
+    3. receiver.component.ts
+        import { Component, OnDestroy } from '@angular/core';
+        import { MessageService } from './message.service';
+        import { Subject, takeUntil } from 'rxjs';
+
+        @Component({
+        selector: 'app-receiver-sub',
+        template: `<div>{{ latest }}</div>`
+        })
+        export class ReceiverWithSubscriptionComponent implements OnDestroy {
+            latest: string | null = null;
+            private destroy$ = new Subject<void>();
+
+            constructor(private msg: MessageService) {
+                this.msg.message$
+                .pipe(takeUntil(this.destroy$))
+                .subscribe(value => {
+                    this.latest = value;
+                    // do other imperative work here
+                });
+            }
+
+            ngOnDestroy() {
+                this.destroy$.next();
+                this.destroy$.complete();
+            }
+        }
+
+******************************************************************************************************************************************
+2. Difference between Observable and Promise?
+
+    Promise:
+        Runs immediately, returns one value (or error) once, and has no native cancellation. Best for single async results.
+
+        const p = new Promise<number>((resolve) => {
+            console.log('Promise executor runs immediately');
+            setTimeout(() => resolve(42), 1000);
+        });
+
+        p.then(v => console.log('Promise resolved', v));
+
+    Observable:
+        Runs only when subscribed, can return multiple values over time, and can be cancelled using unsubscribe(). 
+        Best for streams, events, and reactive patterns.
+    
+        import { Observable } from 'rxjs';
+
+        const obs = new Observable<number>(subscriber => {
+            console.log('Observable producer runs only on subscribe');
+            let i = 0;
+            const id = setInterval(() => subscriber.next(++i), 500);
+
+            // cleanup on unsubscribe
+            return () => {
+                clearInterval(id);
+                console.log('cleanup after unsubscribe');
+            };
+        });
+
+        const sub = obs.subscribe(v => console.log('value', v));
+        setTimeout(() => sub.unsubscribe(), 1600); // stops the stream
+
+******************************************************************************************************************************************
+3.  What are Subjects? Types of Subjects?
+    A Subject is a special type of Observable that is also an Observer.
+
+    - It can emit values (like Observer)
+    - It can be subscribed to (like Observable)
+
+    Simple Technical Meaning
+        Normal Observable → Data flows from producer → subscribers
+        Subject → You can manually push data using .next()
+
+    Basic Example
+        import { Subject } from 'rxjs';
+
+        const subject = new Subject<number>();
+
+        subject.subscribe(v => console.log('A:', v));
+        subject.subscribe(v => console.log('B:', v));
+
+        subject.next(1);
+        subject.next(2);
+
+        Output
+        A: 1
+        B: 1
+        A: 2
+        B: 2
+
+        All subscribers get same value → multicast
+
+        Types of Subjects
+        🔹 Subject
+            Basic multicast stream.
+            Does not store previous values — new subscribers only receive future emissions.
+            Used for simple event broadcasting.
+
+        🔹 BehaviorSubject
+            Requires an initial value and always holds the latest value.
+            New subscribers immediately receive the current/latest value.
+            Commonly used for app state (user data, theme, shared state).
+
+        🔹 ReplaySubject
+            Stores and replays the last N emitted values to new subscribers.
+            Useful when new subscribers need some history of previous emissions.
+
+        🔹 AsyncSubject
+            Emits only the last value, and only after complete() is called.
+            Useful when you only care about the final result after a process finishes.
+
+
+******************************************************************************************************************************************
+4.  How do you cancel HTTP requests?
+
+    Angular HTTP returns Observables, so cancellation works by stopping the subscription.
+    When subscription stops → browser cancels network request (XHR / fetch abort).
+
+    1. unsubscribe() — Manual Cancellation
+        You manually stop listening to the response. When you unsubscribe → Angular aborts the HTTP request.
+
+        Example
+            const sub = this.http.get('/api/hotels').subscribe({
+                next: data => console.log(data)
+            });
+
+            // Cancel after 1 second
+            setTimeout(() => {
+            sub.unsubscribe();
+            console.log('Request Cancelled');
+            }, 1000);
+
+    What Happens : Request starts, Before response arrives → unsubscribe(), Browser cancels network request
+
+    When Used : One-off requests, Manual control situations
+
+    ---------------------------------------------------------------------------------
+
+    2. switchMap() — Auto Cancel Previous Request 
+        When a new request starts → old request is automatically cancelled. Perfect for search typing, filters, dropdown selection.
+
+        Example (Search Box)
+        searchInput.valueChanges.pipe(
+            switchMap(text => this.http.get(`/api/search?q=${text}`))
+        ).subscribe(result => console.log(result));
+
+    ---------------------------------------------------------------------------------
+    3. takeUntil() — Cancel on Component Destroy
+           Used to stop requests when component is destroyed (navigation, page change). Prevents memory leaks.
+
+        Example
+        private destroy$ = new Subject<void>();
+
+        ngOnInit() {
+        this.http.get('/api/bookings')
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(data => console.log(data));
+        }
+
+        ngOnDestroy() {
+            this.destroy$.next();
+            this.destroy$.complete();
+        }
+
+        What Happens
+            Request runs normally
+            When component destroyed → destroy$ emits
+            Observable stops → request cancelled
+
+        When Used
+            Almost every Angular component
+            Long-lived streams
+
+******************************************************************************************************************************************
+
+5. How do you handle errors in RxJS?
+    Error Handling in RxJS (Short)
+    🔹 subscribe(error)
+        Handle error at subscription level.
+        obs$.subscribe({ error: err => console.log(err) });
+
+    🔹 catchError() 
+        Catch error inside stream and return fallback value.
+        obs$.pipe(catchError(err => of([])));
+
+    🔹 retry()
+        Retry failed request automatically.
+        obs$.pipe(retry(2));
+
+    🔹 finalize()
+        Runs on success OR error (cleanup, stop loader).
+        obs$.pipe(finalize(() => stopLoader()));    
+
+******************************************************************************************************************************************
+
