@@ -1,0 +1,155 @@
+Core Concepts
+
+What is Spring Security and why is it used?
+
+How does Spring Security authentication flow work?
+
+Difference between Authentication vs Authorization?
+
+What is SecurityFilterChain?
+
+What is the role of UserDetailsService?
+
+What is PasswordEncoder and why is BCrypt preferred?
+
+What is the default login flow in Spring Security?
+
+What is CSRF and how does Spring Security protect against it?
+
+✅ Basic Configuration
+
+How do you disable default login form?
+
+How do you secure specific endpoints?
+
+Difference between:
+
+permitAll()
+
+authenticated()
+
+hasRole()
+
+hasAuthority()
+
+How do you configure in-memory authentication?
+
+🌿 Intermediate — Real Backend Usage
+✅ JWT + Stateless Security
+
+How do you implement JWT authentication in Spring Security?
+
+Where do you place JWT filter in filter chain?
+
+Why disable session creation in JWT apps?
+
+How do you extract and validate JWT?
+
+✅ Filters & Internals
+
+Explain Spring Security filter chain order.
+
+Difference between:
+
+OncePerRequestFilter
+
+GenericFilterBean
+
+What is AuthenticationManager?
+
+What is AuthenticationProvider?
+
+✅ Method-Level Security
+
+Difference between:
+
+@PreAuthorize
+@PostAuthorize
+@Secured
+@RolesAllowed
+
+
+How does SpEL work in @PreAuthorize?
+
+🌳 Advanced — Architecture + Internals
+✅ Internals Deep Dive
+
+What is SecurityContextHolder?
+
+What is stored inside Authentication object?
+
+What is GrantedAuthority?
+
+What is AnonymousAuthenticationToken?
+
+✅ Custom Authentication
+
+How do you implement custom auth provider?
+
+How do you integrate OAuth login?
+
+How do you support multi-tenant authentication?
+
+✅ Performance + Scaling
+
+How do you scale authentication in microservices?
+
+Session vs Token auth tradeoffs?
+
+How do you avoid DB hit on every request?
+
+🚀 Production Scenario Questions (High Value)
+🔥 Security Incidents
+
+How would you handle leaked JWT signing key?
+
+How do you implement token rotation?
+
+How do you detect token replay attacks?
+
+🔥 Zero Trust / Enterprise
+
+How do you implement service-to-service authentication?
+
+How do you implement mTLS with Spring Security?
+
+How do you integrate with identity providers (Okta, Auth0)?
+
+🔥 Real Debugging
+
+Why might authentication work locally but fail in prod?
+
+How do you debug filter chain issues?
+
+How do you log security events safely (without leaking tokens 😉)?
+
+🧠 Tricky Interview Questions (Senior Level)
+⭐ Design Thinking
+
+Design auth for:
+
+Mobile app
+
+Web SPA
+
+Microservices backend
+
+How would you:
+
+Support logout in JWT?
+
+Support device-based sessions?
+
+Revoke tokens instantly?
+
+⭐ Security Hardening
+
+How do you protect against:
+
+Credential stuffing
+
+Session fixation
+
+CSRF in SPA apps
+
+CORS misconfig attacks
