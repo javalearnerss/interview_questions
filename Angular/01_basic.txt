@@ -163,8 +163,7 @@ Angular 15+ / 16+ / 17+
 
         -------------------------------------------------------------------------        
             
-        ngDoCheck()
-            runs every time Angular checks the screen for changes.
+        ngDoCheck() : runs every time Angular checks the screen for changes. It runs when something is changed on the screen.
                 Runs many times
                 Use only if normal Angular change detection is not enough
         
@@ -372,19 +371,19 @@ Angular 15+ / 16+ / 17+
 
         @Injectable({ providedIn: 'root' })
         export class MessageService {
-        // internal subject keeping the latest message
-        private readonly _message$ = new BehaviorSubject<string | null>(null);
+                // internal subject keeping the latest message
+                private readonly _message$ = new BehaviorSubject<string | null>(null);
 
-        // public read-only observable
-        readonly message$: Observable<string | null> = this._message$.asObservable();
+                // public read-only observable
+                readonly message$: Observable<string | null> = this._message$.asObservable();
 
-        send(message: string) {
-            this._message$.next(message);
-        }
+                send(message: string) {
+                    this._message$.next(message);
+                }
 
-        clear() {
-            this._message$.next(null);
-        }
+                clear() {
+                    this._message$.next(null);
+                }
         }
     
     2. sender.component.ts
@@ -402,16 +401,16 @@ Angular 15+ / 16+ / 17+
         `
         })
         export class SenderComponent {
-        text = '';
+            text = '';
 
-        constructor(private msg: MessageService) {}
+            constructor(private msg: MessageService) {}
 
-        send() {
-            if (this.text.trim()) {
-            this.msg.send(this.text.trim());
-            this.text = '';
+            send() {
+                if (this.text.trim()) {
+                this.msg.send(this.text.trim());
+                this.text = '';
+                }
             }
-        }
         }
     
     3. receiver.component.ts
@@ -472,6 +471,44 @@ Angular 15+ / 16+ / 17+
         ✔ Flexible layouts
         ✔ Pass full HTML instead of only data
 
+    hotel-card component html
+        <div class="card">
+            <div class="card-header">
+                <ng-content select="[header]"></ng-content>
+            </div>
+
+            <div class="card-body">
+                <ng-content></ng-content>
+            </div>
+
+            <div class="card-footer">
+                <ng-content select="[footer]"></ng-content>
+            </div>
+        </div>
+
+    search component html
+        <app-hotel-card>
+
+            <div header>
+                Taj Hotel ⭐⭐⭐⭐⭐
+            </div>
+
+            <div>
+                Location: Mumbai <br>
+                Price: ₹8000 / night
+            </div>
+
+            <div footer>
+                <button>Book Now</button>
+            </div>
+
+        </app-hotel-card>
+
+    When to Use Content Projection
+    1. Reusable UI Wrapper Components : When structure is fixed, but content changes.
+    2. When Parent Should Control Inner Content : Child controls layout, Parent controls what appears inside
+    3. When You Don’t Want Too Many @Input Properties : Instead of passing many strings/HTML via inputs, Just project real HTML
+
 ******************************************************************************************************************************************
 5. How does ViewChild work?
     ViewChild lets a component access elements or child components inside its own HTML (view).
@@ -480,6 +517,7 @@ Angular 15+ / 16+ / 17+
     2. Access child component methods / properties
 
     Access DOM Element Using ViewChild
+    Ex. When booking page loads → you want to auto focus the search input box, So user can start typing immediately without clicking.
        Parent HTML
         <input #nameInput type="text" />
         <button (click)="focusInput()">Focus Input</button>
