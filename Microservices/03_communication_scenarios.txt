@@ -1,139 +1,403 @@
-1) Sync REST vs Async Messaging
+Sync REST vs Async Messaging
 
-	Checkout calls Inventory + Pricing + User. Under load, Inventory becomes slow.
+	1. Checkout calls Inventory + Pricing + User. Under load, Inventory becomes slow. 
+		What happens to the overall latency? How do you prevent cascading failures?
 
-	What happens to the overall latency? How do you prevent cascading failures?
+	2. You have 3 downstream services; one is optional (recommendations).
+		How do you design so the core flow succeeds even if optional fails?
 
-	You have 3 downstream services; one is optional (recommendations).
+	3. You must expose a single API to clients, but internally you have 8 services.
+		Would you use API Gateway, BFF, or aggregation service? Why?
 
-	How do you design so the core flow succeeds even if optional fails?
+	4. A synchronous chain is causing timeouts and retries.
+		When do you switch to async, and what changes in data consistency?
 
-	You must expose a single API to clients, but internally you have 8 services.
+Timeouts, Retries, Circuit Breakers (Resilience4j)
 
-	Would you use API Gateway, BFF, or aggregation service? Why?
+	5. A service call fails intermittently (5xx spikes).
+		Do you retry? How many times? Backoff? Jitter? What are you protecting?
 
-	A synchronous chain is causing timeouts and retries.
+	6. Retries increased load and made outage worse.
+		What would you change (retry budget, circuit breaker, bulkhead, rate limit)?
 
-	When do you switch to async, and what changes in data consistency?
+	7. Circuit breaker is open, but business wants “best effort”.
+		How do you implement fallbacks without hiding real failures?
 
-2) Timeouts, Retries, Circuit Breakers (Resilience4j)
+	8. You see timeout=2s on client but server logs show requests running 10s.
+		Where do you fix it? Server thread pool? DB? client timeouts? cancellation?
 
-	A service call fails intermittently (5xx spikes).
+Feign / WebClient / RestTemplate Choices
 
-	Do you retry? How many times? Backoff? Jitter? What are you protecting?
+	9. You’re using Feign and need request correlation + auth propagation.
+		Where do you implement interceptors/filters?
 
-	Retries increased load and made outage worse.
+	10. Your downstream returns large payloads; memory spikes with RestTemplate.
+		Would WebClient help? How do you stream safely?
 
-	What would you change (retry budget, circuit breaker, bulkhead, rate limit)?
+	11. You need idempotency for “place order” API.
+		How do you design idempotency keys + dedupe across retries?
 
-	Circuit breaker is open, but business wants “best effort”.
+Distributed Transactions & Sagas
 
-	How do you implement fallbacks without hiding real failures?
+	12. Booking flow: hold inventory → create booking → notify.
+		If notify fails after booking succeeds, what’s the correct state? How to recover?
 
-	You see timeout=2s on client but server logs show requests running 10s.
+	13. Inventory hold expires in 5 minutes. Payment can take longer.
+		How do you model saga timeouts and compensations?
 
-	Where do you fix it? Server thread pool? DB? client timeouts? cancellation?
+	14. Two users try to book the last seat concurrently across services.
+		Where do you enforce correctness (inventory service lock/optimistic versioning)?
 
-3) Service Discovery & Load Balancing
+Event-Driven Communication (Kafka/RabbitMQ)
 
-	You deploy more pods, but traffic still hits only a few pods.
+	15. You publish BookingCreated. Consumers sometimes process twice.
+		How do you make consumers idempotent?
 
-	What would you check (LB, service discovery cache, keep-alive, DNS, client LB)?
+	16. An event schema changes (new field / renamed field).
+		How do you do backward/forward compatible changes?
 
-	One zone has higher latency; cross-zone calls are expensive.
+ Ordering, Duplicates, and Consistency
 
-	How do you influence routing (zone-aware LB, topology hints, locality)?
+	17. You receive BookingCancelled before BookingCreated (out of order).
+		How do you handle it (versioning, state machine, buffering, ignore)?
 
-4) Feign / WebClient / RestTemplate Choices
+Observability: Tracing, Metrics, Logs
 
-	You’re using Feign and need request correlation + auth propagation.
+	18. A request crosses 6 services; users report slowness.
+		How do you pinpoint which hop is slow (OpenTelemetry tracing, correlation IDs)?
 
-	Where do you implement interceptors/filters?
+	19. Logs show different IDs per service, hard to correlate.
+		How do you propagate traceId/spanId in Spring?
 
-	Your downstream returns large payloads; memory spikes with RestTemplate.
+	20. You want SLIs/SLOs for inter-service calls.
+		What metrics do you emit (latency percentiles, error rate, saturation)?
 
-	Would WebClient help? How do you stream safely?
+Security Between Services
 
-	You need idempotency for “place order” API.
+	21. Internal calls must be authenticated/authorized.
+		Do you use mTLS, JWT propagation, OAuth2 client credentials—where in Spring?
 
-	How do you design idempotency keys + dedupe across retries?
+	22. A service calls another on behalf of a user.
+		How do you prevent confused-deputy / privilege escalation?
 
-5) Distributed Transactions & Sagas
+	23. Secrets for service-to-service auth rotate.
+		How do you handle rotation without downtime?
 
-	Booking flow: hold inventory → create booking → notify.
 
-	If notify fails after booking succeeds, what’s the correct state? How to recover?
 
-	Inventory hold expires in 5 minutes. Payment can take longer.
+*************************************************************************************************************************
+1.  Booking service calls user, inventory, and payment services. Under load, Inventory becomes slow. What happens to the overall latency? 
+	How do you prevent cascading failures?
 
-	How do you model saga timeouts and compensations?
+	To prevent cascading failures:
+		1. Use timeouts for all external service calls.
+		2. Implement circuit breaker pattern for inventory service.
+		3. Use bulkheads to isolate failures.
+		4. Use fallback logic where possible.
+		5. Consider asynchronous processing or message queues.
+		6. Monitor and alert on failures.
 
-	Two users try to book the last seat concurrently across services.
-
-	Where do you enforce correctness (inventory service lock/optimistic versioning)?
-
-6) Event-Driven Communication (Kafka/RabbitMQ)
-
-	You publish BookingCreated. Consumers sometimes process twice.
-
-	How do you make consumers idempotent?
-
-	An event schema changes (new field / renamed field).
-
-	How do you do backward/forward compatible changes?
-
-	Consumer lag grows; business asks to “just scale consumers”.
-
-	When does scaling not help (partition limits, slow downstream, DB bottleneck)?
-
-	Exactly-once is requested.
-
-	What do you answer realistically (EOS in Kafka vs business exactly-once)?
-
-7) Ordering, Duplicates, and Consistency
-
-	You receive BookingCancelled before BookingCreated (out of order).
-
-	How do you handle it (versioning, state machine, buffering, ignore)?
-
-	The same command gets sent twice due to client retry.
-
-	Where do you dedupe (API gateway, service layer, DB unique constraint)?
-
-8) Observability: Tracing, Metrics, Logs
-
-	A request crosses 6 services; users report slowness.
-
-	How do you pinpoint which hop is slow (OpenTelemetry tracing, correlation IDs)?
-
-	Logs show different IDs per service, hard to correlate.
-
-	How do you propagate traceId/spanId in Spring?
-
-	You want SLIs/SLOs for inter-service calls.
-
-	What metrics do you emit (latency percentiles, error rate, saturation)?
-
-9) Security Between Services
-
-	Internal calls must be authenticated/authorized.
-
-	Do you use mTLS, JWT propagation, OAuth2 client credentials—where in Spring?
-
-	A service calls another on behalf of a user.
-
-	How do you prevent confused-deputy / privilege escalation?
-
-	Secrets for service-to-service auth rotate.
-
-	How do you handle rotation without downtime?
-
-10) Versioning, Backward Compatibility, Deployments
-
-	You deploy v2 of a service, v1 clients still exist.
-
-	How do you version APIs/events safely?
-
-	Canary deploy causes 1% errors only on new version.
-
-	What signals do you check and how do you roll back safely?
+	Summary:
+	Timeouts, circuit breakers, bulkheads, and fallback logic prevent cascading failures when a dependent service (like inventory) is slow or down.
+
+
+*************************************************************************************************************************
+2. You have 3 downstream services; one is optional (recommendations). How do you design so the core flow succeeds even if optional fails?
+	Booking service calls user, inventory, and payment services.
+	Payment service is optional: booking should succeed even if payment fails.
+
+	Design:
+		1. Call payment service after required services (user, inventory).
+		2. If payment call fails (exception, timeout, error), log the failure but do not fail the booking.
+		3. Optionally, record payment status in booking response or database.
+		4. Use try-catch or fallback logic for payment call.
+		5. Optionally, trigger compensation or notification for failed payment.
+
+		// In BookingService.java (Spring Boot example)
+
+		public BookingResponse book(BookingRequest request) {
+
+			// 1. Call required services
+			UserResponse user = userService.getUser(request.getUserId());
+			InventoryResponse inventory =
+				inventoryService.reserve(request.getItemId(), request.getQuantity());
+
+			// 2. Proceed with booking logic
+			Booking booking = createBooking(user, inventory, request);
+
+			// 3. Call optional payment service
+			boolean paymentSuccess = false;
+			try {
+				PaymentResponse payment =
+					paymentService.processPayment(request.getPaymentInfo());
+				paymentSuccess = payment.isSuccess();
+			} catch (Exception e) {
+				// Log payment failure, but do not fail booking
+				LOGGER.warn("Payment service failed for bookingId={}: {}",
+					booking.getId(), e.getMessage());
+			}
+
+			// 4. Record payment status (optional)
+			booking.setPaymentStatus(paymentSuccess ? "SUCCESS" : "FAILED");
+			bookingRepository.save(booking);
+
+			// 5. Return booking response (booking is successful regardless of payment)
+			return new BookingResponse(booking.getId(), paymentSuccess);
+		}
+*************************************************************************************************************************
+3. You must expose a single API to clients, but internally you have 8 services. Would you use API Gateway, BFF, or aggregation service? Why?
+
+	1. API Gateway:
+		Acts as a single entry point for clients.
+		Routes requests to appropriate microservices.
+		Can perform authentication, rate limiting, logging, and protocol translation.
+		Suitable for exposing a unified endpoint for multiple services.
+
+	2. Backend For Frontend (BFF):
+		Custom backend tailored for a specific client (web, mobile).
+		Aggregates and transforms data from multiple services for the client’s needs.
+		Useful when different clients require different data shapes or aggregations.
+
+		Real Use Case: Booking System
+			The booking system has multiple microservices: Booking, Payment, Inventory, User, Notification, etc.
+			There are two clients: a web app and a mobile app.
+			The web app needs detailed booking info, user profile, and payment history.
+			The mobile app needs a simplified booking summary and push notification status.
+
+	3. Aggregation Service:
+		A dedicated service that calls multiple microservices, aggregates their responses, and returns a combined result.
+		Can be used behind an API Gateway or as a BFF.
+
+		Real Use Case: Booking System
+			The booking system has separate microservices for Booking, Payment, and Inventory.
+			A client (web or mobile app) needs to display a booking summary, payment status, and inventory availability in one view.
+			Instead of calling each service separately, the client calls the aggregation service.
+			The aggregation service receives the request, calls Booking, Payment, and Inventory services, aggregates their responses, 
+			and returns a single combined result.
+
+*************************************************************************************************************************
+4. A synchronous chain is causing timeouts and retries. When do you switch to async, and what changes in data consistency?
+	
+	- If the step can happen later → make it async (email, notification, payment confirmation, analytics).
+		Example (real use case: e-commerce checkout):
+		1. Sync (problem): PlaceOrder → ReserveInventory → ChargePayment → SendEmail → payment gateway slows → timeouts → retries → checkout fails.
+		2. Async (fix): PlaceOrder + ReserveInventory returns Order=CONFIRMED, Payment=PENDING; publish PaymentRequested to a queue; 
+		a worker charges payment and updates status to PAID (or PAYMENT_FAILED and triggers compensation like release inventory/cancel order).
+
+	- What changes in data consistency (simple):
+		When you move Sync → Async, you usually move from Immediate Consistency to Eventual Consistency.
+		 1. Sync: All data is updated before user gets response → system is always fully up-to-date.
+		 2. Async: Main action is saved now, but some updates happen later → data may be temporarily incomplete.
+		
+		Place Order → Order Created (Payment = PENDING)
+		Then background process:
+		Process Payment → Update Order → Payment = SUCCESS
+
+*************************************************************************************************************************
+5. A service call fails intermittently (5xx spikes).Do you retry? How many times? Backoff? Jitter? What are you protecting?
+	1. Use retries for transient inventory service failures.
+	2. Apply exponential backoff with jitter to avoid thundering herd.
+	3. Limit the number of retries to avoid long delays and resource exhaustion.
+	4. Use a library (e.g., Resilience4j, Spring Retry) or custom logic.
+	5. Typical retry count: 3–5 times; backoff starts at 200–500ms, doubles each time, add random jitter (e.g., ±100ms).
+
+	Example
+	// Add to your Maven pom.xml:
+	// <dependency>
+	//   <groupId>io.github.resilience4j</groupId>
+	//   <artifactId>resilience4j-spring-boot2</artifactId>
+	//   <version>1.7.1</version>
+	// </dependency>
+
+	import io.github.resilience4j.retry.annotation.Retry;
+	import io.github.resilience4j.retry.RetryConfig;
+	import org.springframework.stereotype.Service;
+
+	import java.time.Duration;
+	import java.util.concurrent.ThreadLocalRandom;
+
+	@Service
+	public class BookingService {
+
+		// Inventory client call with retry
+		@Retry(name = "inventoryService", fallbackMethod = "inventoryFallback")
+		public InventoryResponse checkInventory(String itemId) {
+			// Call inventory service (e.g., via RestTemplate/WebClient)
+			return inventoryClient.getInventory(itemId);
+		}
+
+		// Fallback if all retries fail
+		public InventoryResponse inventoryFallback(String itemId, Throwable t) {
+			// Handle failure (return default, error, etc.)
+			return new InventoryResponse("unknown", 0);
+		}
+	}
+
+	- Configure retry, backoff, and jitter in application.yml:
+		resilience4j.retry:
+		instances:
+			inventoryService:
+			max-attempts: 4            # 1 initial + 3 retries
+			wait-duration: 500ms       # initial backoff
+			retry-exceptions:
+				- java.io.IOException
+				- org.springframework.web.client.ResourceAccessException
+			exponential-backoff-multiplier: 2
+			randomization-factor: 0.2  # adds ±20% jitter to backoff
+
+*************************************************************************************************************************
+
+6. Retries increased load and made outage worse. What would you change (retry budget, circuit breaker, bulkhead, rate limit)?
+	Solution:
+		1. Limit retries with a retry budget to avoid overload.
+		2. Use a circuit breaker to stop retries when the service is unhealthy.
+		3. Use bulkhead to isolate failures and prevent resource exhaustion.
+		4. Apply rate limiting to control request rate to the downstream service.
+
+	Summary of changes:
+	1. Retry budget: Limit total retries per time window (not just per request).
+	2. Circuit breaker: Open after a threshold of failures to stop all calls temporarily.
+	3. Bulkhead: Restrict concurrent calls to the failing service.
+	4. Rate limit: Throttle requests to avoid overwhelming the service.
+
+	resilience4j:
+	retry:
+		instances:
+		inventoryService:
+			max-attempts: 2          # Reduce retries
+			wait-duration: 500ms
+			retry-exceptions:
+			- java.io.IOException
+			fail-after-max-attempts: true   # Stop after max attempts
+
+	circuitbreaker:
+		instances:
+		inventoryService:
+			failure-rate-threshold: 50     # Open if 50% fail
+			sliding-window-size: 10
+			minimum-number-of-calls: 5
+			wait-duration-in-open-state: 30s
+
+	bulkhead:
+		instances:
+		inventoryService:
+			max-concurrent-calls: 5        # Limit concurrent calls
+			max-wait-duration: 0
+
+	ratelimiter:
+		instances:
+		inventoryService:
+			limit-for-period: 10           # Max 10 calls per period
+			limit-refresh-period: 1s
+
+
+
+*************************************************************************************************************************
+9. You’re using Feign and need request correlation + auth propagation. Where do you implement interceptors/filters?
+	
+	1. For request correlation (trace IDs, etc.):
+		Generate or extract a correlation ID at the API gateway.
+		Propagate the correlation ID in HTTP headers to downstream services.
+		In each Spring Boot service, use a Feign RequestInterceptor to add the correlation ID header to outgoing Feign requests.
+		Optionally, use a filter to extract and set the correlation ID in the logging context (MDC).
+
+	2. For authentication propagation:
+		Extract the auth token (e.g., JWT, OAuth2) at the API gateway.
+		Pass the token in the Authorization header to downstream services.
+		In each service, use a Feign RequestInterceptor to add the Authorization header from the incoming request to outgoing Feign requests.
+
+	3. Implementation steps:
+		Create a Feign RequestInterceptor bean for correlation ID and auth propagation.
+		Use a servlet filter to extract headers from incoming requests and store them (e.g., in ThreadLocal or MDC).
+		In the interceptor, read from the context and set headers on Feign requests.
+
+*************************************************************************************************************************
+11. You need idempotency for “place order” API. How do you design idempotency keys + dedupe across retries?
+	
+	1. Generate an idempotency key for each client request (e.g., UUID, hash of request payload).
+	2. Store the idempotency key and response/result in a persistent store (e.g., database, Redis).
+	3. On receiving a request:
+		 Check if the idempotency key exists.
+		 If yes, return the stored response (dedupe).
+		 If no, process the request, store the result with the key, and return the response.
+	4. For retries, clients must send the same idempotency key.
+	5. Use middleware/interceptor to enforce idempotency logic.
+	6. Clean up old keys periodically.
+
+*************************************************************************************************************************
+12. Booking flow: hold inventory → create booking → notify. If notify fails after booking succeeds, what’s the correct state? How to recover?
+	Correct state:
+	→ Booking = CONFIRMED
+	→ Notification = PENDING / FAILED (separate state)
+
+	Why:
+	Notification is a side-effect. If booking + payment succeeded, don’t roll back booking.
+
+	Recovery:
+	- Use Outbox pattern → save BookingConfirmed event in same DB transaction.
+	- Retry notification asynchronously (with idempotency).
+	- If still failing → DLQ + reconciliation job to retry later.
+
+*************************************************************************************************************************
+13. Inventory hold expires in 5 minutes. Payment can take longer. How do you model saga timeouts and compensations?
+
+	Key rule
+  	 Your saga deadline = inventoryHoldExpiresAt (5 minutes).
+	 Payment is allowed to run longer, but booking cannot.
+
+	States (keep it interview-crisp)
+		Booking: PENDING → HOLD_CONFIRMED → CONFIRMED | FAILED
+		Hold: HELD → RELEASED/EXPIRED
+		Payment: STARTED → SUCCEEDED | FAILED | TIMEOUT
+
+	Orchestrated saga flow (easy to explain)
+
+	1. Hold inventory
+		Inventory returns holdId + expiresAt = now+5m
+		Booking stores holdId, expiresAt, state = HOLD_CONFIRMED
+
+	2. Start payment + set timeout
+		Start payment asynchronously (paymentIntentId)
+		Schedule a timeout job at expiresAt (or a poller that checks deadlines)
+
+	3. Timeout handler (fires at expiresAt)
+		If booking not CONFIRMED yet:
+			Compensate: call Inventory to release hold
+			Mark booking = FAILED (HOLD_EXPIRED / PAYMENT_TIMEOUT)
+
+	4. Payment callback arrives
+		If booking is still within deadline and hold is active:
+			Confirm booking → booking = CONFIRMED
+		If booking already FAILED / hold released:
+			Compensate: trigger refund/reversal
+			Mark payment outcome as LATE_SUCCESS_REFUNDED (or similar)
+
+	Implementation steps:
+		When booking starts, reserve inventory and record reservation expiration time.
+		Start payment process with a timeout (e.g., async, with a scheduler or timeout handler).
+		If payment not completed before inventory hold expires, cancel inventory reservation and mark booking as failed.
+		If payment completes after inventory is released, trigger compensation (refund).
+		Use a state machine or status field to track booking/payment/inventory status.
+
+*************************************************************************************************************************
+14. Two users try to book the last seat concurrently across services. Where do you enforce correctness (inventory service lock/optimistic versioning)?
+	Problem:
+		Two requests to book the last seat arrive nearly simultaneously.
+		The first request is updating the database (reserving the seat).
+		The second request has already checked availability (seat appears available), but the first request will soon reserve it.
+		Risk: Both requests may succeed, causing overbooking.
+
+	Solution:
+		Prevent this race condition by ensuring the seat reservation (decrement) is atomic at the database level.
+		Do NOT rely on checking availability in application code before updating.
+		Use a single atomic SQL update (e.g., UPDATE ... WHERE available > 0).
+		Only the first request will succeed (update count = 1); the second will fail (update count = 0).
+
+	Implementation:
+		In the inventory service/repository, use an atomic update query.
+		After the update, check the affected row count.
+		If 1 → reservation succeeded.
+		If 0 → seat was already taken.
+
+*************************************************************************************************************************
+16. An event schema changes (new field / renamed field). How do you do backward/forward compatible changes?
