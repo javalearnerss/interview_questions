@@ -69,26 +69,14 @@ State Management
     How do Signals improve performance?
 
 Security
-    How does Angular prevent XSS?
-    What is DOM sanitization?
     Where should JWT tokens be stored?
-    How do you protect against CSRF?
-    What security data should never be on frontend?
-
+    
 Performance Optimization
     How do you improve Angular app performance?
     What is lazy loading and preloading?
     How do you reduce bundle size?
     What causes memory leaks in Angular?
     How do you detect performance bottlenecks?
-
-Testing
-    Difference between unit, integration, and e2e tests?
-    How do you test components?
-    How do you mock services and HTTP calls?
-    What is TestBed?
-    What is Karma and Jasmine?
-    What is Cypress?
 
 Build & Deployment
     What are Angular environments?
@@ -321,6 +309,288 @@ Angular 15+ / 16+ / 17+
     component state).
 
 ******************************************************************************************************************************************
+************* Change Detection ***********
+1. How does Angular change detection work?
+    1. Angular uses change detection to update the UI when application state changes.
+        User Action (UI) → Event Handler (TypeScript) → State Changes → Angular Change Detection Runs → UI Updates
+        Example:
+            User clicks button → Counter increases → UI should show new number
+            API returns data → UI should show new data
+
+
+    2. The framework creates a component tree and runs change detection to check if data-bound properties have changed.
+        AppComponent
+            ├ HeaderComponent
+            ├ ProductListComponent
+            └ FooterComponent
+        
+        Angular goes through this tree and checks:
+             Did any component data change?
+             If yes → Update UI
+             If no → Do nothing
+
+        Angular tracks:
+            Interpolation → {{ value }}
+            Property binding → [disabled]="isLoading"
+            Input values → @Input()
+
+        By default Angular runs change detection when:
+        ✅ Button click
+        ✅ HTTP response
+        ✅ Timer (setTimeout / setInterval)
+        ✅ Promise resolved
+        ✅ Observable emits
+        ✅ User input
+
+
+    3. By default, Angular uses Zone.js to detect async events (HTTP, timers, user input) and automatically triggers change detection.
+        1. Zone.js is like a watcher around your app
+        2. It tracks async operations
+        3. When async work finishes → It tells Angular → “Run change detection now”
+
+        Note : You normally don’t use Zone.js directly — Angular uses it internally.
+    HTTP Call Finished → Zone.js detects async completion → Zone.js notifies Angular → Angular runs Change Detection → UI updates automatically 
+
+
+    4. Each component has a change detector that checks for changes in its template and updates the DOM if needed.
+        Every Angular component has an internal watcher.
+        This watcher:
+            1️⃣ Checks component data
+            2️⃣ Compares with previous value
+            3️⃣ If changed → Updates HTML (DOM)
+
+    5. Change detection can be triggered manually (e.g., via ChangeDetectorRef) or automatically (default).
+        Why Do We Need Manual Change Detection?
+        Main cases:
+            ✔ OnPush + object mutation
+            ✔ Code running outside Angular zone
+            ✔ Third-party library callbacks
+            ✔ Performance optimization
+        
+        Real Example — OnPush + Mutation Problem
+        - Child Component (OnPush)
+            import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+
+            @Component({
+            selector: 'app-child',
+            template: `<h2>{{ user.name }} - {{ user.age }}</h2>`,
+            changeDetection: ChangeDetectionStrategy.OnPush
+            })
+            export class ChildComponent {
+            @Input() user!: { name: string; age: number };
+            }
+
+        - Parent Component (Problem Case)
+        @Component({
+        template: `
+            <app-child [user]="user"></app-child>
+            <button (click)="increaseAge()">Increase Age</button>
+        `
+        })
+        export class ParentComponent {
+
+            user = { name: 'Sandeep', age: 25 };
+
+            increaseAge() {
+                this.user.age++;   // Mutation ❌
+            }
+        }
+
+        Problem
+        OnPush checks only: Input reference change but not Internal property mutation
+
+        So UI may NOT update.
+        ✅ Fix Using ChangeDetectorRef (Manual)
+        Parent Component (Manual Fix)
+        import { ChangeDetectorRef } from '@angular/core';
+
+            constructor(private cdr: ChangeDetectorRef) {}
+
+            increaseAge() {
+            this.user.age++;      // Mutation
+            this.cdr.detectChanges();   // Manual trigger ✅
+        }
+
+    6. There are two strategies: Default (checks all components) and OnPush (checks only when inputs change or events occur).
+   
+   
+******************************************************************************************************************************************
+3.  Difference between Default and OnPush change detection?
+    Default change detection checks all components in every cycle, while OnPush checks a component only when its input reference changes, 
+    an event occurs inside it, or it is manually triggered, which improves performance.
+
+    1. Default Example
+        Child Component (Default)
+        @Component({
+        selector: 'app-child',
+        template: `Age: {{ user.age }}`
+        })
+        export class ChildComponent {
+        @Input() user!: { name: string; age: number };
+        }
+
+        Parent Component
+        @Component({
+        template: `
+            <app-child [user]="user"></app-child>
+            <button (click)="increaseAge()">Increase Age</button>
+        `
+        })
+        export class ParentComponent {
+
+            user = { name: 'Sandeep', age: 25 };
+
+            increaseAge() {
+                this.user.age++;   // Mutation
+            }
+        }
+
+        What Happens (Default)
+            Button Click
+            ↓
+            Angular runs change detection
+            ↓
+            Child checked
+            ↓
+            Template sees new age
+            ↓
+            UI Updates 
+
+
+        Even mutation works.
+
+    2. OnPush Example
+        Child Component (OnPush)
+        @Component({
+        selector: 'app-child',
+        template: `Age: {{ user.age }}`,
+        changeDetection: ChangeDetectionStrategy.OnPush
+        })
+        export class ChildComponent {
+        @Input() user!: { name: string; age: number };
+        }
+
+        Parent Component (Same Code)
+        increaseAge() {
+            this.user.age++;   // Mutation ❌
+        }
+
+        What Happens (OnPush)
+        Button Click
+        ↓
+        Angular checks Parent
+        ↓
+        Child Input reference SAME
+        ↓
+        Child NOT checked
+        ↓
+        UI NOT updated
+
+
+******************************************************************************************************************************************
+4. How does trackBy improve performance?
+
+    trackBy helps Angular avoid re-rendering entire lists when using *ngFor.
+      Without trackBy → Angular may recreate all DOM elements
+      With trackBy → Angular updates only changed items
+
+    Problem Without trackBy
+    Angular tracks list items by object reference (memory address) by default.
+    If array changes → Angular may think all items are new → Rebuild DOM → Slow for big lists.
+
+    Example Without trackBy
+    Component
+    users = [
+    { id: 1, name: 'Sandeep' },
+    { id: 2, name: 'Rahul' }
+    ];
+
+    refreshList() {
+        this.users = [...this.users]; // New reference but same data
+    }
+
+    Template
+    <div *ngFor="let user of users">
+    {{ user.name }}
+    </div>
+
+    ❌ What Happens
+    Array reference changed
+    ↓
+    Angular recreates ALL DOM elements
+    ↓
+    Performance waste
+
+    Solution — Using trackBy
+    trackBy tells Angular:
+     “Identify each item using this unique value”
+
+    Usually → ID
+
+    Example With trackBy
+    Component
+    trackByUserId(index: number, user: any) {
+        return user.id;
+    }
+
+    Template
+    <div *ngFor="let user of users; trackBy: trackByUserId">
+        {{ user.name }}
+    </div>
+
+    What Happens
+    Array reference changed
+    ↓
+    Angular checks IDs
+    ↓
+    Only changed items updated
+    ↓
+    DOM reuse → Faster performance
+
+    Real Performance Impact
+    Imagine:
+    1000 list items
+    Only 1 item updated
+
+    Without trackBy
+    ❌ Recreate 1000 DOM nodes
+    With trackBy
+    ✅ Update only 1 DOM node
+   
+******************************************************************************************************************************************
+5. How do you manually trigger change detection?
+    You manually trigger change detection using ChangeDetectorRef.
+     It is used when Angular does NOT automatically detect changes
+     Mostly used with OnPush, performance tuning, or external callbacks
+
+       import { Component, ChangeDetectorRef } from '@angular/core';
+
+        @Component({
+        selector: 'app-demo',
+        template: `
+            <h2>{{ name }}</h2>
+            <button (click)="updateName()">Update</button>
+        `
+        })
+        export class DemoComponent {
+
+            name = 'Sandeep';
+
+            constructor(private cdr: ChangeDetectorRef) {}
+
+            updateName() {
+                this.name = 'Rahul';
+                this.cdr.detectChanges();   // Manual trigger
+            }
+        }
+
+        Real Scenario Example (OnPush + Mutation)
+        increaseAge() {
+            this.user.age++;        // Mutation
+            this.cdr.detectChanges();   // Force UI update
+        }
+
+
 *********** Component Communication ************
 1. How do components communicate with each other?
     Components communicate in many ways. Choose depending on relationship:
@@ -864,4 +1134,146 @@ Angular 15+ / 16+ / 17+
         obs$.pipe(finalize(() => stopLoader()));    
 
 ******************************************************************************************************************************************
+*************** HTTP & Interceptors *************
+1. How does HttpClient work?
 
+
+******************************************************************************************************************************************
+2. What is an HTTP interceptor?
+3. How do you add auth headers globally?
+4. How do you handle API errors centrally?
+5. Difference between retry and retryWhen?
+
+
+******************************************************************************************************************************************
+
+***** Angular 15+ / 16+ / 17+ *********
+1. What are standalone components?
+    Standalone components in Angular (introduced in v14+) are components that do not require inclusion in an NgModule. 
+    They are self-contained and can directly declare their own dependencies (other components, directives, pipes) via the imports property.
+
+    Key points:
+        No need to declare in an NgModule.
+        Use the standalone: true flag in the component decorator.
+        Dependencies are listed in the imports array.
+        Can be used directly in routing or bootstrapped as root components.
+
+        import { Component } from '@angular/core';
+        import { CommonModule } from '@angular/common';
+
+        @Component({
+        selector: 'app-standalone',
+        template: `<h1>Standalone Component</h1>`,
+        standalone: true,
+        imports: [CommonModule]
+        })
+        export class StandaloneComponent {}
+
+    When components are not standalone components then they are defined in the NgModule and all the dependencies are provided through imports.
+    NgModules are typically defined in files ending with .module.ts. The main application module is usually in src/app/app.module.ts. 
+    Feature modules are defined in their own files, such as src/app/feature/feature.module.ts.
+
+        Example file:
+        src/app/app.module.ts
+
+        Example definition:
+        // src/app/app.module.ts
+        import { NgModule } from '@angular/core';
+        import { BrowserModule } from '@angular/platform-browser';
+        import { AppComponent } from './app.component';
+
+        @NgModule({
+        declarations: [AppComponent],
+        imports: [BrowserModule],
+        providers: [],
+        bootstrap: [AppComponent]
+        })
+        export class AppModule {}
+
+
+******************************************************************************************************************************************
+2. What are Angular Signals?
+    A signal is a wrapper around a value that notifies interested consumers when that value changes. Signals can contain any value, 
+    from primitives to complex data structures. You read a signal's value by calling its getter function, which allows Angular to track 
+    where the signal is used.
+    Signals may be either writable or read-only.
+
+
+    - Writable signals :
+        Writable signals provide an API for updating their values directly. 
+        You create writable signals by calling the signal function with the signal's initial value:
+
+        const count = signal(0);
+        // Signals are getter functions - calling them reads their value.
+        console.log('The count is: ' + count());
+        
+        To change the value of a writable signal, either .set() it directly:
+        count.set(3); 
+        
+        or use the .update() operation to compute a new value from the previous one:
+        // Increment the count by 1.
+        count.update((value) => value + 1);
+    
+    - Converting writable signals to readonly
+        WritableSignal provide a asReadonly() method that returns a readonly version of the signal. 
+        This is useful when you want to expose a signal's value to consumers without allowing them to modify it directly:
+
+        @Injectable({providedIn: 'root'})
+        export class CounterState {
+            // Private writable state
+            private readonly _count = signal(0);
+            readonly count = this._count.asReadonly(); // public readonly
+            increment() {
+                this._count.update((v) => v + 1);
+            }
+        }
+
+        @Component({
+        /* ... */
+        })
+        export class AwesomeCounter {
+            state = inject(CounterState);
+            count = this.state.count; // can read but not modify
+            increment() {
+                this.state.increment();
+            }
+        }
+    
+        The readonly signal reflects any changes made to the original writable signal, but cannot be modified using set() or update() methods.
+
+******************************************************************************************************************************************
+4. Signals vs Observables?
+    Think simply:
+      Signals → State (value over time)
+      Observables → Streams (events over time)
+
+    State = Current data/value that represents UI or app condition
+        It answers:
+        “What is the current situation right now?”
+            Examples of state:
+            Is user logged in? → true / false
+            Cart items count → 3
+            Loading spinner visible? → true / false
+            Selected theme → "dark"
+
+    Observables — Async Streams (Simple Meaning)
+        Observable = A stream of values coming over time (usually async)
+
+        Instead of holding one current value (state),
+        Observables handle multiple values/events happening over time.
+
+        What Is “Async Stream” (Simple)
+        Break it:
+            Async → Happens later / not immediately (API, timers, user input)
+            Stream → Multiple values coming one after another
+
+        Real Life Analogy
+        Water Tap
+            Signal → Water level in bucket (current state)
+            Observable → Water flowing from tap (continuous stream)
+
+******************************************************************************************************************************************
+    What is zoneless Angular?
+    What is hydration in Angular?
+    What is deferred loading?
+******************************************************************************************************************************************
