@@ -1,0 +1,62 @@
+Kafka Fundamentals (Experienced-Level)
+
+    1. Why did your organization choose Kafka over traditional messaging systems?
+    2. What problems does Kafka solve well—and what does it not solve?
+    3. How does Kafka guarantee message ordering?
+    4. What is the role of partitions in Kafka scalability?
+    5. How do producers decide which partition a message goes to?
+    6. What happens if a partition leader fails?
+    7. How does Kafka ensure durability?
+    8. What are ISR (In-Sync Replicas)?
+    9. What happens when ISR shrinks?
+    10. How does Kafka handle backpressure?
+
+
+Error Handling & Reliability
+    How do you handle poison messages?
+    Retry topics vs dead-letter topics — when to use what?
+    How do you avoid infinite retry loops?
+    What happens when a consumer crashes mid-processing?
+    How do you monitor consumer lag correctly?
+    How do you pause and resume consumption safely?
+
+Performance & Tuning
+    What metrics matter most for Kafka performance?
+    How do you tune consumers for low latency?
+    How does compression affect performance?
+    What causes throughput to drop suddenly?
+
+Kafka in Distributed Systems
+    How do you design event-driven systems with Kafka?
+    Kafka vs REST — when to use which?
+    How do you guarantee ordering across services?
+    How do you handle eventual consistency?
+    How do you manage inter-service contracts?
+    What anti-patterns exist in event-driven design?
+
+Senior / Architect-Level Questions
+    When should Kafka NOT be used?
+    How do you design Kafka for 100+ services?
+    How do you prevent Kafka becoming a bottleneck?
+    How do you enforce governance around Kafka usage?
+    How do you handle multi-team ownership of topics?
+    How do you migrate from MQ to Kafka?
+    How do you justify Kafka operational cost?
+    How do you design DR for Kafka?
+    What would you redesign in your Kafka setup?
+    What Kafka failure taught you the most?
+
+Failure & Resilience Thinking
+
+✅ How do you design failure isolation?
+✅ How do you prevent cascading failures via Kafka?
+✅ How do you control blast radius with Kafka?
+
+Tier 3 — Nice to Know (Good for Senior / Lead Interviews)
+
+You don’t need deep mastery, just conceptual clarity:
+
+• What happens if partition leader fails?
+• What are ISR and why do they matter?
+• How does Kafka handle backpressure?
+• How do you detect stuck partitions?

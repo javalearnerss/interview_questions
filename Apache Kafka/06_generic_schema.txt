@@ -1,0 +1,8 @@
+Schema & Data Evolution
+    How do you manage schema evolution in Kafka?
+    What happens when producers and consumers use different schemas?
+    How do you handle backward and forward compatibility?
+    Schema Registry — why and when?
+    What schema mistakes cause outages?
+    How do you version events safely?
+    What happens if schema compatibility rules are ignored?

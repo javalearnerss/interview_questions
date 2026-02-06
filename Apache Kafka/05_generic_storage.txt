@@ -1,0 +1,9 @@
+Kafka Storage & Retention
+
+    What is log compaction?
+    When would you use log compaction over retention?
+    How does Kafka clean up old data?
+    How do you size Kafka storage?
+    How does retention impact performance?
+    Why is Kafka not a database?
+    What data-loss scenarios exist in Kafka?

@@ -1,0 +1,113 @@
+
+
+Offset Management & Delivery Semantics
+
+1. What does “at-least-once” delivery really mean?
+    At-least-once delivery means:
+        Every message will be delivered one or more times
+        No message is lost
+        Duplicates are possible
+        Note : At-least-once gaurantees that consumer will receive message at least once.
+
+2. Why is “exactly-once” often misunderstood in Kafka?
+    A message is processed only once, even if there are retries, failures, or restarts in producers, brokers, or consumers.
+    It applies mainly to Kafka → Kafka
+        EOS guarantees cover producer retries + transactional writes between topics, not external systems.
+
+    Offsets and side effects aren’t automatically atomic
+        Writing to a DB/API and committing offsets are separate unless you design for it.
+
+    Idempotence ≠ exactly-once everywhere
+        Idempotent producers prevent duplicate writes to Kafka, not duplicate processing.
+
+    Upstream duplicates still exist
+        If multiple producers emit the same business event, Kafka won’t dedupe them.
+
+3. How does Kafka implement exactly-once semantics?
+    A message is processed only once, even if there are retries, failures, or restarts in producers, brokers, or consumers.
+
+    Kafka implements exactly-once semantics (EOS) by combining idempotent producers + transactions + coordinated offset commits.
+    How it works (step by step):
+    Idempotent producer
+        Each producer gets a Producer ID (PID) and adds sequence numbers.
+        Broker drops duplicate retries → no duplicate writes to Kafka.
+
+    Transactions
+        Producer starts a transaction (transactional.id).
+        Writes to multiple partitions/topics are grouped atomically.
+        On failure, the whole transaction is aborted.
+
+    Atomic offset commit
+        Consumer processes records.
+        Offsets are sent to the transaction (sendOffsetsToTransaction()).
+        commitTransaction() commits both output records and offsets together.
+
+    Read committed
+        Consumers with isolation.level=read_committed only see committed transactions.
+
+4. When is exactly-once not worth the complexity?
+    Use at-least-once instead if:
+
+        Duplicates are harmless
+            Logs, metrics, clickstreams, analytics → easy to dedupe later.
+
+        You write to external systems
+            DBs / APIs where Kafka EOS doesn’t apply end-to-end anyway.
+
+        High throughput / low latency is critical
+            Transactions add coordination, latency, and operational overhead.
+
+        Simple pipelines
+            Single topic → single consumer → single sink (manual commit + idempotent write is enough).
+
+        Operational simplicity matters
+            Fewer configs, fewer failure modes, easier on-call life.
+
+5. What happens if offsets are committed before DB writes?
+    Consumer processes a record
+    Offset is committed
+    DB write fails or app crashes
+    On restart, consumer resumes after that offset
+
+6. How do you safely replay Kafka messages?
+    Safely replaying Kafka messages means re-reading old data without breaking downstream.
+
+    Use a new consumer group
+        Replay with group.id=replay-<date> so prod consumers aren’t affected.
+
+    Reset/seek offsets to the replay point
+        Prefer by timestamp (e.g., “3 days ago”) or to a known offset.
+
+    Make downstream idempotent
+        Dedupe by eventId or use DB unique constraint + upsert so repeats don’t corrupt.
+
+    Throttle the replay
+        Limit concurrency / max.poll.records, add rate limits to avoid overwhelming DB/services.
+
+    Isolate output if risky
+        Write to a staging topic/table first, validate, then merge/cut over.
+
+7. How do you handle duplicate events?
+    Handle duplicates by making processing idempotent:
+
+        Include a unique eventId (or use (topic,partition,offset) as an ID).
+        Deduplicate at the sink:
+            DB unique constraint + upsert (INSERT … ON CONFLICT DO NOTHING/UPDATE)
+            Or a processed_event table keyed by eventId.
+        Make side effects idempotent (emails/payments): store a “sent/processed” flag before sending.
+        Producer safety: enable.idempotence=true to reduce duplicates from retries.
+        Monitor: track dedupe-hit rate; sudden spikes indicate retries/rebalances.
+
+8. How do you reset offsets in production safely?
+    Stop consumers → dry-run → reset by timestamp/duration → restart slowly with idempotent processing.
+
+
+9. What offset-related outages have you seen?
+    Auto-commit caused data loss: offsets committed before processing/DB write → missing records.
+    Commit failures ignored: intermittent commit errors → big reprocessing after restart → duplicate writes / load spike.
+    Accidental reset to earliest: consumer replays entire topic → DB/API meltdown, lag explosion.
+    Wrong group.id in prod: new group starts at latest/earliest unexpectedly → either skips data or reprocesses too much.
+    max.poll.interval.ms exceeded: slow processing → consumer kicked out → repeated rebalances + duplicates.
+    Offset commit too frequent: commit on every record → coordinator overload, latency increases.
+    Offsets expired (offsets.retention.minutes): idle group comes back and starts from reset policy → unexpected replay or skip.
+    Rebalance storms: unstable consumers → partitions move constantly → duplicate processing + lag never recovers.

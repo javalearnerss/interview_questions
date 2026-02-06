@@ -515,7 +515,6 @@
     So the same key can start landing on a different partition
     Then events for that key are split across partitions → no global ordering for that key anymore
 
-4. Too many topics exist and Kafka becomes hard to manage. How do you fix governance?
 
 5. A topic grows faster than expected and disk fills up. What do you do?
     Immediate containment
@@ -575,131 +574,76 @@
 🧬 Schema & Data Evolution Scenarios
 
 1. Producer deploys a schema change and consumers crash. What went wrong?
-
 2. Old consumers break after a new field is added. Why?
-
 3. Schema Registry is down — what happens?
-
 4. Different teams evolve schemas independently. How do you prevent outages?
-
 5. A backward-compatible change still causes issues. Why?
-
 6. How do you safely remove a field from events?
-
 7. A schema change corrupts downstream data. How do you recover?
-
 8. Schema compatibility rules are bypassed in production. What’s the impact?
-
 9. Replay of old events fails due to schema mismatch. Why?
-
 10. How do you test schema changes before production?
 
 🧨 Failure & Reliability Scenarios
 
 Kafka broker goes down during peak traffic. What happens?
-
 ISR shrinks frequently. What does that indicate?
-
 Disk usage grows faster than expected. Why?
-
 Network latency spikes affect Kafka cluster. What breaks first?
-
 One broker is much slower than others. Why?
-
 Zookeeper instability causes Kafka issues. How?
-
 Kafka cluster survives but clients start failing. Why?
-
 GC pauses on brokers cause lag. How do you detect?
-
 Messages pile up but brokers look healthy. What do you check?
-
 What failure modes can cause silent data loss?
 
 ⚙️ Performance & Tuning Scenarios
 
 Throughput suddenly drops by 50% after a config change. How do you debug?
-
 Consumer fetch requests are slow. Why?
-
 High CPU on brokers but low network usage. Why?
-
 Compression improves throughput but increases latency. Why?
-
 Kafka performs well in test but poorly in prod. Why?
-
 Increasing batch size makes latency worse. Why?
-
 Brokers run out of file handles. What caused it?
-
 GC tuning improves throughput but causes latency spikes. Why?
-
 How do you identify the true bottleneck — producer, broker, or consumer?
-
 What tuning mistakes commonly cause outages?
 
 🌍 Kafka in Distributed Systems Scenarios
 
 A service publishes events but downstream state is inconsistent. Why?
-
 Kafka is used as a request-response system and starts failing. Why?
-
 A single event triggers a cascade of failures. How do you prevent this?
-
 Event-driven workflow partially completes and gets stuck. Why?
-
 Multiple services consume the same topic but interpret data differently. How do you fix this?
-
 Replay causes downstream systems to double charge customers. What went wrong?
-
 Event ordering across services is broken. Why?
-
 Kafka becomes a shared blast radius. How do you redesign?
-
 One bad consumer slows the entire ecosystem. How?
-
 What Kafka anti-patterns have you seen in microservices?
 
 🔐 Security & Compliance Scenarios
 
 Unauthorized consumer reads sensitive data. How did this happen?
-
 ACL misconfiguration blocks production traffic. How do you recover?
-
 Certificates expire and Kafka clients start failing. What breaks?
-
 A team bypasses security using shared credentials. How do you prevent this?
-
 Audit team asks who accessed which topics. How do you answer?
-
 Kafka credentials leak. What’s your immediate action?
-
 TLS handshake failures happen intermittently. Why?
-
 IAM-based auth works in one region but not another. Why?
-
 Security changes break older consumers. Why?
-
 How do you rotate secrets without downtime?
 
 🧠 Senior / Architect-Level Scenarios
-
 Kafka is used everywhere and becomes hard to govern. What do you change?
-
 Business wants Kafka for everything. When do you say no?
-
 Kafka cluster cost keeps increasing. How do you optimize?
-
 One team’s design causes repeated Kafka incidents. How do you fix culturally and technically?
-
 You need cross-region disaster recovery for Kafka. How do you design it?
-
 A migration from MQ to Kafka causes message loss. Why?
-
 You inherit a badly designed Kafka platform. Where do you start?
-
 What Kafka decision caused the biggest outage you’ve seen?
-
 What would you redesign if starting Kafka from scratch?
-
 What Kafka failure changed how you design systems?
