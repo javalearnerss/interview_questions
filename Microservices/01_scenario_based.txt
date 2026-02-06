@@ -43,18 +43,18 @@ Security & access control
     5. How do you prevent data leakage between services?
 
 Deployment & versioning
-    How do you deploy microservices with zero downtime?
-    A new version of a service breaks older consumers. How do you fix and prevent this?
-    How do you handle database schema changes in live systems?
-    How do you safely roll back a failed deployment?
-    How do you deploy changes independently without coordination hell?
+    1. How do you deploy microservices with zero downtime?
+    2. A new version of a service breaks older consumers. How do you fix and prevent this?
+    3. How do you handle database schema changes in live systems?
+    4. How do you safely roll back a failed deployment?
+    5. How do you deploy changes independently without coordination hell?
 
 Scaling & performance
-    One service needs to scale rapidly while others don’t. How do you handle this?
-    How do you handle hot spots caused by uneven traffic?
-    Where do you apply caching in microservices and why?
-    How do you avoid over-scaling due to noisy neighbors?
-    How do you design for predictable latency under load?
+    1. One service needs to scale rapidly while others don’t. How do you handle this?
+    2. How do you handle hot spots caused by uneven traffic?
+    3. Where do you apply caching in microservices and why?
+    4. How do you avoid over-scaling due to noisy neighbors?
+    5. How do you design for predictable latency under load?
 
 
 

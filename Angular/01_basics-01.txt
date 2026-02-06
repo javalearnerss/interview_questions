@@ -1,0 +1,465 @@
+Forms 
+    1. Difference between Template-driven and Reactive forms?
+    2. Why are Reactive Forms preferred in large apps?
+    3. What is FormGroup, FormControl, FormArray?
+    4. How do you implement custom validators?
+    5. What is cross-field validation?
+    6. How do you handle dynamic forms?
+
+Routing & Navigation
+    7.  What is Angular Router?
+    8.  How does lazy loading work?
+    9.  Difference between CanActivate, CanLoad, and CanMatch?
+    10. How do you pass data between routes?
+    11. How do you protect routes?
+    12. What is a resolver and when do you use it?
+
+State Management
+    13. What problems does NgRx solve?
+    14. Explain actions, reducers, selectors, and effects.
+    15. When should you NOT use NgRx?
+    16. Difference between NgRx and Signals?
+    17. How do Signals improve performance?
+
+
+**************************************************************************************************************
+******* Forms ************8
+1.  Difference between Template-driven and Reactive forms?
+   
+    What is Template-Driven Form?
+         Template-driven forms are Angular forms where:
+            1. Form structure is created in HTML template
+            2. Uses Angular directives like:
+                - ngForm
+                - ngModel
+                - required, minlength, etc.
+            3. Two-way data binding using [(ngModel)]
+
+👉 Angular automatically creates form model behind the scenes.
+    
+    
+    Step 2 — Component TypeScript
+        Template-driven forms require FormsModule.
+
+        app.component.ts
+        import { CommonModule } from '@angular/common';
+        import { Component } from '@angular/core';
+        import { FormsModule } from '@angular/forms';
+
+        @Component({
+        selector: 'app-root',
+        standalone: true,
+        imports: [FormsModule, CommonModule], // ⭐ Required for Template-driven forms
+        templateUrl: './app.component.html',
+        styleUrl: './app.component.css'
+        })
+        export class AppComponent {
+            title = 'angular-learn';
+            user = {
+                name: '',
+                email: '',
+                password: ''
+            };
+
+            onSubmit(form: any) {
+                console.log('Form Submitted');
+                console.log(this.user);
+                console.log(form);
+            }
+        }
+
+
+    Step 3 — HTML Template (Main Part)
+        app.component.html
+        <h2>User Registration</h2>
+
+        <form #userForm="ngForm" (ngSubmit)="onSubmit(userForm)">
+
+            <!-- Name -->
+            <div>
+                <label>Name</label>
+                <input type="text" name="name" required minlength="3" [(ngModel)]="user.name" #name="ngModel">
+
+                <div *ngIf="name.invalid && name.touched">
+                    <small *ngIf="name.errors?.['required']">
+                        Name is required
+                    </small>
+                    <small *ngIf="name.errors?.['minlength']">
+                        Minimum 3 characters required
+                    </small>
+                </div>
+            </div>
+
+            <br>
+
+            <!-- Email -->
+            <div>
+                <label>Email</label>
+                <input type="email" name="email" required email [(ngModel)]="user.email" #email="ngModel">
+
+                <div *ngIf="email.invalid && email.touched">
+                    <small>Email is invalid</small>
+                </div>
+            </div>
+
+            <br>
+
+            <!-- Password -->
+            <div>
+                <label>Password</label>
+                <input type="password" name="password" required minlength="6" [(ngModel)]="user.password" #password="ngModel">
+
+                <div *ngIf="password.invalid && password.touched">
+                    <small>Password must be at least 6 characters</small>
+                </div>
+            </div>
+
+            <br>
+
+            <button type="submit" [disabled]="userForm.invalid">
+                Submit
+            </button>
+
+        </form>
+
+    Real Uses of form
+        1️⃣ Get Form Values
+        Instead of model object:
+        console.log(form.value);
+        Output:
+
+        {
+            name: "Sandeep",
+            email: "abc@gmail.com",
+            password: "123456"
+        }
+
+        Useful when you don’t bind to model object.
+
+    2️⃣ Check Form Validation Before Submit
+        onSubmit(form:any){
+            if(form.invalid){
+                return;
+            }
+        }
+
+    3️⃣ Reset Form After Submit
+
+        Very common real use:
+
+        onSubmit(form:any){
+            console.log(this.user);
+            form.reset();
+        }
+
+    4️⃣ Access Individual Controls
+        form.controls.name.value
+        form.controls.email.valid
+
+    5️⃣ Mark All Fields Touched (Show Errors)
+        Object.values(form.controls).forEach(control => {
+            control.markAsTouched();
+        });
+
+    ------------------------------------------------------------------------------
+
+    Reactive Forms in Angular are model-driven forms, where the form structure and logic are defined in the TypeScript component class, not in the template.
+        They provide:
+        More control over validation
+        Better scalability for complex forms
+        Easier unit testing
+        Reactive programming using Observables
+
+
+        Example - register.component.ts
+        import { CommonModule } from '@angular/common';
+        import { Component } from '@angular/core';
+        import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+
+        @Component({
+        selector: 'app-register',
+        standalone: true,
+        imports: [ReactiveFormsModule, CommonModule],
+        templateUrl: './register.component.html',
+        styleUrl: './register.component.css'
+        })
+        export class RegisterComponent {
+            registerForm!: FormGroup;
+
+            ngOnInit() {
+                this.registerForm = new FormGroup({
+                name: new FormControl('', Validators.required),
+                email: new FormControl('', [Validators.required, Validators.email]),
+                password: new FormControl('', [Validators.required, Validators.minLength(6)])
+                });
+            }
+
+            onSubmit() {
+                console.log(this.registerForm.value);
+            }
+        }
+
+        register.component.html
+            <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+
+            <div>
+                <label>Name</label>
+                <input type="text" formControlName="name">
+                <small *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
+                Name is required
+                </small>
+            </div>
+
+            <div>
+                <label>Email</label>
+                <input type="email" formControlName="email">
+                <small *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+                Enter valid email
+                </small>
+            </div>
+
+            <div>
+                <label>Password</label>
+                <input type="password" formControlName="password">
+                <small *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+                Min 6 characters required
+                </small>
+            </div>
+
+            <button type="submit" [disabled]="registerForm.invalid">
+                Submit
+            </button>
+
+            </form>
+
+        When to Use Reactive Forms?
+
+        Use when:
+        ✅ Form is large
+        ✅ Dynamic fields needed
+        ✅ Complex validation
+        ✅ Need full programmatic control
+        ✅ Need Observables / valueChanges  
+
+
+
+**************************************************************************************************************
+2. Why are Reactive Forms preferred in large apps?
+    1️⃣ Better Scalability
+        Reactive Forms are highly scalable because the entire form structure is defined inside the TypeScript component instead of the HTML template.
+
+    2️⃣ Strong Validation Handling
+        Reactive Forms provide powerful validation capabilities, including both synchronous and asynchronous validations. 
+        All validation logic is written in the component class, which keeps templates clean and easy to read.
+
+    3️⃣ Highly Testable
+        Reactive Forms are easier to test because the form logic exists completely in the TypeScript class. 
+        This allows developers to write unit tests without needing to render the HTML template.
+
+    4️⃣ Better Control with Reactive Programming
+        Reactive Forms use RxJS Observables, which allow developers to react to form value changes in real time. Using features like valueChanges 
+        and statusChanges, developers can implement features like live search, instant validation feedback, or auto-saving form data.
+
+    5️⃣ Cleaner and More Maintainable Code
+        Reactive Forms help maintain a clear separation between UI and business logic.
+
+    6️⃣ Dynamic Form Handling
+        Reactive Forms make it very easy to build dynamic forms using FormArray. 
+        Developers can dynamically add or remove fields at runtime based on user actions or backend data.
+
+    7️⃣ Predictable Data Flow and Debugging
+        Reactive Forms provide explicit and predictable form state management. Since the form model is controlled in one place, debugging becomes easier.
+
+**************************************************************************************************************
+
+3. What is FormGroup, FormControl, FormArray?
+    ✅ FormControl
+        What it is:
+        Represents a single input field in a form. It tracks value and validation status.
+
+        Example:
+        name = new FormControl('', Validators.required);
+
+        👉 Used for one field like Name, Email, Password
+
+    ✅ FormGroup
+        What it is:
+        A collection of FormControls. Represents a complete form or form section.
+
+        Example:
+
+        form = new FormGroup({
+        name: new FormControl(''),
+        email: new FormControl('')
+        });
+
+    👉 Used for full forms like Login Form, Register Form
+
+    ✅ FormArray
+        What it is:
+        A dynamic list of FormControls or FormGroups. Used when fields can be added/removed.
+
+        Example:
+
+        skills = new FormArray([
+        new FormControl('Angular'),
+        new FormControl('React')
+        ]);
+
+
+    👉 Used for multiple skills, multiple phone numbers, etc.
+
+        import { FormGroup, FormControl, FormArray } from '@angular/forms';
+
+        form = new FormGroup({
+        skills: new FormArray([
+            new FormControl('Angular'),
+            new FormControl('React')
+        ])
+        });
+
+        // Helper getter
+        get skills() {
+        return this.form.get('skills') as FormArray;
+        }
+
+        addSkill() {
+        this.skills.push(new FormControl(''));
+        }
+
+        <form [formGroup]="form">
+
+        <div formArrayName="skills">
+            <div *ngFor="let skill of skills.controls; let i = index">
+            <input [formControlName]="i">
+            </div>
+        </div>
+
+        <button type="button" (click)="addSkill()">
+            Add Skill
+        </button>
+
+        </form>
+
+
+**************************************************************************************************************
+
+4. How do you implement custom validators?
+5. What is cross-field validation?
+
+    1) Custom validator for single control (FormControl)
+
+    TS
+
+    import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+
+    export function noSpaceValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+        const v = (control.value ?? '') as string;
+        return v.trim().length === v.length ? null : { noSpace: true };
+    };
+    }
+
+
+    Use
+
+    name = new FormControl('', [noSpaceValidator()]);
+
+
+    Template error
+
+    <small *ngIf="name.errors?.['noSpace']">No leading/trailing spaces</small>
+
+    2) Custom validator for cross-field validation (FormGroup)
+
+    TS
+
+    import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+
+    export function matchFields(a: string, b: string): ValidatorFn {
+    return (group: AbstractControl): ValidationErrors | null => {
+        const v1 = group.get(a)?.value;
+        const v2 = group.get(b)?.value;
+        return v1 === v2 ? null : { fieldsMismatch: true };
+    };
+    }
+
+
+    Use
+
+    form = new FormGroup(
+    {
+        password: new FormControl(''),
+        confirmPassword: new FormControl('')
+    },
+    { validators: matchFields('password', 'confirmPassword') }
+    );
+
+
+    Template error
+
+    <small *ngIf="form.errors?.['fieldsMismatch']">Passwords must match</small>
+
+
+**************************************************************************************************************
+
+6. How do you handle dynamic forms?
+
+    Dynamic forms in Angular Reactive Forms are handled mainly with FormArray (add/remove controls at runtime) and 
+    sometimes by building the form from config/data.
+
+    1) Using FormArray (most common)
+
+    TS
+
+    form = this.fb.group({
+    phones: this.fb.array([this.fb.control('')])
+    });
+
+    get phones() { return this.form.get('phones') as FormArray; }
+
+    addPhone() { this.phones.push(this.fb.control('')); }
+    removePhone(i: number) { this.phones.removeAt(i); }
+
+
+    HTML
+
+    <form [formGroup]="form">
+    <div formArrayName="phones">
+        <div *ngFor="let c of phones.controls; let i = index">
+        <input [formControlName]="i" placeholder="Phone">
+        <button type="button" (click)="removePhone(i)">Remove</button>
+        </div>
+    </div>
+
+    <button type="button" (click)="addPhone()">Add phone</button>
+    </form>
+
+    2) Dynamic rows with FormArray of FormGroup (real-world)
+
+    TS
+
+    items = this.fb.array([]);
+
+    addItem() {
+    this.items.push(this.fb.group({
+        name: [''],
+        qty: [1],
+    }));
+    }
+
+    3) Build form from API/config (schema-driven)
+
+    You loop through fields from backend and create controls:
+
+    const controls: any = {};
+    fields.forEach(f => controls[f.key] = this.fb.control('', f.validators));
+    this.form = this.fb.group(controls);
+
+
+    Interview one-liner:
+
+    “I handle dynamic forms using FormArray to add/remove controls or groups at runtime, 
+    and for schema-driven forms I generate controls from backend config and patch values with patchValue().”
+
+**************************************************************************************************************

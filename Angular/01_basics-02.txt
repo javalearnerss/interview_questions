@@ -1,0 +1,14 @@
+Performance Optimization
+    How do you improve Angular app performance?
+    What is lazy loading and preloading?
+    How do you reduce bundle size?
+    What causes memory leaks in Angular?
+    How do you detect performance bottlenecks?
+
+Build & Deployment
+    What are Angular environments?
+    How does AOT compilation work?
+    Difference between JIT and AOT?
+    What is tree shaking?
+    How do you debug production issues?
+    What causes a blank screen after deployment?

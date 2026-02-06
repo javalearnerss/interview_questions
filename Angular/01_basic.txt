@@ -29,22 +29,6 @@ Component Communication
     What is content projection (ng-content)?
     How does ViewChild work?
 
-Routing & Navigation
-    What is Angular Router?
-    How does lazy loading work?
-    Difference between CanActivate, CanLoad, and CanMatch?
-    How do you pass data between routes?
-    How do you protect routes?
-    What is a resolver and when do you use it?
-
-Forms
-    Difference between Template-driven and Reactive forms?
-    Why are Reactive Forms preferred in large apps?
-    What is FormGroup, FormControl, FormArray?
-    How do you implement custom validators?
-    What is cross-field validation?
-    How do you handle dynamic forms?
-
 RxJS & Observables
     What is an Observable?
     Difference between Observable and Promise?
@@ -61,30 +45,9 @@ HTTP & Interceptors
     How do you handle API errors centrally?
     Difference between retry and retryWhen?
 
-State Management
-    What problems does NgRx solve?
-    Explain actions, reducers, selectors, and effects.
-    When should you NOT use NgRx?
-    Difference between NgRx and Signals?
-    How do Signals improve performance?
-
 Security
     Where should JWT tokens be stored?
     
-Performance Optimization
-    How do you improve Angular app performance?
-    What is lazy loading and preloading?
-    How do you reduce bundle size?
-    What causes memory leaks in Angular?
-    How do you detect performance bottlenecks?
-
-Build & Deployment
-    What are Angular environments?
-    How does AOT compilation work?
-    Difference between JIT and AOT?
-    What is tree shaking?
-    How do you debug production issues?
-    What causes a blank screen after deployment?
 
 Angular 15+ / 16+ / 17+
     What are standalone components?
@@ -864,7 +827,7 @@ Angular 15+ / 16+ / 17+
             Angular finds <app-child>
             Gives parent direct access to child instance
             Parent can call methods / read properties
-        
+
 ******************************************************************************************************************************************
 ******************** RxJS & Observables ***************
 1. What is an Observable?
