@@ -1,0 +1,165 @@
+Core Fundamentals
+1️. What problem does Kubernetes solve?
+Answer: Container orchestration — automated deployment, scaling, service discovery, self-healing, and resource management for containerized workloads.
+
+2️. Explain Kubernetes architecture.
+Answer: 
+Control Plane:
+API Server → entry point
+etcd → cluster state storage
+Scheduler → assigns pods to nodes
+Controller Manager → maintains desired state
+
+Node:
+Kubelet → manages pods
+Container runtime → runs containers
+Kube-proxy → networking rules
+
+3️. What happens when you run kubectl apply?
+Answer Flow: kubectl → API Server → validates → stores desired state in etcd → controllers detect change → scheduler assigns node → kubelet creates container.
+
+4️. Pod vs Container?
+Answer:
+Pod = smallest deployable unit.
+Can contain multiple containers sharing network + storage.
+
+5️. Deployment vs ReplicaSet?
+Answer: Deployment manages ReplicaSet → adds rollout, rollback, updates.
+ReplicaSet only ensures pod count.
+
+6️. StatefulSet vs Deployment?
+Answer: StatefulSet = stable identity + ordered startup + persistent storage.
+Used for DB, Kafka, Zookeeper.
+
+7️. DaemonSet Use Case?
+Answer: Runs one pod per node.
+Example: logging agents, monitoring agents.
+
+8️. Job vs CronJob?
+Answer: Job = run once.
+CronJob = scheduled execution.
+
+
+9️. How Kubernetes networking works?
+Answer: Every pod gets IP.
+Pods communicate directly (flat network).
+Services provide stable virtual IP.
+
+10. Service Types?
+Answer:
+ClusterIP → internal
+NodePort → node exposed
+LoadBalancer → cloud LB
+Ingress → HTTP routing layer
+
+11. What is CNI?
+Answer:
+Container Network Interface plugin managing pod networking.
+Examples: Calico, Cilium, Flannel.
+
+1️2. How DNS works inside cluster?
+Answer:
+CoreDNS maps service name → ClusterIP.
+
+13. Requests vs Limits?
+Answer:
+Request → scheduler decision.
+Limit → max allowed usage.
+Memory limit breach → OOMKill.
+
+14. QoS Classes?
+Answer:
+Guaranteed → best priority
+Burstable → medium
+BestEffort → lowest priority
+
+15. HPA vs VPA vs Cluster Autoscaler?
+Answer:
+HPA → scale pods
+VPA → adjust pod resources
+Cluster Autoscaler → scale nodes
+
+16. How HPA gets metrics?
+Answer:
+Metrics Server → CPU/memory
+Prometheus adapter → custom metrics
+
+17. ConfigMap vs Secret?
+Answer:
+ConfigMap → non-sensitive
+Secret → base64 encoded sensitive data
+
+18. PV vs PVC?
+Answer:
+PV = actual storage
+PVC = request for storage
+
+19. StorageClass?
+Answer:
+Defines dynamic storage provisioning policy.
+
+20. How controllers maintain desired state?
+Answer:
+Watch API → detect drift → reconcile → update actual state.
+
+21. What happens if etcd quorum lost?
+Answer:
+Cluster becomes read-only / unavailable.
+Need quorum restore or snapshot recovery.
+
+22. Scheduler decision factors?
+Answer:
+Resources
+Affinity rules
+Taints/Tolerations
+Node selectors
+Scoring plugins
+
+23. Taints vs Tolerations?
+Answer:
+Taint → repels pods
+Toleration → allows scheduling on tainted node
+
+24. Pod stuck in Pending?
+Answer Check:
+Resources
+Taints
+PVC binding
+Affinity rules
+Scheduler logs
+
+25. CrashLoopBackOff?
+Answer Check:
+App crash
+OOMKilled
+Probe failure
+Bad config
+Dependency failure
+
+26. Node NotReady?
+Answer Check:
+Kubelet
+Disk pressure
+Network plugin
+Runtime
+Resource exhaustion
+
+27. RBAC Role vs ClusterRole?
+Answer:
+Role → namespace scope
+ClusterRole → cluster scope
+
+28. Service Account Use?
+Answer:
+Pod identity to access API securely.
+
+29. How to achieve zero downtime deployment?
+Answer:
+Rolling update
+Readiness probes
+Pod disruption budget
+Graceful shutdown handling
+
+30. How Kubernetes handles node failure?
+Answer:
+Node marked NotReady → pods rescheduled → services updated → traffic rerouted.

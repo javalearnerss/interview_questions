@@ -1,0 +1,102 @@
+Fundamentals
+1. What is Kubernetes and why is it used?
+2. What problems does Kubernetes solve compared to traditional deployment?
+3. What is a container and how is it different from a VM?
+4. What is a Pod?
+5. Why does Kubernetes use Pods instead of running containers directly?
+
+Architecture Basics
+6. What are Kubernetes cluster components?
+7. What is the role of:
+    API Server
+    Scheduler
+    Controller Manager
+    etcd
+8. What is kubelet?
+9. What is kube-proxy?
+
+Core Objects
+10. What is a Deployment?
+11. Difference between Deployment and ReplicaSet?
+12. What is a Service in Kubernetes?
+    Types of Services:
+    ClusterIP
+    NodePort
+    LoadBalancer
+
+Configuration
+13. What is ConfigMap?
+14. What is Secret?
+15. Difference between ConfigMap vs Secret?
+
+Workload Management
+16. What is the difference between:
+    Deployment
+    StatefulSet
+    DaemonSet
+    Job
+    CronJob
+
+17. When would you use StatefulSet?
+18. What is rolling update and rollback?
+19. What is liveness probe vs readiness probe vs startup probe?
+
+Networking
+20. How does Kubernetes networking work?
+21. What is CNI?
+22. What is Ingress?
+23. Difference between Ingress and LoadBalancer Service?
+
+Storage
+24. What is Persistent Volume (PV)?
+25. What is Persistent Volume Claim (PVC)?
+26. What is StorageClass?
+27. Difference between static vs dynamic provisioning?
+
+Scaling
+28. What is HPA (Horizontal Pod Autoscaler)?
+29. What is VPA?
+30. What is Cluster Autoscaler?
+
+Scheduling & Resource Management
+31. Scheduling & Resource Management
+32. How does Kubernetes scheduler decide Pod placement?
+33. What are taints and tolerations?
+34. What are node affinity and pod affinity?
+35. What are resource requests and limits?
+
+Security
+36. What is RBAC?
+37. What are Service Accounts?
+38. What is Pod Security (PSA / PSP legacy)?
+39. How are Secrets secured in etcd?
+
+Observability
+40. How do you monitor Kubernetes clusters?
+41. What is metrics-server?
+42. Logging architecture in Kubernetes?
+
+Reliability & Resilience
+43. What happens when a node goes down?
+44. How does Kubernetes self-heal applications?
+45. What is disruption budget (PDB)?
+
+Performance
+46. How do you troubleshoot high CPU node usage?
+47. How do you debug pending Pods?
+48. How do you debug CrashLoopBackOff?
+
+Networking Deep Dive
+49. How does kube-proxy work (iptables vs IPVS)?
+50. How does service discovery work internally?
+51. How does DNS work in Kubernetes?
+
+Storage Deep Dive
+52 .How do you handle Stateful DB in Kubernetes?
+53. How do you design backup and restore strategy?
+
+Real Production Scenarios
+54. How do you manage secrets in production (Vault, External Secrets)?
+55. How do you implement blue-green / canary deployment?
+56. How do you isolate noisy neighbors?
+
