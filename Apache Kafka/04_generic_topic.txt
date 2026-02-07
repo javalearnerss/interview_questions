@@ -2,21 +2,31 @@
 Topic & Partition Design
 
 1. How do you decide the number of partitions?
-    Decide partitions based on parallelism needed now + growth + broker limits:
-   
-    Required consumer parallelism
-        Max active consumers in a group ≈ #partitions
-        Partitions ≈ (target throughput) ÷ (throughput per partition)
-    Ordering/key constraints
-        If you need per-entity ordering, partitions must support expected key cardinality + hotspot risk.
-    Producer throughput
-        More partitions can increase write parallelism, but also overhead.
-    Broker capacity / operational cost
-        More partitions = more files, memory, leader/ISR work, rebalances.
-        Stay within your cluster’s proven partition limits.
-    Future scaling
-        Add a buffer (often 2×) so you can scale consumers later without immediate repartitioning.
+    1. Throughput requirements: More partitions allow higher parallelism and throughput.
+    2. Consumer parallelism: The maximum number of consumers in a group that can process in parallel is limited by the number of partitions.
+    3. Producer throughput: More partitions can help distribute producer load.
+    4. Ordering guarantees: Messages in a partition are ordered; more partitions may reduce ordering guarantees across the topic.
+    5. Broker resources: Each partition uses broker resources (memory, file handles); too many partitions can overload brokers.
+    6. Replication factor: More partitions × replication factor = more storage and network usage.
+    7. Future scalability: Plan for future increases in traffic or consumer count.
 
+    Example calculation steps:
+        Estimate expected throughput (e.g., MB/sec).
+        Determine how many consumers you want to run in parallel.
+        Benchmark a single partition’s throughput on your hardware.
+
+    Calculate:
+        num_partitions = max(expected_throughput / partition_throughput, max_parallel_consumers)
+
+    Summary table:
+
+    Factor	                    Impact on Partition Count
+    Consumer parallelism	    ≥ number of consumers
+    Throughput              	≥ total throughput / per-partition throughput
+    Ordering                	Fewer partitions = stronger order
+    Broker resources        	Avoid too many partitions
+
+*******************************************************************************************************************************************
 2. What happens if you under-partition a topic?
     Limited consumer parallelism
         Max active consumers in a group = #partitions → scaling consumers won’t help.
@@ -32,6 +42,8 @@ Topic & Partition Design
 
     Harder to scale later
         Adding partitions later can break per-key ordering and requires careful migration.
+
+*******************************************************************************************************************************************
 
 3. Can you change partition count later? What are the risks?
     Risks / side effects:
@@ -51,6 +63,8 @@ Topic & Partition Design
     Stateful consumers become harder
         Apps relying on partition affinity/state stores may need changes.
 
+*******************************************************************************************************************************************
+
 4. How does partition count affect consumer scaling?
     Partition count directly caps consumer scaling.
         In a consumer group, only one consumer can read a partition at a time.
@@ -62,6 +76,8 @@ Topic & Partition Design
         Too few partitions → can’t scale consumers → lag grows.
         Enough partitions → scale out consumers linearly (up to the partition count).
         More partitions also mean more rebalances and overhead, so don’t overdo it.
+
+*******************************************************************************************************************************************
 
 5. How do keys impact data distribution?
     Keys directly control how data is distributed across partitions.
@@ -78,11 +94,65 @@ Topic & Partition Design
     Null key → sticky/round-robin behavior
         No ordering guarantee; distribution evens out over time.
 
+*******************************************************************************************************************************************
+
 6. What happens with hot partitions?
+
+    A "hot partition" in Kafka occurs when one or a few partitions receive a disproportionately high volume of messages compared to others. 
+    This usually happens if the message key is not well distributed (e.g., always using the same key or a small set of keys).
+
+    Impacts:
+        The broker hosting the hot partition becomes overloaded (CPU, disk, network).
+        Consumers assigned to the hot partition lag behind, while others are mostly idle.
+        Overall throughput is limited by the slowest (hottest) partition.
+        Can cause increased latency and potential data loss if the broker cannot keep up.
+
+    Mitigation Strategies:
+        Use a key with high cardinality and even distribution.
+        Implement a custom partitioner to balance load.
+        Monitor partition metrics and rebalance if needed.
+        Increase the number of partitions (with caution).
+
+    | Problem       | Cause                   | Impact                     | Solution                       |
+    | ------------- | ----------------------- | -------------------------- | ------------------------------ |
+    | Hot Partition | Skewed key distribution | Broker/consumer bottleneck | Use better keying/partitioning |
+
+
+*******************************************************************************************************************************************
 
 7. How do you design topics for multi-tenant systems?
 
+*******************************************************************************************************************************************
 8. Topic-per-event vs shared-topic — trade-offs?
+    
+      1. Topic per Event
+        Each event type (e.g., user_created, order_placed) gets its own Kafka topic.
+        All tenants share these topics.
+
+        Example:
+        user_created topic: All user creation events from all tenants.
+        order_placed topic: All order placed events from all tenants.
+
+    2. Topic per Tenant
+        Each tenant (customer, client, etc.) gets its own set of topics.
+        Each event type for each tenant is a separate topic.
+
+        Example:
+        TenantA: tenantA_user_created, tenantA_order_placed
+        TenantB: tenantB_user_created, tenantB_order_placed
+
+    3. Explosion
+        "Explosion" refers to the rapid increase in the number of topics.
+        With many tenants and many event types, topic-per-tenant can create thousands of topics, which can be hard to manage and may impact Kafka performance.
+
+        Example Table:
+
+        Event Type	    Tenant	    Topic per Event	       Topic per Tenant
+        user_created	TenantA	    user_created	        tenantA_user_created
+        order_placed	TenantA	    order_placed	        tenantA_order_placed
+        user_created	TenantB	    user_created	        tenantB_user_created
+        order_placed	TenantB	    order_placed	        tenantB_order_placed
+    
     Topic-per-event
     Pros
         Simple consumers (no filtering)
@@ -106,14 +176,38 @@ Topic & Partition Design
         No per-event isolation; noisy event can affect others
 
 
-
+*******************************************************************************************************************************************
 9. What topic design mistakes have you fixed?
-    Here are common topic design mistakes I’ve seen/fixed (good interview answers):
-    Too few partitions → lag/backlogs; fixed by increasing partitions + sharding keys / new topic migration.
-    Hot keys / skewed distribution → one partition overloaded; fixed by better keys, key-sharding, or tenant isolation.
-    Topic-per-event / topic-per-tenant explosion → unmanageable cluster; fixed by shared domain topics + governance + quotas.
-    Wrong retention (too long/too short) → disk fills or data missing; fixed with tiered retention + alerts.
-    Using Kafka for blobs (huge payloads) → OOM/disk issues; fixed by storing in S3/DB and sending references.
-    Compaction used incorrectly → “missing data”; fixed by proper keys, tombstone handling, and correct cleanup policy.
-    Mixed workloads in one topic (critical + noisy) → noisy neighbor; fixed by separating topics/quotas.
-    No schema/versioning discipline → consumer breaks; fixed via Schema Registry + compatibility rules.
+    Too Many Topics (Topic Explosion):
+    Creating a topic per tenant, per event, or per user without considering scale, leading to operational and performance issues.
+
+    Too Few Topics:
+    Overloading a single topic with unrelated data, making consumer logic complex and reducing parallelism.
+
+    Poor Partitioning Strategy:
+    Using too few or too many partitions, or not partitioning by a meaningful key, causing uneven load or limiting throughput.
+
+    Hardcoding Topic Names:
+    Embedding topic names in code instead of using configuration, making changes and environment management difficult.
+
+    Ignoring Retention Policies:
+    Not setting appropriate retention, leading to data loss or excessive storage costs.
+
+    No Versioning:
+    Not versioning topics when message schema changes, causing compatibility issues.
+
+    Lack of Naming Conventions:
+    Inconsistent or unclear topic names, making management and monitoring harder.
+
+    Not Considering Security:
+    Failing to set up ACLs or using public topics for sensitive data.
+
+    Best Practices:
+        Use shared topics with clear partitioning and metadata.
+        Keep topic count manageable.
+        Use configuration for topic names.
+        Apply consistent naming conventions.
+        Set appropriate retention and security policies.
+        Version topics when schemas change.
+
+*******************************************************************************************************************************************

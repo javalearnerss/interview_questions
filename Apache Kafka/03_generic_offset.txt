@@ -8,42 +8,132 @@ Offset Management & Delivery Semantics
         No message is lost
         Duplicates are possible
         Note : At-least-once gaurantees that consumer will receive message at least once.
+*******************************************************************************************************************************************
 
 2. Why is “exactly-once” often misunderstood in Kafka?
-    A message is processed only once, even if there are retries, failures, or restarts in producers, brokers, or consumers.
-    It applies mainly to Kafka → Kafka
-        EOS guarantees cover producer retries + transactional writes between topics, not external systems.
+   "Exactly once" delivery in Kafka means: Each message is delivered to the consumer and processed only one time (no duplicates, no loss).
+    Achieved by combining idempotent producers and transactional messaging with careful consumer offset management.
 
-    Offsets and side effects aren’t automatically atomic
-        Writing to a DB/API and committing offsets are separate unless you design for it.
+    "Exactly-once" in Kafka is often misunderstood because:
+    - Kafka guarantees "exactly-once" processing only for consume-process-produce workflows, not for simple producer-only or consumer-only cases.
+    - For producers, enabling idempotence and transactions ensures each message is written only once to a topic.
+    - For consumers, Kafka cannot guarantee "exactly-once" delivery; it guarantees "at least once" (possible duplicates) or "at most once" 
+       (possible loss).
+    - True "exactly-once" semantics require the consumer to process messages idempotently and commit offsets only after successful processing, 
+        but duplicates may still occur if the consumer crashes before committing.
+    - "Exactly-once" is only fully achieved when the consumer, processing logic, and producer are all coordinated using Kafka’s transactional APIs.
 
-    Idempotence ≠ exactly-once everywhere
-        Idempotent producers prevent duplicate writes to Kafka, not duplicate processing.
-
-    Upstream duplicates still exist
-        If multiple producers emit the same business event, Kafka won’t dedupe them.
+    Summary:
+    Kafka's "exactly-once" is misunderstood because it applies to end-to-end processing (consume-process-produce with transactions), 
+    not to simple producer or consumer delivery. Consumers must still handle possible duplicates.
+*******************************************************************************************************************************************
 
 3. How does Kafka implement exactly-once semantics?
     A message is processed only once, even if there are retries, failures, or restarts in producers, brokers, or consumers.
 
-    Kafka implements exactly-once semantics (EOS) by combining idempotent producers + transactions + coordinated offset commits.
-    How it works (step by step):
-    Idempotent producer
-        Each producer gets a Producer ID (PID) and adds sequence numbers.
-        Broker drops duplicate retries → no duplicate writes to Kafka.
+    1. Configure Kafka producer for idempotence and transactions.
+    2. Configure Kafka consumer for manual offset commit and isolation.level=read_committed.
+    3. Consumer reads messages.
+    4. Process messages.
+    5. Producer sends output messages within a transaction.
+    6. Producer sends offsets to transaction.
+    7. Commit transaction atomically (messages and offsets).
+    8. If any error, abort transaction.
 
-    Transactions
-        Producer starts a transaction (transactional.id).
-        Writes to multiple partitions/topics are grouped atomically.
-        On failure, the whole transaction is aborted.
+    public class ExactlyOnceConfig {
 
-    Atomic offset commit
-        Consumer processes records.
-        Offsets are sent to the transaction (sendOffsetsToTransaction()).
-        commitTransaction() commits both output records and offsets together.
+        @Bean
+        public ProducerFactory<String, String> producerFactory() {
+            Map<String, Object> props = new HashMap<>();
+            props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+            props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
+            props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+            props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+            // Do NOT set TRANSACTIONAL_ID_CONFIG directly; use prefix
+            DefaultKafkaProducerFactory<String, String> factory =
+                new DefaultKafkaProducerFactory<>(props);
+            factory.setTransactionIdPrefix("exactly-once-transaction-");
+            return factory;
+        }
 
-    Read committed
-        Consumers with isolation.level=read_committed only see committed transactions.
+        @Bean
+        public KafkaTemplate<String, String> kafkaTemplate() {
+            return new KafkaTemplate<>(producerFactory());
+        }
+
+        @Bean
+        public ConsumerFactory<String, String> consumerFactory() {
+            Map<String, Object> props = new HashMap<>();
+            props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+            props.put(ConsumerConfig.GROUP_ID_CONFIG, "exactly-once-group");
+            props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+            props.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
+            props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+            props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+            return new DefaultKafkaConsumerFactory<>(props);
+        }
+
+        @Bean
+        public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
+            ConcurrentKafkaListenerContainerFactory<String, String> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+
+            factory.setConsumerFactory(consumerFactory());
+            factory.getContainerProperties().setAckMode(
+                org.springframework.kafka.listener.ContainerProperties.AckMode.MANUAL
+            );
+
+            return factory;
+        }
+    }
+
+
+        @Service
+        public class ExactlyOnceListener {
+
+            @Autowired
+            private KafkaTemplate<String, String> kafkaTemplate;
+
+            @KafkaListener(topics = "input-topic", containerFactory = "kafkaListenerContainerFactory")
+            public void listen(
+                ConsumerRecord<String, String> record,
+                Acknowledgment ack,
+                Consumer<String, String> consumer
+            ) {
+
+                kafkaTemplate.executeInTransaction(kt -> {
+
+                    // Process the record
+                    String processedValue = process(record.value());
+
+                    // Produce to output topic
+                    kt.send("output-topic", record.key(), processedValue);
+
+                    // Prepare offset map for commit
+                    Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<>();
+                    offsets.put(
+                        new TopicPartition(record.topic(), record.partition()),
+                        new OffsetAndMetadata(record.offset() + 1)
+                    );
+
+                    // Commit offset as part of transaction
+                    consumer.commitSync(offsets);
+
+                    return null;
+                });
+
+                ack.acknowledge();
+            }
+
+            private String process(String value) {
+                // Business logic here
+                return value.toUpperCase();
+            }
+        }
+
+
+
+*******************************************************************************************************************************************
 
 4. When is exactly-once not worth the complexity?
     Use at-least-once instead if:
@@ -63,11 +153,15 @@ Offset Management & Delivery Semantics
         Operational simplicity matters
             Fewer configs, fewer failure modes, easier on-call life.
 
+*******************************************************************************************************************************************
+
 5. What happens if offsets are committed before DB writes?
     Consumer processes a record
     Offset is committed
     DB write fails or app crashes
     On restart, consumer resumes after that offset
+
+*******************************************************************************************************************************************
 
 6. How do you safely replay Kafka messages?
     Safely replaying Kafka messages means re-reading old data without breaking downstream.
@@ -87,6 +181,8 @@ Offset Management & Delivery Semantics
     Isolate output if risky
         Write to a staging topic/table first, validate, then merge/cut over.
 
+*******************************************************************************************************************************************
+
 7. How do you handle duplicate events?
     Handle duplicates by making processing idempotent:
 
@@ -98,9 +194,12 @@ Offset Management & Delivery Semantics
         Producer safety: enable.idempotence=true to reduce duplicates from retries.
         Monitor: track dedupe-hit rate; sudden spikes indicate retries/rebalances.
 
+*******************************************************************************************************************************************
+
 8. How do you reset offsets in production safely?
     Stop consumers → dry-run → reset by timestamp/duration → restart slowly with idempotent processing.
 
+*******************************************************************************************************************************************
 
 9. What offset-related outages have you seen?
     Auto-commit caused data loss: offsets committed before processing/DB write → missing records.
@@ -111,3 +210,5 @@ Offset Management & Delivery Semantics
     Offset commit too frequent: commit on every record → coordinator overload, latency increases.
     Offsets expired (offsets.retention.minutes): idle group comes back and starts from reset policy → unexpected replay or skip.
     Rebalance storms: unstable consumers → partitions move constantly → duplicate processing + lag never recovers.
+
+*******************************************************************************************************************************************

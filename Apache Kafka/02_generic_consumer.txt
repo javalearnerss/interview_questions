@@ -140,3 +140,105 @@ Consumers (Deep Dive)
     - Bad error handling: swallowing exceptions and continuing commits → silently drops failed records.
     - Under-provisioned consumers: too few consumers vs partitions or too slow processing → lag grows until downstream SLAs break.
 
+******************************************************************************************************************************
+
+**** Kafka Consumer exactly-one semantic***
+- Kafka itself does not provide true "exactly once" delivery to a consumer-only application; it provides "at least once" or "at most once".
+- "Exactly once" semantics require the consumer's processing to be idempotent, and the consumer must commit offsets only after successful processing.
+- Set consumer isolation level to read_committed if upstream producers use transactions.
+- Use manual offset commit (disable auto-commit).
+- Ensure your processing logic is idempotent to avoid side effects from possible duplicate deliveries.
+
+
+    @Configuration
+    @EnableKafka
+    public class ExactlyOnceConsumerConfig {
+
+        @Bean
+        public ConsumerFactory<String, String> consumerFactory() {
+            Map<String, Object> props = new HashMap<>();
+            props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+            props.put(ConsumerConfig.GROUP_ID_CONFIG, "exactly-once-group");
+            props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false); // manual commit
+            props.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed"); // only if producer uses transactions
+            props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+            props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+
+            return new DefaultKafkaConsumerFactory<>(props);
+        }
+    }
+
+    // Consumer
+
+    @RetryableTopic(
+        backoff = @Backoff(value = 3000L, multiplierExpression = "2"),
+        attempts = "4", // N-1 Retry attempts
+        topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE,
+        autoCreateTopics = "false",
+        dltTopicSuffix = "-dlt",
+        dltStrategy = DltStrategy.FAIL_ON_ERROR,
+        include = DelayException.class
+    )
+    @KafkaListener(
+        topics = "${topic-name}",
+        groupId = "${groupid}"
+    )
+    public void consume(
+        @Payload String message,
+        @Header(value = KafkaHeaders.OFFSET, required = false) Long offset,
+        @Header(value = KafkaHeaders.RECEIVED_TOPIC, required = false) String topic,
+        @Headers MessageHeaders headers,
+        Acknowledgment ack
+    ) {
+
+        LOGGER.info("#### -> Received message {} from topic {} with offset {}", message, topic, offset);
+
+        try {
+            
+
+            bigMacMessageProcessor.processMessage(message);
+
+        } catch (final DelayException delayExp) {
+            LOGGER.error("Retrying message due to DelayException: {}", delayExp.getMessage());
+            throw delayExp;
+
+        } catch (Exception ex) {
+            LOGGER.error("Moving message to DLT due to exception: {}", ex.getMessage());
+            throw new Exception(ex);
+        }
+
+        ack.acknowledge();
+    }
+
+********************************************************************************************************************
+
+Consumer concurrency (4 threads in one process) = one Kafka consumer instance internally processing in parallel.
+
+4 separate processes (each with 1 consumer) = four independent Kafka consumer instances working in parallel.
+
+Kafka View: Group Membership & Partitions
+    - Consumer Concurrency (Single Process, 4 Threads)
+        A Kafka application runs one consumer instance inside a single process.
+        This consumer polls records from its assigned partitions and pushes them into an internal work queue.
+
+        Inside the same process, four worker threads pull records from that queue and process them in parallel.
+
+        From Kafka’s perspective, the application is one group member, so partition assignment happens only once — to that single consumer.
+
+        Implication:
+        Throughput can improve for processing, but fetch parallelism is limited to partitions assigned to that one consumer instance.
+    
+    - 4 Separate Processes (4 Consumers)
+        A Kafka deployment runs 4 separate processes, each with one consumer instance.
+
+        Each process joins the same consumer group, so Kafka sees 4 group members.
+        Kafka distributes partitions across all four consumers automatically.
+
+Fault Isolation
+    - Consumer Concurrency (Single Process, 4 Threads)
+        If the process crashes, the consumer and all 4 workers stop, and Kafka must rebalance partitions.
+
+    - 4 Separate Processes (4 Consumers)
+        If one process crashes, only that consumer is lost — the other three continue processing without interruption.
+
+********************************************************************************************************************
