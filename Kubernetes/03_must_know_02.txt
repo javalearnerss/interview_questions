@@ -1,0 +1,22 @@
+
+🟡 Level 2 — Strong 6-Year Developer Level
+Scaling & Performance
+11. How does HPA scale your Java application? What metrics are usually used?
+12. Why do Java apps sometimes scale poorly in Kubernetes?
+13. How do you tune JVM for containers?
+👉 Expected:
+Heap sizing vs container memory limit
+GC tuning
+Startup time impact
+
+Stateless Design (Very Common Question)
+14. Why should apps be stateless in Kubernetes?
+15. How do you manage user sessions?
+Expected Answers: Redis, DB-backed session, JWT tokens
+
+Service Communication
+16. How do services talk to each other inside cluster?
+17. What is service discovery in Kubernetes?
+18. How does DNS work inside cluster?
+
+************************************************************************************************************************************

@@ -1,0 +1,324 @@
+
+🟠 Level 3 — Senior Developer / Production Ownership
+Deployment Strategies
+20. Rolling update vs Blue-Green vs Canary — when to use?
+21. How do you prevent downtime during deployment?
+22. What happens to in-flight requests during rollout?
+
+Resource Management
+23. What are resource requests vs limits?
+24. What happens if Java app exceeds memory limit?
+25. What is OOMKilled?
+
+Failure Scenarios
+26. Node crashes — what happens to your app?
+27. Pod restarts — what happens to cache/session?
+28. How does Kubernetes self-heal?
+
+🔴 Level 4 — Senior+ / Lead Level (Many Companies Ask)
+Production Design
+29. How would you design Spring Boot microservices in Kubernetes?
+30. How would you design Kafka consumers in Kubernetes?
+31. How would you design DB connections inside Kubernetes?
+
+***********************************************************************************************************************************
+20. Rolling update vs Blue-Green vs Canary — when to use?
+
+    Rolling Update : Rolling update is Kubernetes gradually replacing old pods with new pods while keeping the application available — but 
+    internally it’s driven by the Deployment controller, ReplicaSets, and pod health checks.
+
+    Step 1: You Trigger a Deployment Update
+        Example:
+        New Docker image pushed
+        You run: kubectl apply -f deployment.yaml
+        
+        Kubernetes detects: Deployment spec changed (image, env, config, etc.)
+
+    Step 2: Kubernetes Creates a New ReplicaSet
+        Important concept:
+        Every Deployment manages:
+        1. Old ReplicaSet (v1 pods)
+        2. New ReplicaSet (v2 pods)
+
+        Example:
+                Before:
+                    ReplicaSet-v1 → 5 pods
+    
+                After update triggered:
+                    ReplicaSet-v1 → 5 pods
+                    ReplicaSet-v2 → 0 pods (new, just created)  
+
+    Step 3: Rolling Strategy Starts Executing
+        Based on: maxSurge, maxUnavailable
+
+        Example:
+            replicas = 5
+            maxSurge = 1
+            maxUnavailable = 1
+
+        Rules:
+            Can add 1 extra pod
+            Can remove 1 old pod at a time
+
+    Step 4: New Pod Creation Starts
+        Kubernetes increases new ReplicaSet size:
+            ReplicaSet-v2 → 1 pod created
+
+        Total pods now: 5 old + 1 new = 6
+
+    Step 5: New Pod Must Become READY
+        Kubernetes waits for:
+            ✔ Container started
+            ✔ Readiness probe passed
+            ✔ App responding
+            ✔ Dependencies reachable
+
+        If not ready:
+            Rolling update pauses.
+
+    Step 6: Old Pod Termination Starts
+        Once new pod is ready:
+        Kubernetes reduces old ReplicaSet:
+            1. ReplicaSet-v1 → 4 pods
+            2. ReplicaSet-v2 → 1 pod
+
+    Step 7: Load Balancer / Service Updates Automatically
+        Kubernetes Service only sends traffic to:
+        👉 READY pods only
+        So traffic shifts gradually:
+            Old pods → less traffic
+            New pods → more traffic
+
+    Step 8: Process Repeats Until Completion
+        Cycle repeats:
+        Create new pod → Wait ready → Delete old pod
+            Final state:
+                ReplicaSet-v1 → 0
+                ReplicaSet-v2 → 5
+
+    Timeline Table (Simple View)
+    Time	    Old Pods	New Pods	Total
+     T0	        3	        0	        3
+     T1	        3	        1	        4
+     T2	        2	        1	        3
+     T3	        2	        2	        4
+     T4	        1	        2	        3
+     T5	        1	        3	        4
+     T6	        0	        3	        3
+
+     -------------------------------------------------------------------------------------
+
+    Blue-Green Deployment — Interview Ready Points
+        Definition
+            Blue-Green deployment is a release strategy using two identical production environments.
+            One environment is Blue (current live), the other is Green (new version / staging).
+
+        How It Works
+            Deploy the new application version to the Green environment.
+            Perform testing, validation, and health checks on Green.
+            Once verified, switch production traffic from Blue → Green (via Load Balancer / DNS).
+            Keep Blue running temporarily for quick rollback if issues occur.
+
+    How It Works — Step by Step
+        Step 1 — Blue is Live (Current Production)
+            Example:
+                Blue Environment → Inventory Service v1 → Serving Users
+                Green Environment → Not used yet
+        
+        Step 2 — Deploy New Version to Green
+            Deploy:
+                Green Environment → Inventory Service v2
+
+            But:
+                ❌ No user traffic yet
+                ✅ You can test safely
+
+        Step 3 — Test Green Environment
+            Teams test:
+                1. Smoke tests
+                2. DB connectivity
+                3. Cache connectivity
+                4. Booking flow
+                5. Performance
+
+            Green is like shadow production.
+
+        Step 4 — Switch Traffic (Critical Moment)
+            Load balancer / router switches:
+                FROM → Blue
+                TO → Green
+
+            Now:
+             All users go to Green (new version)
+
+        Step 5 — Keep Blue as Backup (Optional)
+            If everything is stable:
+                Delete Blue
+                OR
+                Keep as rollback backup
+
+        Why Blue-Green is Very Safe
+        Because:
+            ✔ No mixing old + new versions
+            ✔ Easy rollback (just switch traffic back)
+            ✔ Full production testing possible
+            ✔ No compatibility issues during rollout
+
+    --------------------------------------------------------------------------------------------------------------------
+    Canary Deployment
+        Canary Deployment means:
+            1. Release new version to small % of users first
+            2. Monitor system behavior
+            3. Gradually increase traffic if safe
+
+            Named after:
+            Canary birds used in coal mines — early warning system.
+        
+        Simple Definition
+            Instead of:
+                1. Replacing all pods (Rolling)
+                2. Switching all traffic (Blue-Green)
+
+            Canary sends:
+                1. Small traffic → New version
+                2. Most traffic → Old version
+
+        How It Works — Step by Step
+            Step 1 — Deploy New Version Alongside Old
+                Example:
+                    1. Old Version → 95% traffic
+                    2. New Version → 5% traffic
+
+            Step 2 — Monitor Metrics
+                Teams watch:
+                    1. Error rate
+                    2. Latency
+                    3. DB load
+                    4. Booking failures
+                    5. Lock conflicts
+                    6. If safe → Increase traffic.
+
+            Step 3 — Gradually Increase Traffic
+                Example rollout: 5% → 20% → 50% → 100%   
+
+            Step 4 — Full Rollout
+                If everything stable: New version becomes main version.
+
+***********************************************************************************************************************************
+21. How do you prevent downtime during deployment?
+
+
+***********************************************************************************************************************************
+22. What happens to in-flight requests during rollout?
+    What is an In-Flight Request?
+        In-flight requests are requests currently being processed by the application but not yet completed. During deployments or shutdowns,
+         we allow in-flight requests to finish before terminating the pod to avoid user errors or data inconsistency.
+
+    In-flight request in a ticket booking application:
+
+        • An in-flight request is a booking operation (e.g., user submitting a ticket purchase) that is being processed by 
+            the application but has not yet completed (user has not received confirmation).
+        • Examples:
+            o User clicks "Book Ticket" and the server is processing payment and seat allocation.
+            o User requests seat availability, and the server is fetching data.
+
+        Deployment impact:
+
+        • If the application is redeployed or restarted while processing in-flight requests, those requests may be interrupted, leading to:
+            o Lost bookings
+            o Payment errors
+            o Inconsistent seat allocation
+
+        Handling in-flight requests:
+
+            • Use graceful shutdown:
+            o When deployment starts, stop accepting new booking requests.
+            o Allow current in-flight requests to finish processing before shutting down the server.
+
+        • In Spring Boot:
+             o Enable graceful shutdown so the application waits for ongoing HTTP requests to complete.
+
+        • Use load balancer health checks:
+             o Remove instance from load balancer before shutdown, so only in-flight requests are processed.
+
+    During rollout, Kubernetes first creates new pods and only sends traffic after readiness passes. When old pods are terminated, 
+    they receive SIGTERM and are marked not ready, so they stop receiving new traffic. However, existing in-flight requests are 
+    allowed to finish within terminationGracePeriodSeconds. In Spring Boot, graceful shutdown ensures the server stops accepting 
+    new requests but allows active requests to complete, preventing user errors and partial transactions.
+
+***********************************************************************************************************************************
+23. What are resource requests vs limits?
+
+    Resource Request:
+
+        • The minimum amount of CPU and memory (RAM) guaranteed to a container.
+        • The scheduler uses requests to decide where to place a pod.
+        • If a node does not have enough unallocated resources to meet the request, the pod will not be scheduled there.
+
+    Resource Limit:
+
+        • The maximum amount of CPU and memory a container can use.
+        • If the container tries to use more than the limit, it may be throttled (CPU) or killed (memory).
+
+    Purpose:
+
+        • Prevents a single container from consuming all resources on a node.
+        • Ensures fair resource allocation and stability.
+
+    Example (Kubernetes YAML):
+
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1"
+
+    • Here, the container is guaranteed 512MiB RAM and 0.5 CPU, but cannot use more than 1GiB RAM or 1 CPU.
+
+
+        Summary Table:
+
+        Term        Description                                   Effect
+        Request     Minimum resources reserved for the container  Scheduler uses for pod placement
+        Limit       Maximum resources container can use           Enforced at runtime (throttle/kill)
+
+***********************************************************************************************************************************
+24. What happens if Java app exceeds memory limit?
+
+    If a Java app exceeds its Kubernetes memory limit, the container is terminated by the Linux OOM killer and Kubernetes marks it as OOMKilled, 
+    usually with exit code 137. The container is then restarted, and if it keeps happening, it leads to CrashLoopBackOff. For Java apps, 
+    this is common because total JVM memory includes heap, metaspace, and native memory. In production, we tune JVM memory using container-aware 
+    settings like MaxRAMPercentage and leave headroom beyond heap.
+
+***********************************************************************************************************************************
+25. What is OOMKilled?
+    OOMKilled = Out Of Memory Killed
+
+    👉 It means the container used more memory than its Kubernetes memory limit,
+    👉 So the Linux kernel forcefully terminated it.
+
+    What Triggers OOMKilled
+    Example:
+
+    resources:
+    limits:
+        memory: 1Gi
+
+    If container memory usage → 1.2Gi
+
+    Result:
+        Linux OOM Killer kills container
+        Kubernetes marks pod:
+
+        Reason: OOMKilled
+        Exit Code: 137
+
+    What Happens After OOMKilled
+        1️⃣ Container is killed immediately (no graceful shutdown)
+        2️⃣ In-flight requests fail
+        3️⃣ Kubernetes restarts container
+        4️⃣ If repeated → CrashLoopBackOff
+
+***********************************************************************************************************************************

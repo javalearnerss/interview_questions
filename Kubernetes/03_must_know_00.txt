@@ -1,0 +1,74 @@
+Spring Boot in Kubernetes - Interview Questions by Seniority Level
+🟢 Level 1 — Expected Knowledge (You must know)
+App Deployment & Runtime
+1. How do you deploy a Spring Boot app in Kubernetes?
+2. What is the role of Deployment vs Pod vs ReplicaSet?
+3. How do you externalize configuration in Kubernetes for Java apps?
+4. How do you pass DB credentials securely to a Spring Boot app?
+5. How do you handle different configs for dev / stage / prod?
+👉 Expected Concepts: ConfigMap, Secret, env variables, volume mount configs
+
+Health Checks (Very Important for Java)
+6. What's the difference between: Liveness probe, Readiness probe, Startup probe?
+7. How would you map Spring Boot Actuator endpoints to probes?
+Example expectation: /actuator/health/liveness, /actuator/health/readiness
+
+Logging & Debugging
+8. How do you check logs of a running Pod?
+9. How do you check previous crash logs?
+10. How do you debug CrashLoopBackOff?
+
+🟡 Level 2 — Strong 6-Year Developer Level
+Scaling & Performance
+11. How does HPA scale your Java application? What metrics are usually used?
+12. Why do Java apps sometimes scale poorly in Kubernetes?
+13. How do you tune JVM for containers?
+👉 Expected:
+Heap sizing vs container memory limit
+GC tuning
+Startup time impact
+
+Stateless Design (Very Common Question)
+14. Why should apps be stateless in Kubernetes?
+15. How do you manage user sessions?
+16. Expected Answers: Redis, DB-backed session, JWT tokens
+
+Service Communication
+17. How do services talk to each other inside cluster?
+18. What is service discovery in Kubernetes?
+19. How does DNS work inside cluster?
+
+🟠 Level 3 — Senior Developer / Production Ownership
+Deployment Strategies
+20. Rolling update vs Blue-Green vs Canary — when to use?
+21. How do you prevent downtime during deployment?
+22. What happens to in-flight requests during rollout?
+
+Resource Management
+23. What are resource requests vs limits?
+24. What happens if Java app exceeds memory limit?
+25. What is OOMKilled?
+
+Failure Scenarios
+26. Node crashes — what happens to your app?
+27. Pod restarts — what happens to cache/session?
+28. How does Kubernetes self-heal?
+
+🔴 Level 4 — Senior+ / Lead Level (Many Companies Ask)
+Production Design
+29. How would you design Spring Boot microservices in Kubernetes?
+30. How would you design Kafka consumers in Kubernetes?
+31. How would you design DB connections inside Kubernetes?
+
+
+
+
+Real Scenario
+Your Java app works locally but fails in Kubernetes. Debug steps?
+Expected Flow:
+Check logs
+Check env variables
+Check config mount
+Check service connectivity
+Check resource limits
+Check readiness probe

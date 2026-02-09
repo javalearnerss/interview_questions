@@ -1,0 +1,255 @@
+Spring Boot in Kubernetes - Interview Questions by Seniority Level
+🟢 Level 1 — Expected Knowledge (You must know)
+App Deployment & Runtime
+1. How do you deploy a Spring Boot app in Kubernetes?
+2. What is the role of Deployment vs Pod vs ReplicaSet?
+3. How do you externalize configuration in Kubernetes for Java apps?
+4. How do you pass DB credentials securely to a Spring Boot app?
+5. How do you handle different configs for dev / stage / prod?
+👉 Expected Concepts: ConfigMap, Secret, env variables, volume mount configs
+
+Health Checks (Very Important for Java)
+6. What's the difference between: Liveness probe, Readiness probe, Startup probe?
+7. How would you map Spring Boot Actuator endpoints to probes?
+Example expectation: /actuator/health/liveness, /actuator/health/readiness
+
+Logging & Debugging
+8. How do you check logs of a running Pod?
+9. How do you check previous crash logs?
+10. How do you debug CrashLoopBackOff?
+
+*******************************************************************************************************************************
+1. How do you deploy a Spring Boot app in Kubernetes?
+   I build the Spring Boot JAR, containerize it using an optimized Docker image, push it to a registry, and deploy via Kubernetes 
+   Deployment and Service. I externalize config using ConfigMaps and Secrets, use actuator-based health probes for resilience, 
+   set resource limits for stable JVM performance, enable HPA for scaling, and expose services via Ingress with TLS. 
+   I also ensure observability, graceful shutdown, and safe rollout strategies like rolling or canary deployments.
+
+    Q: ConfigMap vs Secret?
+        ConfigMap for non-sensitive config; Secret for sensitive. In production, prefer external secret stores + sealed secrets.
+    
+    Q: Readiness vs liveness?
+        Readiness controls whether the pod gets traffic; liveness decides if the pod should be restarted.
+
+    Q: How do you do zero-downtime deployments?
+
+    Q: What if pods crash due to OOM?
+        Tune JVM heap for container limits, set memory requests/limits correctly, inspect heap dumps, and review memory leaks.
+
+    In a ticket booking system with API Gateway, Booking, Inventory, Payment, I deploy each service as its own Spring Boot Docker image 
+    and run them in Kubernetes using a Deployment + Service.
+        1. API Gateway is exposed via Ingress + TLS (public entry). It routes requests to internal services.
+        2. Booking Service handles booking workflow and talks to Inventory (seat availability/lock) and Payment (charge/refund) using their Kubernetes Services (stable DNS).
+        3. Config like timeouts, URLs, feature flags go in ConfigMaps; sensitive data like DB creds and payment keys go in Secrets.
+        4. I add readiness/liveness probes to all services so only healthy pods get traffic.
+        5. I set CPU/memory requests/limits and enable HPA—especially for Gateway and Booking to handle peak traffic.
+        6. For safe releases I use rolling updates, monitor logs/metrics (booking success rate, payment failures, latency), and rollback if error rate spikes.
+
+*******************************************************************************************************************************
+2. What is the role of Deployment vs Pod vs ReplicaSet?
+   Pod is the smallest deployable unit that runs containers. ReplicaSet ensures the desired number of pod replicas are always running for 
+   availability. Deployment is a higher-level controller that manages ReplicaSets and provides production features like rolling updates, 
+   rollbacks, and version control. In production, we usually work with Deployments, not Pods or ReplicaSets directly
+
+   Real Example (Spring Boot)
+        Pod → Runs your Spring Boot Docker container
+        ReplicaSet → Ensures 3 instances of your Spring Boot service run
+        Deployment → Handles version upgrades (v1 → v2), rollback, rolling updates
+
+    Ticket Booking Application Example:
+        1. In a ticket booking application, each microservice (API Gateway, Booking, Inventory, Payment) runs inside Pods, which are the smallest 
+            deployable units that contain the service container.
+        2. To ensure availability, Kubernetes uses a ReplicaSet to maintain the required number of pods.
+            For example, if we want 5 Booking Service pods and one crashes during peak booking time, ReplicaSet automatically creates a new one.
+        3. In real production, we don’t manage Pods or ReplicaSets directly. We use Deployments, which manage ReplicaSets and give production features 
+            like:
+            Rolling updates → deploy new Booking version without downtime
+            Rollback → revert if payment or booking flow breaks
+            Version control → track deployment history
+        4. So in production ticket booking systems, we define Deployments for each service (Gateway, Booking, Inventory, Payment), and 
+            Kubernetes handles pod scaling, healing, and updates automatically.
+
+*******************************************************************************************************************************
+3. How do you externalize configuration in Kubernetes for Java apps?
+    In Kubernetes, I externalize configuration for Java/Spring Boot apps using ConfigMaps for non-sensitive values and Secrets for sensitive values, 
+    then inject them into the Deployment as environment variables (or mounted files) so the same Docker image can run across environments.
+    
+    Based on your manifest:
+        1. ConfigMap (booking-service-config) holds runtime config like SERVER_PORT, and downstream service URLs (INVENTORY_BASE_URL, PAYMENT_BASE_URL, etc.).
+        2. Secret (booking-service-secret) holds sensitive values like DB_PASSWORD and JWT_SECRET.
+        3. In the Deployment, I load them using:
+            envFrom: configMapRef and envFrom: secretRef to inject all keys as env vars.
+            (Optional) env: with configMapKeyRef for a specific key like SERVER_PORT.
+    Spring Boot reads these env vars directly (e.g., DB_PASSWORD, JWT_SECRET, INVENTORY_BASE_URL) and maps them to properties, keeping configs 
+    out of the image and Git, while enabling per-environment overrides.
+
+*******************************************************************************************************************************
+ 4. How do you pass DB credentials securely to a Spring Boot app?
+    I store DB credentials in Kubernetes Secrets (or an external secret manager like Vault/AWS Secrets Manager) and inject them into the 
+    Spring Boot pod as env vars like SPRING_DATASOURCE_USERNAME and SPRING_DATASOURCE_PASSWORD or mount them as files. I lock down access 
+    via RBAC and enable secret encryption at rest, and I rotate credentials regularly.
+
+   Example :
+   I keep DB creds outside the image using Kubernetes Secrets (or AWS Secrets Manager/Vault). For the booking service, 
+   the Secret (booking-service-secret) stores values like DB_PASSWORD and I inject them into the pod using envFrom: secretRef 
+   (or map directly to SPRING_DATASOURCE_USERNAME/SPRING_DATASOURCE_PASSWORD). Spring Boot picks them up via env vars or mounted files. 
+   Access is restricted using RBAC, Secrets are encrypted at rest, and I follow regular rotation (ideally automated via External Secrets/operator) 
+   so credentials can be updated without rebuilding the image.
+
+*******************************************************************************************************************************
+5. 
+
+
+
+
+
+*******************************************************************************************************************************
+6. What's the difference between: Liveness probe, Readiness probe, Startup probe?
+
+    Liveness probe checks if the container is alive and restarts it if it fails. Readiness probe checks if the pod is ready to receive traffic 
+    and removes it from service endpoints if it fails without restarting. Startup probe is used for slow-starting apps and prevents liveness 
+    and readiness checks from running until the application has fully started.
+
+    Example:
+    Here’s a ticket booking / Spring Boot production explanation (short + clear):
+    In our booking system deployment, we use all three probes to ensure reliability during peak traffic and deployments.
+
+    Liveness Probe → Checks if the booking service container is still alive.
+    If the app gets stuck (e.g., thread deadlock during heavy booking load), Kubernetes restarts the container automatically.
+
+    Readiness Probe → Checks if the booking pod is ready to handle requests.
+    If DB is down, inventory service is unreachable, or app is still warming up, the pod is removed from Service endpoints, so booking traffic is not sent to it (no restart).
+
+    Startup Probe → Used because Spring Boot apps can take time to start.
+    It delays liveness/readiness checks until the app is fully started, preventing false restarts during boot.
+
+    In your manifest, this maps to:
+        /actuator/health/liveness → container health
+        /actuator/health/readiness → ready for booking traffic
+        /actuator/health → startup check
+
+    Result:
+    No traffic to half-started pods, automatic recovery from stuck pods, and stable booking flow during deploys and traffic spikes.
+
+*******************************************************************************************************************************
+7. How would you map Spring Boot Actuator endpoints to probes?
+
+To map Spring Boot Actuator health endpoints to Kubernetes probes, the clean production way is to use Spring Boot’s liveness/readiness 
+health groups.
+
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 5
+
+startupProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 8080
+  failureThreshold: 30
+  periodSeconds: 5
+
+    Good interview points
+        Readiness should include dependency checks (DB, Kafka, Redis). If dependencies are down, pod stays running but won’t receive traffic.
+        Liveness should be lightweight (don’t fail liveness just because DB is down—otherwise you cause restart loops).
+        If Actuator is protected, allow only cluster access (NetworkPolicy) or expose probes on a separate port.
+
+*******************************************************************************************************************************
+8. How do you check logs of a running Pod?
+    ✅Basic Command
+        kubectl logs <pod-name>
+        Shows logs of the main container in the pod.
+
+    ✅ If Pod has multiple containers
+        kubectl logs <pod-name> -c <container-name>
+
+    ✅ Stream logs (like tail -f)
+        kubectl logs -f <pod-name>
+
+    ✅ View previous logs (if container restarted)
+        kubectl logs <pod-name> --previous
+
+    ✅ Logs using namespace
+        kubectl logs <pod-name> -n <namespace>
+
+    ✅ Get Pod name first (real workflow)
+        kubectl get pods
+        kubectl get pods -n <namespace>
+
+*******************************************************************************************************************************
+9. How do you check previous crash logs?
+    To check previous crash logs, I use kubectl logs <pod-name> --previous. This shows logs from the last terminated container instance, 
+    which is useful in CrashLoopBackOff scenarios. I usually combine it with kubectl describe pod to check exit codes, restart count, and events.
+
+    In a booking application (API gateway → booking → inventory/payment), CrashLoopBackOff usually means the booking-service pod starts, fails, restarts—often due to bad config, DB auth, missing secret, or a dependency issue.
+
+    Here’s how I explain it in production terms:
+
+        1. If booking-service is crashing, I run:
+            kubectl logs -n booking <booking-pod> --previous
+            This shows the logs from the last failed container run, which is exactly what you need when the current container keeps restarting.
+
+        2. Then I correlate it with:
+            kubectl describe pod -n booking <booking-pod>
+            to check:
+            Exit code (e.g., 1 for startup failure, 137 for OOM kill)
+            Restart count (how frequent)
+            Events (e.g., failed readiness, image pull error, OOMKilled)
+
+    Booking-specific examples of what you might find in --previous logs:
+        DB_PASSWORD missing / wrong → booking service can’t connect to DB and exits
+        Wrong INVENTORY_BASE_URL / PAYMENT_BASE_URL → app fails on startup if it validates downstream
+        Port mismatch (app on 8051, config says 8080) → probes fail → restarts
+        Memory too low during Spring Boot startup → OOMKilled (exit 137)
+    So: --previous tells me why it crashed, and describe pod tells me how Kubernetes handled it (exit code + events).
+
+*******************************************************************************************************************************
+10. How do you debug CrashLoopBackOff?
+
+    To debug CrashLoopBackOff in a ticket booking system (gateway, booking, inventory, payment), I follow this quick production checklist:
+    1. Identify which service is crashing
+
+        kubectl get pods -n booking
+        kubectl get pods -A | grep -E "booking|inventory|payment|gateway"
+
+    2. Check events + exit reason
+        kubectl describe pod -n booking <pod>
+        Look for: Exit Code, OOMKilled (137), probe failures, image pull errors, mount/secret errors.
+
+    3. Read the real crash logs
+        kubectl logs -n booking <pod> --previous
+        kubectl logs -n booking <pod>
+
+        --previous is key in CrashLoopBackOff.
+
+    4. Validate config + secrets (common booking issue)
+        kubectl get cm,secret -n booking
+        kubectl describe cm -n booking booking-service-config
+        kubectl describe secret -n booking booking-service-secret
+
+        Typical causes: wrong DB creds, missing env var, wrong downstream URL (inventory/payment).
+
+    5. Check probes (readiness/liveness/startup)
+        In describe pod, see if probes are failing (e.g., /actuator/health/* not reachable or app starting too slow).
+        Fix by tuning startupProbe/delays or correcting ports.
+
+    6. Check resource limits (OOM / CPU throttling)
+        kubectl top pod -n booking
+
+        If OOMKilled → increase memory limit/request or fix JVM settings.
+
+    7. Reproduce quickly with an interactive debug
+        If it crashes too fast:
+        kubectl exec -it -n booking <pod> -- sh
+
+*******************************************************************************************************************************
+

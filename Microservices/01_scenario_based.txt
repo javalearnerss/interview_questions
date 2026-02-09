@@ -169,9 +169,9 @@ Scaling & performance
         Process the operation.
         Store the idempotency key and response/result in a persistent store (e.g., database, cache).
         On repeated requests with the same idempotency key:
-        Detect the key in the store.
-        Return the previously stored response/result without re-processing.
-        Ensure all side effects (DB writes, events) are only performed once per idempotency key.
+            Detect the key in the store.
+            Return the previously stored response/result without re-processing.
+            Ensure all side effects (DB writes, events) are only performed once per idempotency key.
 
     - When a user books a ticket, the Booking Service receives the request and creates a booking record with status "PENDING".
     - The Booking Service sends asynchronous requests (events) to the Inventory Service (to reserve a seat) and the Payment Service 
@@ -286,10 +286,10 @@ any failure or slowness in those services will block the Booking Service. This c
     2. For each dependency (e.g., Payment Service, Inventory Service), implement fallback logic in Booking Service.
     3. Use timeouts, retries, and circuit breakers to detect failures quickly.
     4. If a dependency fails, Booking Service should:
-    5. Mark booking as "PENDING" or "FAILED" (not crash).
-    6. Notify the user that confirmation/payment/seat assignment is delayed.
-    7. Allow the user to check status later or receive notification when resolved.
-    8. Log degraded operations for monitoring and alerting.
+        1.. Mark booking as "PENDING" or "FAILED" (not crash).
+        2.  Notify the user that confirmation/payment/seat assignment is delayed.
+        3.  Allow the user to check status later or receive notification when resolved.
+        4.  Log degraded operations for monitoring and alerting.
 
 Example: Booking Service graceful degradation
     - If Inventory Service is unavailable, Booking Service creates booking with status "PENDING" and informs user that seat assignment will be 
@@ -331,7 +331,7 @@ Observability & debugging
 
 ***********************************************************************************************************************************************
 
-5. How do you monitor SLA/SLOs across multiple services?
+5. How do you monitor SLA(Service Level Aggrement)/SLOs(Service Level Objective) across multiple services?
     1. Define SLOs/SLAs for each booking system service (e.g., Booking, Inventory, Payment):
         Example: 99.9% availability, 95% of requests < 200ms, <1% error rate.
     2. Instrument each service to expose metrics (latency, error rate, availability) using Spring Boot Actuator.
