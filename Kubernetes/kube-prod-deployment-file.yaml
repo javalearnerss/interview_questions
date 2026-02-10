@@ -1,0 +1,181 @@
+Below is a production-style Kubernetes Deployment setup (not just basic YAML).
+This includes what real production deployments usually have:
+
+✅ Resource limits
+✅ Health probes
+✅ Security context
+✅ Rolling updates
+✅ ConfigMap + Secret usage
+✅ Proper labels
+✅ Pod disruption safety
+✅ Container port exposure
+✅ Env config
+✅ Graceful shutdown
+✅ Image pull policy
+✅ Readiness + Liveness tuned
+
+
+
+# ===========================
+# Booking Service - Production Manifest (Single File)
+# Includes: Namespace, ConfigMap, Secret, Service, Deployment, PDB, HPA
+# ===========================
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: booking
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: booking-service-config
+  namespace: booking
+data:
+  SERVER_PORT: "8051"
+  INVENTORY_BASE_URL: "http://inventory-service:8080"
+  USER_BASE_URL: "http://user-management-service:8080"
+  PAYMENT_BASE_URL: "http://payment-service:8080"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: booking-service-secret
+  namespace: booking
+type: Opaque
+stringData:
+  DB_PASSWORD: "replace-me"
+  JWT_SECRET: "replace-me"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: booking-service
+  namespace: booking
+  labels:
+    app: booking-service
+spec:
+  type: ClusterIP
+  selector:
+    app: booking-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8051
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booking-service
+  namespace: booking
+  labels:
+    app: booking-service
+    tier: backend
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: booking-service
+  template:
+    metadata:
+      labels:
+        app: booking-service
+        tier: backend
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+
+      containers:
+        - name: booking-service
+          image: 336042380202.dkr.ecr.us-east-1.amazonaws.com/dev/booking-service:latest
+          imagePullPolicy: Always
+
+          ports:
+            - name: app
+              containerPort: 8051
+
+          env:
+            - name: SERVER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: booking-service-config
+                  key: SERVER_PORT
+
+          envFrom:
+            - configMapRef:
+                name: booking-service-config
+            - secretRef:
+                name: booking-service-secret
+
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8051
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8051
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 5
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8051
+            failureThreshold: 30
+            periodSeconds: 10
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: booking-service-pdb
+  namespace: booking
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: booking-service
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: booking-service-hpa
+  namespace: booking
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: booking-service
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

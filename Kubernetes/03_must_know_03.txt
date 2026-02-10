@@ -322,3 +322,287 @@ Production Design
         4️⃣ If repeated → CrashLoopBackOff
 
 ***********************************************************************************************************************************
+26. Node crashes — what happens to your app?
+
+    1. Pod Disruption:
+        All pods (including your Spring Boot app) running on the crashed node become unreachable and 
+        stop serving traffic.
+
+    2. Kubernetes Response:
+        The Kubernetes control plane detects the node failure (via node heartbeats).
+        Pods on the failed node are marked as "Unknown" or "NotReady".
+        After a timeout (default ~5 minutes), Kubernetes evicts the pods from the failed node.
+
+    3. Pod Rescheduling:
+        Kubernetes automatically schedules replacement pods on healthy nodes, if resources are available.
+        The new pods start up and register with the service/load balancer.
+
+    4. Effect on Spring Boot App:
+        Any in-flight requests to the crashed node are lost.
+        New requests are routed to healthy pods.
+        If there are enough replicas, the application remains available (no downtime).
+        If only one replica existed, the app is unavailable until the pod restarts on another node.
+
+    5. Best Practices:
+        Use multiple replicas for high availability.
+        Use readiness/liveness probes for fast failover.
+        Externalize session state to avoid user session loss.
+    
+    Event                | Kubernetes Action                | Spring Boot App Effect
+
+    Node crashes         | Pods on node become unreachable  | Requests to those pods fail
+
+    Node marked NotReady | Pods evicted, rescheduled        | New pods start elsewhere
+
+    Sufficient replicas  | Traffic routed to healthy pods   | Minimal/no downtime
+
+    Single replica       | App unavailable until restart    | Temporary downtime possible
+
+*****************************************************************************************************************************
+28. What happens to cache/session when a Pod restarts in Kubernetes?
+
+    When a Pod restarts, anything stored inside the Pod memory or local filesystem is lost, unless the data is stored externally 
+    or on persistent storage.
+
+    ✅ Cache behavior
+        If cache is inside the Pod (in-memory / local cache like Spring Cache, Ehcache, local Redis instance)
+        Cache is cleared on restart
+        First requests after restart may be slower (cache warm-up)
+        If cache is external (Redis, Memcached, Hazelcast cluster)
+        Cache survives Pod restart
+        Other Pods continue using the same cache
+
+    ✅ Session behavior
+        If sessions stored inside Pod memory (sticky sessions / in-memory HTTP session)
+        User sessions are lost on Pod restart
+        Users may get logged out or lose cart state
+        If sessions stored externally (Redis / DB / distributed session store)
+        Sessions remain intact
+        Users don’t notice Pod restart
+
+    ✅ Storage summary
+    Storage Type	        After Pod Restart
+    Container Memory	    ❌ Lost
+    emptyDir	            ❌ Lost
+    Persistent Volume	    ✅ Preserved
+    External Cache/DB	    ✅ Preserved
+
+
+    ✅ Ticket Booking Example (Strong interview closer)
+        “If my booking app stores user session and seat lock data inside the Pod, a restart would lose that data. So in production, 
+        I store sessions and cache in Redis so Pod restarts are transparent to users.”
+
+**************************************************************************************************************
+29. How would you design Spring Boot microservices in Kubernetes?
+    1) Service boundaries and responsibilities
+        API Gateway
+            Single entry point for clients (web/mobile).
+            Routes to /users, /bookings, /payments, /inventory.
+            Handles TLS termination, auth enforcement, rate limiting.
+
+        User Service
+            Signup/login/profile.
+            Issues/validates JWT (or integrates with Keycloak/OAuth).
+            Stores user data in its own DB.
+
+        Booking Service
+            Orchestrates booking flow: “create booking → reserve seats → initiate payment → confirm/cancel”.
+            Owns booking state machine: PENDING → CONFIRMED or CANCELLED/EXPIRED.
+
+        Inventory Service
+            Owns seat availability and seat locks.
+            Prevents overselling using DB constraints or locking strategy.
+
+        Payment Service
+            Talks to payment gateway.
+            Ensures idempotency: same payment request should not double-charge.
+            K8s angle: Each of these is its own Deployment (stateless) with its own Service (DNS-based discovery).
+
+    2) Stateless design (what must NOT live in Pods)
+        In Kubernetes, Pods can restart anytime, so don’t keep critical state in memory.
+            User sessions: don’t store in pod memory. Use JWT (stateless) or store sessions in Redis.
+            Seat locks: never keep only in-memory. Store locks in Redis with TTL or DB.
+            Booking status: store in Booking DB; never rely on cached state.
+        Result: if a Booking/Inventory pod restarts, users don’t lose their booking/lock.
+
+    3) Data ownership (DB per service)
+        User DB: users, roles, login metadata
+        Booking DB: bookings, booking_items, status, expiry timestamps
+        Inventory DB: events, seats, seat_status, reservations/locks
+        Payment DB: payment_intents, provider refs, status
+
+        Why interviewers like it: independent scaling + independent schema changes + fewer cross-service coupling issues.
+
+    4) Communication style (sync + async)
+        Synchronous (REST)
+            Gateway → all services (client calls)
+            Booking → Inventory (reserve/lock seats)
+            Booking → Payment (create payment intent)
+        Asynchronous (events) for reliability
+            Inventory emits SeatsReserved, SeatsReleased
+            Payment emits PaymentSucceeded, PaymentFailed
+            Booking consumes events to finalize booking
+
+        Why: avoids tight coupling and handles retries safely. If Payment is slow, Booking doesn’t block forever.
+
+    5) Resilience patterns (critical for booking/payment)
+        In Booking → Inventory/Payment calls:
+            Timeouts (don’t hang)
+            Retries with backoff (only for safe operations)
+            Circuit breaker (avoid cascading failures)
+            Bulkheads (separate thread pools for payment vs inventory)
+
+        Idempotency
+            POST /payments must accept an Idempotency-Key so retries don’t double-charge.
+            POST /bookings can use a client-generated request id to avoid duplicate bookings.
+
+    6) Kubernetes objects (mapped to your app)
+        API Gateway
+            Deployment + Service + Ingress (or Gateway API)
+            Often needs higher CPU and strict autoscaling.
+        Booking/Inventory/Payment/User
+            Deployment + Service (ClusterIP)
+            HPA for scale
+            ConfigMap/Secret for config
+        External dependencies
+            Redis (cache/locks) → managed preferred; if in-cluster then StatefulSet + PV
+            Kafka/RabbitMQ → managed preferred
+
+    7) Health probes (Actuator, per service)
+        Use Spring Boot Actuator:
+        Liveness: “Is the process alive?”
+            /actuator/health/liveness
+            If it fails → K8s restarts the container
+        Readiness: “Can this pod serve traffic now?”
+            /actuator/health/readiness
+            Only route traffic if it’s Ready
+
+        Examples
+            Booking readiness should fail if it can’t reach Booking DB (otherwise it will accept requests and fail).
+            Inventory readiness should consider Inventory DB + Redis (if Redis is used for seat locks).
+            Payment readiness should consider Payment DB + payment provider connectivity (or at least DNS/egress).
+
+    8) Config management (dev/stage/prod)
+        Same Docker image everywhere.
+            ConfigMap: URLs, feature flags, timeouts, log levels
+            Secrets: DB passwords, payment gateway keys, JWT signing keys
+
+            Example:
+                PAYMENT_PROVIDER_KEY in Secret
+                INVENTORY_LOCK_TTL_SECONDS in ConfigMap
+        This keeps deployments repeatable and secure.
+
+    9) Deployment strategy (rolling/canary) — booking-specific
+        Rolling update (default)
+            Good for backward-compatible changes (new endpoint, internal refactor).
+            Ensure readiness probes so traffic doesn’t hit half-started pods.
+        Canary / Blue-Green
+            Use for risky changes:
+                inventory lock algorithm change
+                payment flow change
+                DB schema changes affecting critical paths
+        Important rule for booking apps: Maintain backward compatibility between versions during rollout (schema + API).
+
+    10) Scaling strategy (HPA) — per service
+        API Gateway: scales on CPU/RPS quickly (spikes)
+        Inventory: scales with “search availability / seat hold” traffic (high during sales)
+        Booking: scales with checkout traffic
+        Payment: scales but protect provider limits (rate limiting + queue)
+        User: moderate scaling unless login spikes
+        Also use topology spread so replicas run across nodes/zones (node failure shouldn’t take down all replicas).
+
+    11) Security (very relevant)
+        Gateway validates JWT and forwards identity headers downstream (or services validate too).
+        RBAC: services only get the K8s permissions they need (often none).
+        NetworkPolicy: only allow:
+        Gateway → services
+        Booking → Inventory/Payment
+        Services → DB/Redis/Kafka
+        Secrets never in images or Git.
+
+    12) Observability (how you debug production issues)
+        Central logs (stdout → ELK/Cloud logging)
+        Metrics (Micrometer → Prometheus/Grafana)
+        booking success rate, payment latency, inventory lock failures
+        Tracing (OpenTelemetry)
+        trace ID from Gateway → Booking → Inventory/Payment
+        helps debug “why booking failed” across services
+        Interview line: “One booking request should be traceable end-to-end with a single traceId.”
+
+    13) Consistency & preventing oversell (inventory focus)
+        Options:
+            DB-level constraints (seat row locked / unique constraint per seat per show)
+            Redis lock with TTL for temporary holds
+            Lock expiry: seats return automatically if payment not completed in X minutes
+            Booking service runs a saga:
+            Reserve seats → Start payment → Confirm seats → Confirm booking
+            On failure → release seats
+
+    A strong 60-second version you can speak
+
+    “I split the ticket booking system into Gateway, Booking, Inventory, Payment, and User services. Each runs as a stateless Spring Boot 
+    Deployment on Kubernetes, with state stored in per-service databases and Redis for sessions/seat locks. Booking orchestrates the 
+    saga—reserves seats via Inventory, creates a payment intent via Payment, and finalizes on success events. I use Actuator 
+    readiness/liveness probes, ConfigMaps/Secrets for environment config, HPA for scaling, and safe rollout strategies like rolling by 
+    default and canary for risky payment/inventory changes. Finally, I ensure end-to-end observability with metrics and tracing so a 
+    single booking can be tracked across all services.”
+
+***************************************************************************************************************************************************
+30. How would you design Kafka consumers in Kubernetes?
+
+    Kafka Consumer Design in Kubernetes (Theory):
+
+    1. Architecture:
+        Each Kafka consumer instance runs inside a container (pod) managed by Kubernetes.
+        Consumers are grouped by a consumer group ID; each instance processes a subset of Kafka topic partitions.
+        Spring Boot can be used to implement the consumer logic, leveraging the @KafkaListener annotation.
+
+    2. Scaling:
+        Kubernetes Deployment manages the number of consumer replicas (pods).
+        Increasing replicas allows more parallel processing, but the number of consumers should not exceed the number of topic partitions (otherwise, some consumers will be idle).
+        Scaling is achieved by updating the replica count in the Deployment manifest.
+
+    3. Fault Tolerance:
+        If a pod fails or a node crashes, Kubernetes automatically restarts the pod on a healthy node.
+        Kafka rebalances partition assignments among available consumers in the group.
+        This ensures continuous message processing and high availability.
+
+    4. Resource Management:
+        Each pod specifies resource requests and limits (CPU, memory) to ensure fair allocation and prevent resource exhaustion.
+        Proper sizing prevents OOM kills and ensures stable operation.
+
+    5. Configuration:
+        Consumer properties (bootstrap servers, group ID, offset reset, concurrency) are set via environment variables or config files.
+        Sensitive data (e.g., credentials) can be managed using Kubernetes Secrets.
+    
+    6. Health Checks:
+        Readiness and liveness probes are configured so Kubernetes only routes traffic to healthy pods and restarts unhealthy ones.
+        Spring Boot Actuator endpoints are commonly used for these probes.
+
+    7. Graceful Shutdown:
+        When a pod is terminated (e.g., during deployment or scaling), Kubernetes signals the container to shut down.
+        The consumer should finish processing in-flight messages and commit offsets before exiting.
+        Spring Boot supports graceful shutdown, ensuring no message loss.
+
+    8. Error Handling:
+        Consumers should handle deserialization errors, processing failures, and commit errors.
+        Failed messages can be sent to a dead-letter topic for later analysis.
+
+    9. Observability:
+        Logging, metrics, and tracing are integrated for monitoring consumer health and performance.
+        Tools like Prometheus and Grafana can be used for visualization.
+
+    Summary Table:
+    Aspect	                    Description
+    Architecture	        Consumers run as pods, grouped by consumer group, process topic partitions
+    Scaling	                Managed by Deployment replicas, limited by partition count
+    Fault Tolerance	        Automatic pod restart, partition reassignment, high availability
+    Resource Mgmt	        Requests/limits for CPU/memory, prevents resource exhaustion
+    Configuration	        Environment variables, config files, secrets
+    Health Checks	        Readiness/liveness probes, Actuator endpoints
+    Graceful Shutdown	    Finish in-flight messages, commit offsets, prevent message loss
+    Error Handling	        Handle failures, dead-letter topic for problematic messages
+    Observability	        Logging, metrics, tracing, monitoring tools
+
+********************************************************************************************************************************
+31. How would you design DB connections inside Kubernetes?
