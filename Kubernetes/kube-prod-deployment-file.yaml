@@ -96,7 +96,7 @@ spec:
 
       containers:
         - name: booking-service
-          image: 336042380202.dkr.ecr.us-east-1.amazonaws.com/dev/booking-service:latest
+          image: booking-service:latest
           imagePullPolicy: Always
 
           ports:
