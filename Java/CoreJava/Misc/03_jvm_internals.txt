@@ -1,0 +1,323 @@
+1. JVM Internals (Very Important)
+    1. Explain JVM architecture in detail.
+    2. How class loading works internally?
+    3. What is ClassLoader hierarchy?
+    4. What is Metaspace vs PermGen?
+    5. How JIT compiler optimizes code?
+    6. What is escape analysis?
+    7. What is biased locking?
+    8. What is lock coarsening and lock elimination?
+    9. How JVM handles method inlining?
+    10. What happens when OutOfMemoryError occurs?
+
+****************************************************************************************************************************
+1. Explain JVM architecture in detail.
+    Main Components
+        1. Class Loader Subsystem
+        2. Runtime Data Areas (Memory)
+        3. Execution Engine
+        4. Native Method Interface (JNI)
+        5. Native Libraries
+
+    1️⃣ Class Loader Subsystem
+        It loads your compiled Java code (.class file) into JVM so it can run.
+        Think:  .java → compile → .class → Class Loader → JVM runs it
+        🔹 What is “Converts into runtime structure”?
+            It means:
+            JVM reads .class file (bytecode)
+            Creates an internal object called Class object
+            Stores it in memory so JVM can use it during execution
+
+        🔹 What is Parent Delegation Model? (Most Asked Interview Point)
+            👉 Before loading any class, JVM asks parent class loader first.
+            Example Flow:
+
+            Application ClassLoader
+            ↓ ask
+            Extension ClassLoader
+            ↓ ask
+            Bootstrap ClassLoader
+
+            ✅ Why?
+            Security (core Java classes can’t be replaced)
+            Avoid duplicate class loading
+            Example:
+            You cannot override java.lang.String — Bootstrap loads it first.
+
+        🔹 What are the 3 Main Phases?
+        🟢 1. Loading
+            JVM reads .class file
+            Creates Class object in memory
+
+        🟡 2. Linking
+            3 sub-steps:
+            Verify → Check bytecode is safe
+            Prepare → Allocate memory for static variables
+            Resolve → Replace symbolic references with real memory references
+
+        🔵 3. Initialization
+            Runs static blocks
+            Assigns static variable values
+
+            Example:
+            static int x = 10;
+            static { System.out.println("Loaded"); }
+
+    2️⃣ Runtime Data Areas (Memory)
+    Defines how JVM memory is organized during execution — mainly Heap, Method Area (Metaspace), Stack, PC Register, Native Stack. 
+    Heap and Method Area are shared across threads, while Stack and PC Register are thread-specific.
+
+    3️⃣ Execution Engine
+    Executes bytecode using Interpreter + JIT Compiler. Interpreter runs code line-by-line initially, while JIT compiles frequently used 
+    code into native machine code for performance. Also includes Garbage Collector for automatic memory cleanup.
+
+    4️⃣ Native Method Interface (JNI)
+    Acts as a bridge between Java and native languages like C/C++. Enables Java to call OS-level or hardware-specific native libraries 
+    when functionality isn’t available in Java.
+
+    5️⃣ Native Libraries
+    Platform-specific compiled libraries (.dll, .so) used by native methods. JVM loads these libraries via JNI when Java programs 
+    need low-level system interaction.
+
+    JVM Execution Flow (End-to-End)
+        .java → Compiler → .class (Bytecode) → Class Loader → Runtime Memory → Execution Engine → Native / Machine Execution
+
+
+******************************************************************************************************************************************
+2. How class loading works internally?
+Refer image for understanding the flow : Java/CoreJava/Misc/302_class_loading_process.png
+
+The Bootstrap loader is the first loader that kicks-in first.
+
+******************************************************************************************************************************************
+3. What is ClassLoader hierarchy?
+    1. The JVM uses a hierarchy of class loaders to load classes.
+    2. Each class loader has a parent, forming a tree-like structure.
+    3. The hierarchy follows the parent delegation model: a class loader delegates the loading request to its parent before attempting to load the class itself.
+    4. The main class loaders in the hierarchy are:
+    5. Bootstrap ClassLoader (root, implemented in native code)
+    6. Extension (Platform) ClassLoader (child of Bootstrap)
+    7. Application (System) ClassLoader (child of Extension)
+    8. Custom ClassLoader (user-defined, child of Application or another custom loader)
+
+    Class Loader Hierarchy Diagram:
+
+    Custom ClassLoader
+    ↑
+    Application (System) ClassLoader
+    ↑
+    Extension (Platform) ClassLoader
+    ↑
+    Bootstrap ClassLoader
+
+    Summary Table : 
+
+        | Class Loader                     | Parent Loader               | Loads From                              |
+        | -------------------------------- | --------------------------- | --------------------------------------- |
+        | Bootstrap ClassLoader            | None (root)                 | JDK core libraries (e.g., java.lang.*)  |
+        | Extension (Platform) ClassLoader | Bootstrap ClassLoader       | JDK extensions (lib/ext or modules)     |
+        | Application (System) ClassLoader | Extension ClassLoader       | Application classpath                   |
+        | Custom ClassLoader               | Application or other loader | User-defined sources (network, DB, etc) |
+
+******************************************************************************************************************************************
+4. What is Metaspace vs PermGen?
+
+    PermGen (Permanent Generation):
+        Used in JVM before Java 8.
+        Stores class metadata, static fields, interned strings.
+        Fixed size; can cause java.lang.OutOfMemoryError: PermGen space if exceeded.
+        Managed by JVM heap.
+
+    Metaspace:
+        Introduced in Java 8, replaces PermGen.
+        Stores class metadata outside JVM heap, in native memory.
+        Grows dynamically (limited by system memory unless max size is set).
+        Reduces OutOfMemoryError risk for class metadata.
+        
+    | Feature    | PermGen (Java ≤7)         | Metaspace (Java ≥8)         |
+    | ---------- | ------------------------- | --------------------------- |
+    | Location   | JVM heap                  | Native memory (OS)          |
+    | Size       | Fixed, configurable       | Dynamic, configurable max   |
+    | Error      | OutOfMemoryError: PermGen | OutOfMemoryError: Metaspace |
+    | Management | JVM                       | OS, JVM                     |
+
+
+******************************************************************************************************************************************
+
+
+5. How JIT compiler optimizes code?
+    1. The JVM starts by interpreting bytecode.
+    2. The JIT (Just-In-Time) compiler monitors code execution and identifies "hot spots" (frequently executed code).
+    3. When a method or loop is executed often, the JIT compiles it to native machine code.
+    4. The JIT applies optimizations during compilation:
+        Inlining: Replaces method calls with method bodies.
+        Loop unrolling: Expands loops to reduce overhead.
+        Dead code elimination: Removes code that is never executed.
+        Constant folding: Computes constant expressions at compile time.
+        Escape analysis: Allocates objects on the stack if they do not escape the method.
+        Method devirtualization: Converts virtual calls to direct calls when possible.
+    5. The optimized native code is cached and reused for subsequent executions.
+    6. The JVM can recompile code with more aggressive optimizations if usage patterns change.
+
+******************************************************************************************************************************************
+
+6. What is escape analysis?
+
+    Escape analysis is a JVM JIT optimization that determines if an object created inside a method escapes the method/thread.
+    If the object does not escape, JVM can:
+    Allocate it on the stack (not heap), reducing GC pressure.
+    Remove unnecessary synchronization if the object is thread-local.
+    Example: Create an object inside a method and use it only within that method (no escape).
+    Show how JVM can optimize such code.
+
+    // Example demonstrating escape analysis
+    public class EscapeAnalysisExample {
+
+        static class Point {
+            int x, y;
+
+            Point(int x, int y) { this.x = x; this.y = y; }
+        }
+
+        // This method creates a Point object that does not escape
+        public int compute() {
+            Point p = new Point(1, 2); // May be stack-allocated
+            return p.x + p.y;
+        }
+
+        public static void main(String[] args) {
+            EscapeAnalysisExample ex = new EscapeAnalysisExample();
+            for (int i = 0; i < 1000000; i++) {
+                ex.compute();
+            }
+        }
+    }
+
+    In the above, the Point object in compute() does not escape the method.
+    JVM may optimize by allocating Point on the stack, not the heap, so no garbage collection is needed for it.
+    If you add code that returns p or stores it in a field, the object escapes and this optimization cannot be applied.
+
+
+******************************************************************************************************************************************
+7. What is biased locking?
+    Imagine a Java object is like a room, and threads are like people trying to enter the room. Normally, to enter, every person must go 
+    through a security check (this is normal synchronization locking). This check takes time and system resources.
+
+    Now JVM observes something interesting — sometimes only one thread keeps entering the same room again and again. Doing a full security 
+    check every time is wasteful. So JVM introduces Biased Locking.
+
+    In biased locking, when the first thread enters the room, JVM says: “Okay, this room mostly belongs to you.” It marks the object 
+    internally with that thread’s ID (in the object header / mark word). Next time when the same thread comes, it doesn’t need to do 
+    locking again — it directly enters. This makes execution very fast because no lock competition or CAS operation is needed.
+
+    But what if another thread suddenly wants to enter the same room? JVM then realizes the room is no longer single-threaded. 
+    It revokes the bias, meaning it removes that special ownership and converts the lock into normal locking 
+    (lightweight or heavyweight depending on contention). From then on, all threads must follow normal synchronization rules.
+
+    In modern JVM versions, biased locking was removed because CPU architectures and JVM optimizations improved, and the 
+    cost-benefit of biased locking reduced in real-world multi-threaded workloads.
+
+
+******************************************************************************************************************************************
+8. What is lock coarsening and lock elimination?
+    🔹 1️⃣ Lock Coarsening
+            JVM combines multiple small synchronized blocks into one bigger lock.
+
+            ✔ Why?
+            Repeated lock acquire/release is costly.
+            Better to hold one lock for longer than acquire many times.
+            ✔ Example Concept
+            Instead of:
+            lock → unlock → lock → unlock → lock → unlock
+
+            JVM converts to:
+            lock → work → work → work → unlock
+
+            ✔ Benefit
+            Reduces synchronization overhead.
+            Improves performance in loop or repeated sync scenarios.
+
+    🔹 2️⃣ Lock Elimination
+            JVM removes locks completely if it detects lock is not needed.
+            ✔ How?
+            Uses Escape Analysis.
+            If object is used only inside one thread → Lock is useless → Removed.
+            ✔ Example Concept
+            If object never leaves method → No multi-thread access → No sync needed.
+
+            Lock Coarsening — code example
+            ✅ Pattern: many small synchronized blocks in a loop
+            public class LockCoarseningDemo {
+                private final Object lock = new Object();
+                private int counter = 0;
+
+                public void work() {
+                    for (int i = 0; i < 1000; i++) {
+                        synchronized (lock) {     // repeated lock/unlock
+                            counter++;
+                        }
+                    }
+                }
+            }
+
+            What JIT may do internally (conceptually)
+            It may “coarsen” to something like:
+
+            public void work_coarsened() {
+                synchronized (lock) {             // single lock for whole loop
+                    for (int i = 0; i < 1000; i++) {
+                        counter++;
+                    }
+                }
+            }
+            When it helps: repeated locking on the same lock with no blocking points between.
+
+            2) Lock Elimination — code example
+            ✅ Pattern: synchronized on an object that never escapes the method (thread-local)
+            public class LockEliminationDemo {
+                public String build() {
+                    StringBuffer sb = new StringBuffer(); // StringBuffer methods are synchronized
+                    sb.append("Hello");
+                    sb.append(" ");
+                    sb.append("World");
+                    return sb.toString();
+                }
+            }
+
+            Why lock elimination can happen
+            sb is created inside the method and never shared with other threads.
+            JIT uses escape analysis to prove it’s thread-local.
+            Then it can remove the internal locks from StringBuffer.append() calls.
+
+******************************************************************************************************************************************
+9. How JVM handles method inlining?
+    JVM method inlining replaces method calls with actual method code for frequently executed small methods. 
+    It reduces call overhead and enables further JIT optimizations.
+
+    🔹 1. What is Method Inlining?
+        JIT replaces a method call with the actual method body.
+        Removes method call overhead → Improves performance.
+
+    🔹 2. When JVM Decides to Inline?
+        JIT considers:
+        Method is small (few bytecode instructions).
+        Method is frequently called (Hot method).
+        Method is final / static / private (easy to predict target).
+        No complex polymorphism (or predictable call site).
+
+    🔹 3. How JVM Does It Internally?
+        Instead of:
+        result = add(a, b);
+
+        JIT converts to:
+        result = a + b;
+
+        No stack frame creation → Faster execution.
+
+******************************************************************************************************************************************
+10. What happens when OutOfMemoryError occurs?
+    When memory allocation fails, JVM first attempts GC, and if memory is still insufficient, it throws OutOfMemoryError. 
+    It is a fatal error and usually indicates memory leak, insufficient memory, or configuration issue.
+
+******************************************************************************************************************************************
+
