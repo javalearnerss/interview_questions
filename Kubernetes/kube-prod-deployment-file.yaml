@@ -1,21 +1,3 @@
-Below is a production-style Kubernetes Deployment setup (not just basic YAML).
-This includes what real production deployments usually have:
-
-✅ Resource limits
-✅ Health probes
-✅ Security context
-✅ Rolling updates
-✅ ConfigMap + Secret usage
-✅ Proper labels
-✅ Pod disruption safety
-✅ Container port exposure
-✅ Env config
-✅ Graceful shutdown
-✅ Image pull policy
-✅ Readiness + Liveness tuned
-
-
-
 # ===========================
 # Booking Service - Production Manifest (Single File)
 # Includes: Namespace, ConfigMap, Secret, Service, Deployment, PDB, HPA
@@ -26,29 +8,35 @@ This includes what real production deployments usually have:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: booking
+  name: booking                # Logical isolation for all booking service resources
+
 ---
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: booking-service-config
   namespace: booking
 data:
-  SERVER_PORT: "8051"
-  INVENTORY_BASE_URL: "http://inventory-service:8080"
+  SERVER_PORT: "8051"          # Application server port inside container
+  INVENTORY_BASE_URL: "http://inventory-service:8080"   # Internal service communication URL
   USER_BASE_URL: "http://user-management-service:8080"
   PAYMENT_BASE_URL: "http://payment-service:8080"
+
 ---
+
 apiVersion: v1
 kind: Secret
 metadata:
   name: booking-service-secret
   namespace: booking
-type: Opaque
+type: Opaque                    # Generic secret type
 stringData:
-  DB_PASSWORD: "replace-me"
-  JWT_SECRET: "replace-me"
+  DB_PASSWORD: "replace-me"     # Database password (base64 encoded automatically)
+  JWT_SECRET: "replace-me"      # JWT signing secret
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -57,14 +45,16 @@ metadata:
   labels:
     app: booking-service
 spec:
-  type: ClusterIP
+  type: ClusterIP               # Internal cluster-only service exposure
   selector:
-    app: booking-service
+    app: booking-service        # Routes traffic to pods with this label
   ports:
     - name: http
-      port: 8080
-      targetPort: 8051
+      port: 8080                # Service port inside cluster
+      targetPort: 8051          # Container port traffic is forwarded to
+
 ---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -74,37 +64,42 @@ metadata:
     app: booking-service
     tier: backend
 spec:
-  replicas: 3
+  replicas: 3                   # Desired number of running pods
+
   strategy:
-    type: RollingUpdate
+    type: RollingUpdate         # Zero-downtime deployment strategy
     rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 1
+      maxUnavailable: 1         # Max pods unavailable during update
+      maxSurge: 1               # Extra pods allowed above replica count during update
+
   selector:
     matchLabels:
-      app: booking-service
+      app: booking-service      # Must match pod template labels
+
   template:
     metadata:
       labels:
         app: booking-service
         tier: backend
+
     spec:
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: 30   # Time given for graceful shutdown before force kill
+
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
+        runAsNonRoot: true                # Prevent container from running as root user
+        runAsUser: 1000                   # Run container process as Linux UID 1000
 
       containers:
         - name: booking-service
-          image: booking-service:latest
-          imagePullPolicy: Always
+          image: booking-service:latest   # Container image
+          imagePullPolicy: Always         # Always pull latest image (common in dev/CI, less in prod)
 
           ports:
             - name: app
-              containerPort: 8051
+              containerPort: 8051         # Container listening port
 
           env:
-            - name: SERVER_PORT
+            - name: SERVER_PORT           # Explicit mapping of critical config variable
               valueFrom:
                 configMapKeyRef:
                   name: booking-service-config
@@ -112,54 +107,58 @@ spec:
 
           envFrom:
             - configMapRef:
-                name: booking-service-config
+                name: booking-service-config   # Import all config map keys as environment variables
             - secretRef:
-                name: booking-service-secret
+                name: booking-service-secret  # Import all secrets as environment variables
 
           resources:
             requests:
-              memory: "512Mi"
-              cpu: "250m"
+              memory: "512Mi"            # Minimum memory guaranteed for container scheduling
+              cpu: "250m"                # Minimum CPU guaranteed (0.25 core)
             limits:
-              memory: "1Gi"
-              cpu: "500m"
+              memory: "1Gi"              # Max memory container can use (OOMKill if exceeded)
+              cpu: "500m"                # Max CPU allowed (throttled if exceeded)
 
           readinessProbe:
             httpGet:
-              path: /actuator/health/readiness
+              path: /actuator/health/readiness   # Checks if app is ready to serve traffic
               port: 8051
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 5
+            initialDelaySeconds: 30       # Wait before first readiness check (startup time buffer)
+            periodSeconds: 10             # Check every 10 seconds
+            timeoutSeconds: 5             # Fail if no response within 5 seconds
+            failureThreshold: 5           # After 5 failures pod marked NotReady (removed from traffic)
 
           livenessProbe:
             httpGet:
-              path: /actuator/health/liveness
+              path: /actuator/health/liveness    # Checks if app is alive (not stuck or deadlocked)
               port: 8051
-            initialDelaySeconds: 60
-            periodSeconds: 15
-            timeoutSeconds: 5
-            failureThreshold: 5
+            initialDelaySeconds: 60       # Wait longer before liveness checks to avoid early restarts
+            periodSeconds: 15             # Check every 15 seconds
+            timeoutSeconds: 5             # Fail if endpoint doesn't respond in time
+            failureThreshold: 5           # Restart container after 5 consecutive failures
 
           startupProbe:
             httpGet:
-              path: /actuator/health
+              path: /actuator/health      # Used only during application startup phase
               port: 8051
-            failureThreshold: 30
-            periodSeconds: 10
+            failureThreshold: 30          # Allows up to 30 failures during startup
+            periodSeconds: 10             # Checked every 10 seconds → allows ~5 minutes startup time
+
 ---
+
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: booking-service-pdb
   namespace: booking
 spec:
-  minAvailable: 2
+  minAvailable: 2                         # At least 2 pods must be available during voluntary disruptions
   selector:
     matchLabels:
       app: booking-service
+
 ---
+
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -170,12 +169,14 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: booking-service
-  minReplicas: 3
-  maxReplicas: 10
+
+  minReplicas: 3                          # Minimum pods always running
+  maxReplicas: 10                         # Maximum pods autoscaler can scale to
+
   metrics:
     - type: Resource
       resource:
-        name: cpu
+        name: cpu                         # Scale based on CPU utilization
         target:
           type: Utilization
-          averageUtilization: 70
+          averageUtilization: 70          # Target average CPU usage across pods = 70%

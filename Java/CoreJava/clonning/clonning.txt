@@ -1,0 +1,129 @@
+Cloneable Interview Questions in Java
+🔹 Basic Cloneable Questions
+
+What is cloning in Java?
+
+What is Cloneable interface?
+
+Is Cloneable a marker interface?
+
+What happens if you call clone() without implementing Cloneable?
+
+Which class provides clone() method?
+
+What is Object.clone() method signature?
+
+Difference between cloning and copy constructor?
+
+Is cloning shallow copy or deep copy by default?
+
+Why clone() method is protected in Object class?
+
+How do you make clone() public?
+
+🔹 Intermediate Level Questions
+
+What is shallow copy?
+
+What is deep copy?
+
+How do you implement deep copy manually?
+
+What happens if object has reference fields?
+
+How arrays behave in cloning?
+
+Can immutable objects be cloned?
+
+What exceptions clone() throws?
+
+Why Cloneable interface does not have clone() method?
+
+How to clone collections?
+
+Can we override clone()?
+
+🔹 Advanced / Senior Level Questions
+
+Why Cloneable is considered broken design by many developers?
+
+Problems with Cloneable interface design.
+
+Why copy constructors or builders are preferred today?
+
+How cloning impacts performance?
+
+How cloning behaves in inheritance hierarchy?
+
+How to clone object with final fields?
+
+How to prevent cloning of object?
+
+How Singleton class prevents cloning?
+
+How to implement thread-safe cloning?
+
+When should you avoid cloning completely?
+
+🔹 Scenario-Based Questions (Important)
+
+👉 Class contains List of objects — how will you deep clone?
+
+👉 If parent class is Cloneable but child is not — what happens?
+
+👉 If child class is Cloneable but parent is not — what happens?
+
+👉 How do you clone object graph?
+
+👉 If object contains DB connection — should you clone?
+
+🔹 Tricky / Trap Questions
+
+⚡ Does Cloneable have methods?
+👉 No — marker interface
+
+⚡ Does clone() call constructor?
+👉 No
+
+⚡ Can we clone String?
+👉 Not needed (immutable)
+
+⚡ Can we clone enum?
+👉 No (not allowed)
+
+⚡ Is clone faster than new object creation?
+👉 Not always — depends on implementation
+
+🔹 Coding Questions (Very Common)
+1️⃣ Basic Clone Example
+
+Implement clone for simple class
+
+2️⃣ Deep Copy Example
+
+Clone object with nested objects
+
+3️⃣ Prevent Cloning
+
+Throw CloneNotSupportedException
+
+4️⃣ Clone Singleton Safely
+
+Return same instance
+
+🔹 Real Interview Discussion Points
+
+✔ Why Java designers made Cloneable marker interface
+✔ Why clone() is controversial
+✔ Alternatives to cloning in modern Java
+✔ Serialization-based deep copy vs cloning
+✔ Frameworks rarely use Cloneable — why?
+
+⭐ Must Know for Interviews (If Short Time)
+
+Focus on:
+✅ Shallow vs Deep copy
+✅ Cloneable marker interface concept
+✅ clone() method rules
+✅ Why clone is discouraged
+✅ Copy constructor vs cloning

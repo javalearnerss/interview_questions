@@ -1,0 +1,138 @@
+Immutability Interview Questions in Java
+🔹 Basic Immutability Questions
+
+What is an immutable object?
+
+Why immutable objects are important in Java?
+
+Give examples of immutable classes in Java.
+
+Why String is immutable?
+
+How immutability helps in multi-threading?
+
+Difference between immutable and unmodifiable object?
+
+How do you check if a class is immutable?
+
+Can immutable object have mutable fields?
+
+Is final class always immutable?
+
+Is final variable always immutable?
+
+🔹 Designing Immutable Class Questions
+
+Steps to create immutable class?
+
+Why class should be final for immutability?
+
+Why fields should be private and final?
+
+Why no setters in immutable class?
+
+Why defensive copy is required?
+
+How to handle mutable fields (Date, List, Map)?
+
+How do you ensure immutability in inheritance?
+
+Can immutable class implement Serializable?
+
+Can immutable class be cloneable?
+
+How builder pattern helps immutability?
+
+🔹 Intermediate Questions
+
+What is defensive copying?
+
+Deep copy vs defensive copy difference?
+
+How immutability improves caching?
+
+How immutability improves security?
+
+How immutability helps in HashMap keys?
+
+How immutability helps in safe publishing?
+
+Can immutable object be lazily initialized?
+
+What is value object concept?
+
+How Optional relates to immutability conceptually?
+
+What is persistent data structure concept?
+
+🔹 Advanced / Senior Level Questions
+
+How JVM optimizes immutable objects?
+
+How immutability helps in lock-free programming?
+
+How immutability helps in functional programming?
+
+Tradeoffs of immutability (memory vs safety)?
+
+How to design high performance immutable objects?
+
+Immutability vs copy-on-write collections?
+
+How record classes (Java 16+) support immutability?
+
+How immutability works in distributed systems?
+
+How to maintain backward compatibility in immutable class?
+
+How serialization impacts immutable objects?
+
+🔹 Scenario-Based Questions (Very Important)
+
+👉 You have immutable class with List field — how will you protect it?
+
+👉 Immutable class but contains Date field — what will you do?
+
+👉 Can immutable object be partially initialized?
+
+👉 How do you update immutable object values?
+
+👉 Immutable object in cache — benefits?
+
+👉 How do you design thread-safe configuration object?
+
+🔹 Tricky / Trap Questions
+
+⚡ Is String fully immutable?
+👉 Yes (from external modification perspective)
+
+⚡ Is immutability same as read-only?
+👉 No (read-only view may still reflect changes)
+
+⚡ Can immutable class have mutable collections?
+👉 Yes, but must return defensive copies
+
+⚡ Is enum immutable?
+👉 Yes
+
+⚡ Can immutable object be serialized safely?
+👉 Yes (usually safest)
+
+🔹 Coding Questions (Common in Interviews)
+
+Write custom immutable class.
+
+Immutable class with mutable collection field.
+
+Immutable class with Date field.
+
+Convert mutable class to immutable.
+
+⭐ Must Know If Interview is Near
+
+Focus on:
+✅ How to create immutable class
+✅ Defensive copying
+✅ Why String immutable
+✅ Immutability + thread safety
+✅ Immutability + HashMap keys

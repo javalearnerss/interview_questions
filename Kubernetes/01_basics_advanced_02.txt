@@ -1,0 +1,312 @@
+Workload Management
+16. What is the difference between:
+    Deployment
+    StatefulSet
+    DaemonSet
+    Job
+    CronJob
+
+17. When would you use StatefulSet?
+18. What is rolling update and rollback?
+19. What is liveness probe vs readiness probe vs startup probe?
+
+Networking
+20. How does Kubernetes networking work?
+21. What is CNI?
+22. What is Ingress?
+23. Difference between Ingress and LoadBalancer Service?
+
+Storage
+24. What is Persistent Volume (PV)?
+25. What is Persistent Volume Claim (PVC)?
+26. What is StorageClass?
+27. Difference between static vs dynamic provisioning?
+
+Scaling
+28. What is HPA (Horizontal Pod Autoscaler)?
+29. What is VPA?
+30. What is Cluster Autoscaler?
+
+
+
+****************************************************************************************************************************************
+24. What is Persistent Volume (PV)?
+
+    Persistent Volume (PV) in Kubernetes:
+       1. A Persistent Volume (PV) is a piece of storage in the cluster that has been provisioned by an administrator or dynamically 
+        provisioned using Storage Classes.
+       2.  PVs are independent of the lifecycle of pods; data stored in a PV remains even if the pod using it is deleted or restarted.
+       3.  PVs can be backed by different storage types: local disk, NFS, cloud block storage (AWS EBS, Azure Disk, GCE PD), etc.
+
+    How it works:
+        A PersistentVolume (PV) is a cluster resource that represents a storage volume.
+        A PersistentVolumeClaim (PVC) is a request for storage by a user/application.
+        Kubernetes binds a PVC to a suitable PV, and the pod mounts the PVC to access the storage.
+
+    Purpose:
+        Provides durable, persistent storage for stateful applications (e.g., databases, file storage, logs).
+        Decouples storage management from pod lifecycle.
+
+pv.yaml
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: my-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data
+
+pvc.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+Pod Using PVC
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-app
+spec:
+  containers:
+    - name: app
+      image: my-app-image
+      volumeMounts:
+        - mountPath: /data
+          name: my-storage
+  volumes:
+    - name: my-storage
+      persistentVolumeClaim:
+        claimName: my-pvc
+
+    ******* Summary *******
+    Resource — Purpose
+    PersistentVolume → Actual storage resource in the cluster
+    PVC → User/application request for storage
+    StorageClass → Defines how storage is dynamically provisioned
+
+    Example 
+        Where to use Persistent Volume in Inventory Service:
+
+        1. Storing File Uploads or Attachments:
+        If the inventory service allows uploading files (e.g., seat maps, event images), use a PV to persist these files so they survive pod restarts.
+
+        2. Persisting Application Logs:
+        Mount a PV to a log directory (e.g., /var/log/inventory) to retain logs for troubleshooting, even if the pod is deleted or rescheduled.
+
+        3. Caching or Temporary Data that Must Survive Restarts:
+        If the service generates reports or exports that need to be available after restarts, store them on a PV.
+
+        4. Embedded Database (Not Recommended for Production):
+        If using a local database (e.g., SQLite for dev/testing), store the DB file on a PV to persist data.
+
+***********************************************************************************************************************
+25. What is Persistent Volume Claim (PVC)?
+
+    A PersistentVolumeClaim in Kubernetes is a request for persistent storage by a pod.
+
+    A PersistentVolumeClaim (PVC) in Kubernetes is a user/application request for storage resources. 
+    It acts as an abstraction that allows pods to request and use persistent storage without knowing the underlying storage details.
+        1. A PVC specifies the desired size, access mode (e.g., ReadWriteOnce), and optionally a storage class.
+        2. Kubernetes matches the PVC to a suitable PersistentVolume (PV) that meets the requirements.
+        3. Once bound, the PVC can be mounted as a volume in a pod, providing persistent storage that survives pod restarts or rescheduling.
+
+******** PVC Sample YAML ********
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+
+  Once upon a time, an Inventory Service needed storage to save product stock data.
+
+    The service filled a request form (PVC) saying:
+    👉 “I need 50GB storage.”
+
+    But the system asked:
+    👉 “Do you want normal storage or high-speed SSD storage?”
+
+    That choice was StorageClass.
+    The inventory team selected Fast SSD StorageClass, and Kubernetes automatically created a disk and attached it to the inventory pod.
+    So:
+    PVC = Asking for storage
+    StorageClass = Choosing storage type
+    PV = Actual storage created
+
+*********************************************************************************************************************
+26. What is StorageClass?
+    • StorageClass:
+    A StorageClass in Kubernetes tells the cluster how to create storage (like disks) for your apps automatically.
+
+    • Why use it?
+    It lets Kubernetes create the right kind of storage for your PersistentVolumeClaim (PVC) without manual setup.
+
+• Example StorageClass YAML:
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast
+provisioner: kubernetes.io/aws-ebs
+
+
+• How to use in a PVC:
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: fast
+
+
+******************************************************************************************************************
+27. Difference between static vs dynamic provisioning?
+    Static Provisioning:
+        Cluster admin manually creates PersistentVolumes (PVs) ahead of time.
+        Users create PersistentVolumeClaims (PVCs) that bind to these pre-existing PVs.
+        Admin must manage PV lifecycle and capacity.
+
+    Dynamic Provisioning:
+        Users create PVCs that specify a StorageClass.
+        Kubernetes automatically creates (provisions) a matching PV using the StorageClass and a storage provisioner.
+        No manual PV management needed; storage is created on demand.
+
+    Summary Table :
+
+    | Aspect              | Static Provisioning                  | Dynamic Provisioning                |
+    | ------------------- | ------------------------------------ | ----------------------------------- |
+    | Who creates PV      | Admin (manually)                     | Kubernetes (automatically)          |
+    | When PV is created  | Before PVC is created                | When PVC is created                 |
+    | StorageClass needed | Optional                             | Required                            |
+    | Use case            | Legacy/manual control, special cases | Most modern, cloud-native workloads |
+    | Admin effort        | Higher (manual PV management)        | Lower (automatic, on-demand)        |
+
+******************************************************************************************************************
+
+28. What is HPA (Horizontal Pod Autoscaler)?
+
+    HPA (Horizontal Pod Autoscaler):
+        1. HPA is a Kubernetes resource that automatically scales the number of pod replicas in a Deployment, StatefulSet, or ReplicaSet based 
+            on observed metrics (like CPU or memory usage).
+        2. HPA monitors metrics (e.g., average CPU utilization) and increases or decreases the number of pods to match demand.
+
+    With respect to Inventory Service in Ticket Booking Application:
+        1. The inventory service handles requests such as checking seat availability, updating inventory after bookings, etc.
+        2. During high demand (e.g., ticket sales opening), request load may spike.
+        3. HPA can automatically increase the number of inventory service pods to handle more traffic, ensuring low latency and high availability.
+        4. When demand drops, HPA reduces the number of pods to save resources.
+
+    Typical HPA Configuration Example:
+    Target: Keep average CPU usage at 50%.
+    Min pods: 2, Max pods: 10.
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: inventory-service-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: inventory-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
+
+******************************************************************************************************************
+29. What is VPA?
+    VPA (Vertical Pod Autoscaler):
+        VPA automatically adjusts the CPU and memory resource requests/limits for pods based on their actual usage.
+        It helps ensure pods have enough resources to run efficiently, without over- or under-provisioning.
+        VPA can recommend, update, or automatically apply new resource values to pods.
+        Unlike HPA (which changes the number of pod replicas), VPA changes the resources assigned to each pod.
+
+    How it works:
+        VPA monitors pod resource usage over time.
+        It provides recommendations or updates the pod spec with new resource requests/limits.
+        When resource values are updated, pods are restarted to apply the new settings.
+
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: inventory-service-vpa
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: inventory-service
+  updatePolicy:
+    updateMode: "Auto"   # Can be "Off", "Initial", or "Auto"
+
+    Summary Table:
+
+    | Autoscaler | What it does                   | Example Use Case                |
+    | ---------- | ------------------------------ | ------------------------------- |
+    | HPA        | Scales number of pods          | Handle traffic spikes           |
+    | VPA        | Scales pod resources (CPU/mem) | Optimize resource usage per pod |
+
+
+
+******************************************************************************************************************
+30. What is Cluster Autoscaler?
+    Cluster Scaler (Cluster Autoscaler):
+        The Cluster Autoscaler is a Kubernetes component that automatically adjusts the number of nodes (VMs) in your cluster.
+        It adds nodes when pods cannot be scheduled due to insufficient resources.
+        It removes nodes when they are underutilized and their pods can be moved elsewhere.
+
+    How it works:
+        Monitors unschedulable pods and node utilization.
+        If pods are pending due to lack of resources, it increases the node count (scales out).
+        If nodes are underutilized and their pods can be rescheduled, it decreases the node count (scales in).
+
+    Typical use:
+        Used with cloud providers (AWS, GCP, Azure) where nodes can be added/removed dynamically.
+
+    Works together with HPA/VPA:
+        HPA scales pods.
+        Cluster Autoscaler ensures enough nodes exist to run them.
+
+    Summary Table:
+
+    | Scaler Type        | What it Scales      | Example Use Case           |
+    | ------------------ | ------------------- | -------------------------- |
+    | HPA                | Pod replicas        | Handle traffic spikes      |
+    | VPA                | Pod resources       | Optimize pod CPU/memory    |
+    | Cluster Autoscaler | Cluster nodes (VMs) | Add/remove nodes as needed |
+
+    Example:
+    If your inventory service HPA increases pod replicas but there aren’t enough nodes, the Cluster Autoscaler will add nodes so the new pods can run.
+
+    ******************************************************************************************************************

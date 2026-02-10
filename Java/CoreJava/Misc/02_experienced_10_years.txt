@@ -1,0 +1,179 @@
+Advanced Core Java Interview Questions (10+ Years)
+🔹 1. OOP & Design Fundamentals (Senior Depth)
+
+Concept + Scenario Based
+
+Difference between abstraction and encapsulation with real production examples.
+
+When would you break SOLID principles intentionally?
+
+How do you design immutable classes? How is String immutable internally?
+
+Difference between composition vs inheritance — where did inheritance fail in real systems?
+
+Explain Liskov Substitution Principle with a bad design example.
+
+How do you design thread-safe singleton in Java? Compare approaches.
+
+What problems does dependency injection solve at JVM level?
+
+🔹 2. Java Memory Model (JMM) & JVM Internals
+
+Must Know for 10+ Years
+
+Explain happens-before relationship.
+
+Stack vs Heap vs Metaspace — what exactly goes where?
+
+Class loading phases — Loading, Linking, Initialization.
+
+How does volatile work internally?
+
+Difference between volatile vs synchronized.
+
+How does escape analysis help performance?
+
+What causes memory leaks in Java despite GC?
+
+Strong vs Weak vs Soft vs Phantom references.
+
+Deep Scenario
+👉 Why double-checked locking was broken before Java 5?
+
+🔹 3. Garbage Collection (Very Common for Senior Roles)
+
+How G1 GC works internally.
+
+CMS vs G1 vs ZGC vs Shenandoah comparison.
+
+Stop-the-world events — why do they happen?
+
+How do you troubleshoot GC performance issues in production?
+
+GC tuning parameters you have used.
+
+What is object promotion? When does it fail?
+
+Allocation failure vs promotion failure.
+
+🔹 4. Multithreading & Concurrency (Most Important Section)
+Core Concepts
+
+Difference between Runnable vs Callable.
+
+How Future works internally.
+
+Difference between wait() and sleep().
+
+Difference between notify() and notifyAll().
+
+How thread pool works internally.
+
+Advanced
+
+How ConcurrentHashMap works in Java 8+.
+
+What is lock striping?
+
+Explain ForkJoinPool work stealing algorithm.
+
+How StampedLock works.
+
+Compare ReentrantLock vs synchronized (post Java 8).
+
+Real World Scenario
+
+👉 How would you design high-throughput concurrent cache?
+
+🔹 5. Collections Internal Working
+
+HashMap internal working in Java 8 (treeify, resize, hash spread).
+
+Why HashMap is not thread safe.
+
+How ConcurrentHashMap avoids full map locking.
+
+Fail fast vs fail safe iterators.
+
+IdentityHashMap vs HashMap.
+
+When LinkedHashMap is better than HashMap.
+
+🔹 6. Exception Handling (Senior Level)
+
+Why checked exceptions are controversial?
+
+How exception handling impacts performance?
+
+Best practices for exception design in enterprise apps.
+
+How suppressed exceptions work (try-with-resources).
+
+🔹 7. String & Performance Internals
+
+String pool working.
+
+Why String is final?
+
+Difference between StringBuilder vs StringBuffer.
+
+How substring memory leak existed pre Java 7.
+
+Compact strings (Java 9+).
+
+🔹 8. Reflection & Class Loading
+
+Custom class loader use cases.
+
+How frameworks use reflection heavily.
+
+Performance cost of reflection — real impact?
+
+How dynamic proxies work.
+
+🔹 9. Java 8+ Core Concepts (Still Core Java for Interviews)
+
+Lambda internal working (invokedynamic).
+
+Functional interfaces — marker vs functional.
+
+Stream pipeline execution.
+
+Parallel stream pitfalls.
+
+Optional — where NOT to use it.
+
+🔹 10. Real Production Problem Questions
+
+These are often asked to 10+ year engineers:
+
+✅ How do you debug CPU spike in Java app?
+✅ How do you detect memory leak in production?
+✅ How do you design idempotent APIs in Java?
+✅ How do you design rate limiter using Core Java only?
+✅ How do you reduce GC pauses in low latency systems?
+✅ How do you analyze thread dump?
+
+⭐ Coding / Whiteboard (Senior Level)
+
+Implement LRU Cache (Thread Safe).
+
+Custom Thread Pool Implementation.
+
+Producer Consumer using BlockingQueue.
+
+Implement Read Write Lock.
+
+Design in-memory message queue.
+
+🔥 Very Tough / Architect-Level Questions
+
+How JVM optimizes hot code paths (JIT optimizations).
+
+Biased locking, lock coarsening, lock elimination.
+
+False sharing and padding.
+
+Off-heap memory usage (ByteBuffer, Unsafe).
+
+How Netty avoids GC pressure.

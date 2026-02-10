@@ -1,0 +1,179 @@
+Core Java Interview Questions (12+ Years Experience)
+🔥 1. JVM Internals (Very Important)
+
+Explain JVM architecture in detail.
+
+How class loading works internally?
+
+What is ClassLoader hierarchy?
+
+What is Metaspace vs PermGen?
+
+How JIT compiler optimizes code?
+
+What is escape analysis?
+
+What is biased locking?
+
+What is lock coarsening and lock elimination?
+
+How JVM handles method inlining?
+
+What happens when OutOfMemoryError occurs?
+
+🔥 2. Java Memory Model (JMM)
+
+What is happens-before relationship?
+
+How volatile works internally?
+
+Difference between volatile and synchronized?
+
+Memory visibility vs atomicity vs ordering?
+
+Safe publication techniques?
+
+What is instruction reordering?
+
+What is false sharing?
+
+What is padding in concurrency?
+
+🔥 3. Concurrency & Multithreading (Most Important Section)
+
+How ConcurrentHashMap works internally (Java 8+)?
+
+How thread pool works internally?
+
+How ForkJoinPool works?
+
+What is work stealing algorithm?
+
+What is StampedLock?
+
+What is Phaser?
+
+What is LongAdder vs AtomicLong?
+
+What is CompletableFuture internal working?
+
+How to design lock-free system?
+
+How to debug deadlocks in production?
+
+🔥 4. Garbage Collection (Production Level)
+
+Compare G1, ZGC, Shenandoah.
+
+What causes GC pauses?
+
+What is object promotion?
+
+Allocation failure vs promotion failure?
+
+How to tune GC for low latency systems?
+
+What GC logs do you check first?
+
+What causes memory leak in Java apps?
+
+How to analyze heap dump?
+
+🔥 5. Collections Internals
+
+HashMap internal working (treeify, resize, hash spread).
+
+Why HashMap capacity is power of 2?
+
+Fail-fast vs fail-safe iterator?
+
+IdentityHashMap use case?
+
+WeakHashMap real production use case?
+
+CopyOnWriteArrayList tradeoffs?
+
+🔥 6. Serialization / Cloning / Immutability
+
+Why Java serialization is discouraged now?
+
+Serialization proxy pattern?
+
+Cloneable design flaws?
+
+How to design high-performance immutable object?
+
+Immutability vs defensive copying tradeoffs?
+
+🔥 7. Exception Handling (Design Level)
+
+Checked vs unchecked — real world decision?
+
+Exception hierarchy design for enterprise system?
+
+Performance cost of exception handling?
+
+Exception handling strategy in microservices?
+
+🔥 8. Java 8+ Core Deep Questions
+
+Lambda internal working (invokedynamic)?
+
+Stream pipeline execution model?
+
+Parallel stream pitfalls in production?
+
+Optional misuse cases?
+
+Functional programming impact on Java design?
+
+🔥 9. Real Production Scenario Questions (Most Asked at 12+ Level)
+
+👉 How do you debug CPU spike in production Java app?
+
+👉 How do you find memory leak in production?
+
+👉 How do you analyze thread dump?
+
+👉 How do you design high throughput caching system?
+
+👉 How do you reduce GC pause for trading system?
+
+👉 How do you design rate limiter using Core Java only?
+
+👉 How do you make configuration objects thread safe?
+
+🔥 10. Architecture Thinking Questions
+
+👉 When NOT to use multithreading?
+👉 When synchronization is better than lock-free?
+👉 How do you design backpressure handling?
+👉 How do you design retry vs fail-fast system?
+👉 How do you design high throughput logging system?
+
+⭐ What Interviewers Expect at 12+ Years
+
+They evaluate:
+
+✅ Depth of JVM understanding
+✅ Production debugging experience
+✅ Concurrency maturity
+✅ Performance tuning exposure
+✅ Tradeoff decision making
+✅ Real system design thinking
+
+⭐ If You Have Limited Time (High ROI Topics)
+
+Focus on:
+
+JVM memory + GC tuning
+
+ConcurrentHashMap + ThreadPool internals
+
+Java Memory Model
+
+HashMap internals
+
+CompletableFuture
+
+Production debugging (heap dump, thread dump, GC logs)

@@ -1,0 +1,122 @@
+Scheduling & Resource Management
+31. Scheduling & Resource Management
+32. How does Kubernetes scheduler decide Pod placement?
+33. What are taints and tolerations?
+34. What are node affinity and pod affinity?
+35. What are resource requests and limits?
+
+Security
+36. What is RBAC?
+37. What are Service Accounts?
+38. What is Pod Security (PSA / PSP legacy)?
+39. How are Secrets secured in etcd?
+
+Observability
+40. How do you monitor Kubernetes clusters?
+41. What is metrics-server?
+42. Logging architecture in Kubernetes?
+
+Reliability & Resilience
+43. What happens when a node goes down?
+44. How does Kubernetes self-heal applications?
+45. What is disruption budget (PDB)?
+
+****************************************************************************************************************************
+36. 36. What is RBAC?
+
+    RBAC (Role-Based Access Control):
+        RBAC is a Kubernetes security mechanism to control who can perform what actions on which resources in the cluster.
+        It lets you define roles with specific permissions and bind them to users, groups, or service accounts.
+
+    Main RBAC resources:
+        Role: Defines permissions (verbs like get, list, create) on resources within a namespace.
+        ClusterRole: Like Role, but can be used cluster-wide or in any namespace.
+        RoleBinding: Assigns a Role to a user/group/service account within a namespace.
+        ClusterRoleBinding: Assigns a ClusterRole to a user/group/service account cluster-wide.
+
+Example: Allow a service account to read pods in a namespace
+
+role.yaml
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: my-namespace
+  name: pod-reader
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+
+rolebinding.yaml
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: my-namespace
+subjects:
+  - kind: ServiceAccount
+    name: my-service-account
+    namespace: my-namespace
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+
+***************************************************************************************************************
+
+37. What are Service Accounts?
+     - A Service account in Kubernetes is an identity used by pods to interact with the Kubernetes API and other cluster resources. 
+       Service accounts are intended for processes running inside pods, not for human users.
+         - Every namespace has a default service account (default).
+         - You can create custom service accounts for specific applications or microservices.
+         - Service accounts are used with RBAC to control what actions a pod can perform (e.g., read secrets, list pods).
+         - When a pod runs, it automatically gets a token for its service account, mounted at /var/run/secrets/kubernetes.io/serviceaccount.
+
+    Example: Create and use a custom service account
+
+
+ServiceAccount (inventory-service-account.yaml):
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: inventory-service-account
+  namespace: inventory-namespace
+
+
+Role (inventory-role.yaml):
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: inventory-manager
+  namespace: inventory-namespace
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "create", "update", "delete"]
+
+
+RoleBinding (inventory-rolebinding.yaml):
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: inventory-manager-binding
+  namespace: inventory-namespace
+subjects:
+  - kind: ServiceAccount
+    name: inventory-service-account
+    namespace: inventory-namespace
+roleRef:
+  kind: Role
+  name: inventory-manager
+  apiGroup: rbac.authorization.k8s.io
+
+Explanation:
+The subjects section in the RoleBinding maps the inventory-service-account to the inventory-manager Role, 
+granting the service account the specified permissions in the namespace.
+
+******************************************************************************************************************************************
+

@@ -1,0 +1,121 @@
+Java Serialization Interview Questions
+🔹 Basic Serialization Questions
+
+What is Serialization in Java?
+
+What is Deserialization?
+
+Which interface is used for Serialization?
+
+What is Serializable marker interface?
+
+What happens if a class does not implement Serializable?
+
+What are ObjectOutputStream and ObjectInputStream?
+
+What is serialVersionUID? Why is it important?
+
+How JVM generates serialVersionUID automatically?
+
+What is default serialization?
+
+Can static variables be serialized?
+
+🔹 Intermediate Level Questions
+
+What is transient keyword?
+
+Can final variables be serialized?
+
+Can constructors run during deserialization?
+
+How do you make a class partially serializable?
+
+What happens if superclass is not serializable?
+
+How to prevent serialization of some fields?
+
+What is Externalizable interface?
+
+Difference between Serializable and Externalizable?
+
+What is custom serialization?
+
+What are writeObject() and readObject() methods?
+
+🔹 Advanced Serialization Questions (Senior Level)
+
+How does serialization work internally in JVM?
+
+What is object graph in serialization?
+
+How circular references are handled in serialization?
+
+What is serialization proxy pattern?
+
+How do you secure serialized objects?
+
+What are serialization vulnerabilities?
+
+How do you avoid deserialization attacks?
+
+How serialization impacts performance?
+
+When NOT to use Java serialization?
+
+How do frameworks avoid Java native serialization?
+
+🔹 Scenario-Based Questions (Very Important)
+
+👉 You changed class structure after serialization — what happens?
+
+👉 You added new field in class — will old serialized object work?
+
+👉 serialVersionUID mismatch — what error comes?
+
+👉 How do you serialize Singleton class properly?
+
+👉 How do you serialize immutable objects?
+
+👉 Can you serialize Lambda expressions?
+
+🔹 Tricky / Trap Questions
+
+⚡ Is String serialized?
+👉 Yes, because String implements Serializable
+
+⚡ Can we serialize Thread class?
+👉 No (not safely / not meaningful)
+
+⚡ Is Array serialized?
+👉 Yes, if element types are serializable
+
+⚡ Can we serialize enum?
+👉 Yes (special handling by JVM)
+
+🔹 Coding-Based Serialization Questions
+
+Write code to serialize and deserialize object.
+
+Custom serialization using writeObject/readObject.
+
+Serialize object to file and read back.
+
+Serialize object over network socket.
+
+🔹 Real Production Discussion Questions
+
+✔ Why many companies avoid Java native serialization?
+✔ Why JSON / Protobuf preferred over serialization?
+✔ Serialization performance vs memory tradeoff
+✔ Backward compatibility handling
+
+⭐ Must Prepare Topics (If Short on Time)
+
+If interview is near, focus on:
+✅ serialVersionUID
+✅ transient keyword
+✅ Serializable vs Externalizable
+✅ Custom serialization
+✅ Serialization proxy pattern
+✅ Security issues (Deserialization attack)
