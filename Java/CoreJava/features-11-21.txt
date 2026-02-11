@@ -1,0 +1,113 @@
+Java 11 (LTS — 2018)
+
+New String methods: isBlank(), lines(), repeat()
+
+New File methods: readString(), writeString()
+
+HTTP Client standardized
+
+Local-variable syntax for lambda (var)
+
+Run single-file source code (java File.java)
+
+Removed Java EE & CORBA modules
+
+✅ Java 12 (2019)
+
+Switch expressions (preview)
+
+Shenandoah GC (experimental)
+
+JVM constants API
+
+✅ Java 13 (2019)
+
+Text Blocks (preview)
+
+Switch expressions (2nd preview)
+
+Dynamic CDS archives
+
+✅ Java 14 (2020)
+
+Switch expressions (final)
+
+Records (preview)
+
+Pattern matching for instanceof (preview)
+
+Helpful NullPointerExceptions
+
+✅ Java 15 (2020)
+
+Text Blocks (final)
+
+Sealed Classes (preview)
+
+Hidden Classes
+
+ZGC & Shenandoah production ready
+
+✅ Java 16 (2021)
+
+Records (final)
+
+Pattern matching for instanceof (final)
+
+jpackage tool
+
+Strong encapsulation of JDK internals
+
+✅ Java 17 (LTS — 2021)
+
+Sealed Classes (final)
+
+Pattern matching for switch (preview)
+
+New macOS rendering pipeline
+
+Enhanced PRNGs
+
+✅ Java 18 (2022)
+
+Simple Web Server
+
+UTF-8 by default
+
+Code snippet in JavaDoc
+
+✅ Java 19 (2022)
+
+Virtual Threads (preview — Project Loom)
+
+Record patterns (preview)
+
+Structured concurrency (incubator)
+
+Foreign function & memory API (preview)
+
+✅ Java 20 (2023)
+
+Virtual Threads (2nd preview)
+
+Record Patterns (2nd preview)
+
+Scoped Values (incubator)
+
+✅ Java 21 (LTS — 2023)
+
+⭐ Big release (many final features)
+
+Virtual Threads (final)
+
+Record Patterns (final)
+
+Pattern Matching for switch (final)
+
+Sequenced Collections
+
+String Templates (preview)
+
+Unnamed Patterns & Variables (preview)
+
+Generational ZGC

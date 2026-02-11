@@ -87,7 +87,15 @@
 2. How class loading works internally?
 Refer image for understanding the flow : Java/CoreJava/Misc/302_class_loading_process.png
 
-The Bootstrap loader is the first loader that kicks-in first.
+    The Bootstrap loader is the first loader that kicks-in first.
+    
+    The Platform Class Loader typically loads JDK platform modules except java.base.
+        Database & Enterprise : java.sql, java.sql.rowset
+        XML & Web : java.xml, java.xml.crypto
+        Logging & Management : java.logging, java.management
+        Desktop / UI : java.desktop
+        Security : java.security.sasl, java.security.jgss
+        Naming : java.naming
 
 ******************************************************************************************************************************************
 3. What is ClassLoader hierarchy?
@@ -112,12 +120,12 @@ The Bootstrap loader is the first loader that kicks-in first.
 
     Summary Table : 
 
-        | Class Loader                     | Parent Loader               | Loads From                              |
-        | -------------------------------- | --------------------------- | --------------------------------------- |
-        | Bootstrap ClassLoader            | None (root)                 | JDK core libraries (e.g., java.lang.*)  |
-        | Extension (Platform) ClassLoader | Bootstrap ClassLoader       | JDK extensions (lib/ext or modules)     |
-        | Application (System) ClassLoader | Extension ClassLoader       | Application classpath                   |
-        | Custom ClassLoader               | Application or other loader | User-defined sources (network, DB, etc) |
+        | Class Loader                     | Parent Loader               | Loads From                                      |
+        | -------------------------------- | --------------------------- | ------------------------------------------------|       
+        | Bootstrap ClassLoader            | None (root)                 | JDK core libraries (e.g., java.lang.*), rt.jar  |
+        | Extension (Platform) ClassLoader | Bootstrap ClassLoader       | JDK extensions (lib/ext or modules)             |
+        | Application (System) ClassLoader | Extension ClassLoader       | Application classpath                           |
+        | Custom ClassLoader               | Application or other loader | User-defined sources (network, DB, etc)         |
 
 ******************************************************************************************************************************************
 4. What is Metaspace vs PermGen?
@@ -127,6 +135,14 @@ The Bootstrap loader is the first loader that kicks-in first.
         Stores class metadata, static fields, interned strings.
         Fixed size; can cause java.lang.OutOfMemoryError: PermGen space if exceeded.
         Managed by JVM heap.
+            Class metadata (class names, method names, field names, constant pool)
+            Method and field information (signatures, access modifiers)
+            Static variables (class-level static fields)
+            Interned string pool (string literals and interned strings)
+            Annotations and reflection data
+            Class loader references
+            Metadata for methods (bytecode, method tables)
+            Information for JIT compilation
 
     Metaspace:
         Introduced in Java 8, replaces PermGen.
@@ -150,14 +166,60 @@ The Bootstrap loader is the first loader that kicks-in first.
     2. The JIT (Just-In-Time) compiler monitors code execution and identifies "hot spots" (frequently executed code).
     3. When a method or loop is executed often, the JIT compiles it to native machine code.
     4. The JIT applies optimizations during compilation:
-        Inlining: Replaces method calls with method bodies.
-        Loop unrolling: Expands loops to reduce overhead.
-        Dead code elimination: Removes code that is never executed.
-        Constant folding: Computes constant expressions at compile time.
-        Escape analysis: Allocates objects on the stack if they do not escape the method.
-        Method devirtualization: Converts virtual calls to direct calls when possible.
+        1. Inlining: Replaces method calls with method bodies.
+        2. Loop unrolling: Expands loops to reduce overhead.
+            int sum = 0;
+            for (int i = 0; i < 4; i++) {
+                sum += arr[i];
+            }
+
+            replaces with 
+            
+            int sum = 0;
+
+            sum += arr[0];
+            sum += arr[1];
+            sum += arr[2];
+            sum += arr[3];
+
+        3. Dead code elimination: Removes code that is never executed.
+        4. Constant folding: Computes constant expressions at compile time instead of calculating them repeatedly at runtime. int x = 10 * 20; => x = 200
+        5. Escape analysis: Allocates objects on the stack if they do not escape the method.
+        6. Method devirtualization: Converts virtual calls to direct calls when possible.
     5. The optimized native code is cached and reused for subsequent executions.
     6. The JVM can recompile code with more aggressive optimizations if usage patterns change.
+
+
+    Analogy : 
+        The JIT (Just-In-Time) compiler in the JVM is like a master chef running a fast-paced restaurant kitchen.
+        When the restaurant first opens, the kitchen staff follows every recipe step by step from the cookbook. 
+        This is like the JVM interpreting bytecode, executing instructions one at a time. It works, but it’s not the fastest way to cook 
+        when orders start piling up.
+        
+        Meanwhile, the master chef (JIT) is watching the orders coming in. He tracks which dishes are requested again and again. 
+        These frequently ordered dishes are like “hot spots” — parts of the code that run very often.
+        
+        When the chef notices a dish becoming popular — maybe a special curry or pasta — he decides to prepare a faster version of that recipe. 
+        In technical terms, when a method or loop runs many times, the JIT compiles the bytecode into native machine code, 
+        which the CPU can execute much faster.
+        
+        While preparing this optimized version, the chef also improves the cooking process using smart tricks:
+            Inlining → If a recipe depends on small helper steps, the chef merges those steps directly into the main recipe instead of switching between recipe cards.
+            Loop Unrolling → If he needs to repeat a step many times (like stirring 10 times), he expands it into fewer bigger steps to reduce overhead.
+            Dead Code Elimination → If a step is never actually needed, he removes it from the recipe completely.
+            Constant Folding → If some ingredient quantity is always fixed, he calculates it beforehand instead of recalculating every time.
+            Escape Analysis → If a temporary bowl is only used inside one cooking step, he keeps it on the workstation (stack) instead of storing it in the pantry (heap).
+            Method Devirtualization → If the chef knows exactly which cooking technique will be used, he goes directly to it instead of checking multiple possibilities.
+        
+        Once the optimized recipe is ready, the chef stores it in a quick-access recipe book. This is like the JVM caching optimized native code, 
+        so the next time the same method runs, it executes instantly.
+        
+        But this chef is adaptive. If customer taste changes or cooking conditions change, he can throw away the old optimized recipe and 
+        create a new one. Similarly, the JVM can recompile code with even more aggressive optimizations if it sees new execution patterns.
+        
+        Because of this smart system, Java programs may feel a little slow at the very beginning (warm-up phase). But as the JIT chef 
+        learns which dishes are most important, performance improves dramatically while the program keeps running.
+
 
 ******************************************************************************************************************************************
 
@@ -200,6 +262,18 @@ The Bootstrap loader is the first loader that kicks-in first.
 
 ******************************************************************************************************************************************
 7. What is biased locking?
+
+
+    In biased locking, the first thread that acquires a lock on an object becomes its “owner” (the lock is biased toward that thread). 
+    As long as no other thread tries to acquire the same lock, the owning thread can re-enter the synchronized block without any 
+    locking operation (no actual lock acquisition or CAS is needed). So, the thread does not require a traditional lock operation 
+    in this case — lock acquisition is effectively bypassed for the biased thread.
+
+    If another thread tries to acquire the lock, the JVM revokes the bias and may upgrade to a regular lightweight or heavyweight lock, 
+    at which point locking is required.
+
+-----------------------------------------------
+    Analogy:
     Imagine a Java object is like a room, and threads are like people trying to enter the room. Normally, to enter, every person must go 
     through a security check (this is normal synchronization locking). This check takes time and system resources.
 
