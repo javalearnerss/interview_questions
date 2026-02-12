@@ -1,0 +1,82 @@
+
+
+ZGC Story — Company Housing With Smart Address QR Tags
+
+Imagine a large company that has built its own housing city for employees. This city represents the heap. 
+Inside the city are many company-owned buildings, and each building has many flats where employee families live. 
+These buildings represent regions, and each family living in a flat represents an object in memory.
+
+Over time, things change in the company. Some employees resign, some get promoted, and some continue working in the same role. 
+The company must constantly keep the housing system clean and organized — freeing flats when employees leave and moving families 
+when employees are promoted. This continuous maintenance is like garbage collection.
+
+🏷️ Smart Address Tag With QR Code (Reference Pointer)
+
+Every employee family has a smart address tag. This tag is what all company systems use to locate the family.
+The tag contains visible address details: City Name, Building Name, Flat Number
+
+These visible details are like the actual memory address.
+
+The tag also contains a hidden QR code that only company systems use internally. This QR code stores the family’s housing status, 
+similar to how ZGC stores metadata inside a reference pointer.
+
+QR status can represent:
+Normal → Family is living normally
+Verified → Confirmed during housing survey (object is alive)
+Moving → Family is currently shifting houses
+Moved → Family already shifted to new flat
+
+Employees don’t interact with the QR code — the system reads it automatically.
+
+📋 Housing Audit (Mark Phase)
+
+Periodically, the company runs a housing audit survey to verify which employees still work in the company and 
+which families are still valid residents.
+
+During this audit:
+    Families of active employees are marked as valid
+    Families of employees who left are marked for removal later
+    This is similar to the mark phase, where the system identifies which objects are still in use.
+
+🚚 Promotion and Family Movement (Relocation)
+    When an employee gets promoted, the company moves the family to a better building or flat. For example:
+    Old Address → Building Lotus, Flat 203
+    New Address → Building Orchid, Flat 702
+    The important part is that the company does not stop the entire housing system to update every record immediately. 
+    Families are moved while the city continues functioning normally.
+    This is like concurrent object relocation in ZGC.
+
+🧾 Old Flat Keeps Redirect Record (Forwarding Pointer)
+    After a family moves, the old flat keeps a record saying:
+    Family moved to → New Building + Flat
+    So if any department or delivery system still tries to reach the old flat, they can be redirected to the new location.
+    This is like a forwarding pointer left at the old memory location.
+
+🚪 Gate QR Scanner (Load Barrier)
+    Now imagine some internal company system still has the old address tag.
+    When that tag is used, it must pass through the city’s smart gate scanner. The scanner reads the QR code and decides what to do.
+    The scanner may:
+        Allow access if family is still there
+        Redirect to new flat if family has moved
+        Find latest location if family is in the middle of moving
+        The system may also automatically update stored address records so next time the correct address is used.
+        This is similar to a load barrier, which fixes references when they are accessed.
+
+❌ When Employee Leaves Company (Garbage Cleanup)
+    If an employee resigns:
+        Family must vacate the flat
+        Flat becomes free
+        Company can reuse that space later
+        This is like reclaiming memory from unused objects.
+
+⚡ Why This System Is Powerful
+
+This housing system works efficiently because:
+    The city never shuts down completely
+    Families can move without breaking company systems
+    Buildings can be cleaned and reused independently
+
+This is why ZGC achieves:
+    Very low pause times
+    Safe object movement
+    Efficient memory reuse
