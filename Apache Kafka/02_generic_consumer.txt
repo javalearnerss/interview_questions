@@ -242,3 +242,28 @@ Fault Isolation
         If one process crashes, only that consumer is lost — the other three continue processing without interruption.
 
 ********************************************************************************************************************
+Kafka comsumer common properties
+
+
+| Property Name           | Description                                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------------------------------- |
+| bootstrap.servers       | Comma-separated list of Kafka broker addresses.                                                         |
+| group.id                | Consumer group identifier.                                                                              |
+| key.deserializer        | Deserializer class for message keys (e.g., `org.apache.kafka.common.serialization.StringDeserializer`). |
+| value.deserializer      | Deserializer class for message values.                                                                  |
+| enable.auto.commit      | If true, consumer’s offset is periodically committed automatically.                                     |
+| auto.commit.interval.ms | Frequency (ms) of auto-commit if enabled.                                                               |
+| auto.offset.reset       | What to do when there is no initial offset (earliest, latest, none).                                    |
+| fetch.min.bytes         | Minimum amount of data the server should return for a fetch request.                                    |
+| fetch.max.bytes         | Maximum amount of data the server should return for a fetch request.                                    |
+| max.poll.records        | Maximum records returned in a single poll.                                                              |
+| max.poll.interval.ms    | Maximum delay between invocations of poll().                                                            |
+| session.timeout.ms      | Timeout used to detect consumer failures.                                                               |
+| heartbeat.interval.ms   | Interval for sending heartbeats to the broker.                                                          |
+| client.id               | Logical identifier for the consumer.                                                                    |
+| security.protocol       | Security protocol (PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL).                                           |
+| ssl.*                   | SSL configuration properties.                                                                           |
+| sasl.*                  | SASL configuration properties.                                                                          |
+
+
+*******************************************************************************************

@@ -238,3 +238,33 @@ Que.1 -> How to prevent duplicate messages in kafka producer.
                 });
             }
         }
+
+**********************************************************************************************************
+
+Kafka producer common properties
+
+| Property Name                         | Description                                                                                         |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| bootstrap.servers                     | Comma-separated list of Kafka broker addresses.                                                     |
+| key.serializer                        | Serializer class for message keys (e.g., `org.apache.kafka.common.serialization.StringSerializer`). |
+| value.serializer                      | Serializer class for message values.                                                                |
+| acks                                  | Number of acknowledgments required (0, 1, all).                                                     |
+| retries                               | Number of retries on send failure.                                                                  |
+| batch.size                            | Size (in bytes) of a batch.                                                                         |
+| linger.ms                             | Time to wait before sending a batch.                                                                |
+| buffer.memory                         | Total memory for buffering messages.                                                                |
+| compression.type                      | Compression (none, gzip, snappy, lz4, zstd).                                                        |
+| client.id                             | Logical identifier for the producer.                                                                |
+| max.request.size                      | Maximum size of a request (bytes).                                                                  |
+| request.timeout.ms                    | Timeout for producer requests.                                                                      |
+| delivery.timeout.ms                   | Maximum time to deliver a message.                                                                  |
+| enable.idempotence                    | Enables idempotent producer for exactly-once semantics.                                             |
+| transactional.id                      | Transactional identifier for transactional producer.                                                |
+| max.in.flight.requests.per.connection | Maximum number of unacknowledged requests per connection.                                           |
+| security.protocol                     | Security protocol (PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL).                                       |
+| ssl.*                                 | SSL configuration properties.                                                                       |
+| sasl.*                                | SASL configuration properties.                                                                      |
+
+
+********************************************************************************************************************
+
