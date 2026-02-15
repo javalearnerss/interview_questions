@@ -18,9 +18,9 @@ Note : Idempotence in a Kafka producer means:
         Producer starts with enable.idempotence=true
         Producer contacts broker → broker assigns PID
         Producer sends records:
-        Each record gets a sequence number per partition
-        Broker tracks (PID, partition, sequence)
-        If a retry arrives with the same sequence number → broker drops it as duplicate
+            Each record gets a sequence number per partition
+            Broker tracks (PID, partition, sequence)
+            If a retry arrives with the same sequence number → broker drops it as duplicate
 
 1.  What delivery guarantees does Kafka provide?
     Kafka supports at-most-once, at-least-once, and exactly-once delivery semantics, 
@@ -64,6 +64,14 @@ Note : Idempotence in a Kafka producer means:
     - Use acks=all (and keep a proper min.insync.replicas) so acks mean the record is safely replicated.
     - If you need exactly-once across topics/processing, use transactions (transactional.id) 
       with read_committed consumers.
+      -------------------------------------------
+      1. When enable.idempotence = true is set, Kafka assigns a unique producer ID to each producer instance.
+      2. The producer sends a sequence number with each message per partition.
+      3. The broker tracks the last sequence number received for each producer ID and partition.
+      4. If a message arrives with a sequence number less than or equal to the last seen for that producer ID and partition, 
+        it is considered a duplicate and rejected.
+      5.This deduplication only works for the same broker/partition. If the producer switches to a different broker 
+        (e.g., due to failover), the new broker may not have the previous sequence state, and deduplication may not be guaranteed.
 
 6.  What is idempotent producer and when do you enable it?
     An idempotent producer ensures that even if a producer retries sending a message, 
@@ -268,3 +276,24 @@ Kafka producer common properties
 
 ********************************************************************************************************************
 
+Questions : How long the Kafka producer waits for an acknowledgment (ack) from the broker for each message sent.
+        The maximum time the producer waits is controlled by the request.timeout.ms property.
+        If the broker does not respond within this timeout, the send fails and may be retried (depending on retries).
+        Default value for request.timeout.ms is 30,000 ms (30 seconds).
+
+********************************************************************************************************************
+Question : Define request.timeout.ms and delivery.timeout.ms Kafka producer properties.
+• Explain their roles and how they interact.
+
+    request.timeout.ms
+        • Maximum time (in ms) the producer waits for a broker response to a request (such as sending a message).
+        • If the broker does not respond within this time, the request is considered failed and may be retried.
+        • Default: 30,000 ms (30 seconds).
+
+    delivery.timeout.ms
+        • Maximum time (in ms) the producer will try to deliver a message (including retries and time spent in the buffer).
+        • If the message is not acknowledged within this time, it is marked as failed and an error is returned.
+        • Default: 120,000 ms (2 minutes).
+        • Must be greater than or equal to request.timeout.ms.
+
+********************************************************************************************************************

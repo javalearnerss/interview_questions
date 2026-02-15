@@ -1,6 +1,6 @@
 Sync REST vs Async Messaging
 
-	1. Checkout calls Inventory + Pricing + User. Under load, Inventory becomes slow. 
+	1. Booking calls Inventory + Payment + User. Under load, Inventory becomes slow. 
 		What happens to the overall latency? How do you prevent cascading failures?
 
 	2. You have 3 downstream services; one is optional (recommendations).
@@ -99,7 +99,13 @@ Security Between Services
 
 	Summary:
 	Timeouts, circuit breakers, bulkheads, and fallback logic prevent cascading failures when a dependent service (like inventory) is slow or down.
+	Benefit: Timeout ensures calls fail fast and don’t block threads when a dependency is slow. Retry with backoff helps recover from temporary 
+	issues by retrying after short delays instead of hammering the failing service. Circuit breaker stops calls completely 
+	when failure rate is high, preventing cascading failures and giving the downstream service time to recover while protecting system resources.
 
+	Minimal Working Setup (Most Projects)
+		implementation 'io.github.resilience4j:resilience4j-spring-boot3'
+		implementation 'org.springframework.boot:spring-boot-starter-aop'
 
 *************************************************************************************************************************
 2. You have 3 downstream services; one is optional (recommendations). How do you design so the core flow succeeds even if optional fails?

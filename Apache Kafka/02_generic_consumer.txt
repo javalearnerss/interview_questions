@@ -18,22 +18,27 @@ Consumers (Deep Dive)
         - max.poll.interval.ms → max time between poll() calls (processing watchdog)
 
 1. How does Kafka consumer group coordination work?
-    - When a consumer starts, it joins a consumer group and discovers the Group Coordinator 
-       (a Kafka broker responsible for that group).
-    - Consumers send JoinGroup requests; the coordinator collects all members.
-    - A leader consumer (chosen by the coordinator) runs the partition assignment strategy 
-       (range, round-robin, sticky).
+    - When a consumer starts, discovers the Group Coordinator (a Kafka broker responsible for that group).
+    - Consumers send JoinGroup requests; if consumer group is not present then the coordinator creates the group. 
+      If group is already present then consumer joins the group and group coordinator triggers the rebalance
+    - Coordinator elects a consumer leader.
+    - A leader consumer (chosen by the coordinator) runs the partition assignment strategy (range, round-robin, sticky) and sends assignment plan to Coordinator
     - The coordinator distributes assignments to all consumers.
     - Consumers start polling only their assigned partitions and send heartbeats to stay active.
     - If a consumer joins, leaves, or fails, the coordinator triggers a rebalance.
     Note : A consumer group is created on the Kafka broker (Group Coordinator) automatically 
-    when the first consumer with a new group.id joins.
-        - There is no explicit “create consumer group” command.
-        - When a consumer starts with a new group.id:
-        - It sends a JoinGroup request to the broker acting as the Group Coordinator.
-        - The coordinator creates group metadata in memory.
-        - Offsets and group state are stored in the internal topic __consumer_offsets.
-        - From then on, that group.id exists and is managed by the broker.
+    
+
+    First Consumer
+        Consumer-1 starts  → Connects to Broker → Find Coordinator  → JoinGroup  → Group Created  
+        → Leader = Consumer-1(It has Topic metadata,All consumer member IDsm, Subscription info)  → Assignment = All partitions 
+        → Leader sends assignment plan to Coordinator
+
+    Seconds Consumer
+        Consumer-2 starts  → Connects to Broker  → Find Coordinator (existing group coordinator) → JoinGroup request sent → Group Rebalance Triggered  
+        → Leader = Consumer-1 (already leader, Has Topic metadata, All consumer member IDs, Subscription info)  → Leader Recomputes Assignment (Partitions shared across C1 & C2)  
+        → Leader sends new assignment plan to Coordinator  → Coordinator sends assignment → Consumer-1 & Consumer-2 
+
 
 2. What causes consumer rebalancing?
     Consumer rebalancing in Kafka happens when the membership or assignment of a consumer group changes.
@@ -76,6 +81,7 @@ Consumers (Deep Dive)
         A rebalance is triggered
         Its partitions are revoked and reassigned to other consumers
         The slow consumer may later rejoin, causing more rebalances and possible duplicates
+        Note : If heartbeats are sent but poll() is not called for too long → consumer is considered DEAD (kicked out of group).
 
 6. How does max.poll.interval.ms affect consumers?
     - max.poll.interval.ms defines the maximum time a consumer can take to process records 
@@ -139,6 +145,71 @@ Consumers (Deep Dive)
     - Wrong offset reset: misused auto.offset.reset (e.g., latest in a new group) → starts after existing data → “missing events” incident.
     - Bad error handling: swallowing exceptions and continuing commits → silently drops failed records.
     - Under-provisioned consumers: too few consumers vs partitions or too slow processing → lag grows until downstream SLAs break.
+
+
+11. What happens when 200 records are polled and one fails?
+    With @RetryableTopic (non-blocking retries), Spring Kafka typically does this:
+    For a failed record on the main topic:
+        1. Your listener throws InvalidItemException
+        2. Spring Kafka’s retry infrastructure publishes that record to the retry topic (or DLT if retries are exhausted)
+        3. After successfully publishing to retry/DLT, the framework commits/acknowledges the offset of the original record on the main topic
+        This is important: otherwise the consumer would be stuck replaying the same failing record forever.
+    So even though your code did not call ack.acknowledge() for the failed record, Spring’s error handling layer commits 
+    it once it has handed it off to retry/DLT.
+
+12. If a non-included exception is thrown (e.g., NullPointerException, RuntimeException, etc.) in the consumer
+    What Spring Kafka does (with @RetryableTopic)
+        It does not send the record to the retry topics.
+        It publishes the record directly to the DLT (because it’s considered “non-retryable” for this listener).
+
+    How commits work in that case
+    Even though your code did not call ack.acknowledge() (because you threw an exception),
+    Spring Kafka will typically:
+        Publish the failed record to the DLT
+        Commit the offset of the original record on the main topic partition (so it won’t be replayed on the main topic)
+
+    So: DLT publish acts like a “recovery,” and then offset is advanced.
+
+13. In a Spring Kafka consumer using @RetryableTopic, suppose a poll fetches 200 records. Out of these, 195 records are processed and 
+    196th records throw a non-retryable exception (e.g., NullPointerException which is not included in retryable exceptions). 
+    The system is configured with DltStrategy.FAIL_ON_ERROR. What happens if publishing those failed records to the 
+    Dead Letter Topic (DLT) also fails? How does Kafka manage offsets in this scenario?
+
+Answer:
+
+    In Spring Kafka, offset commits are tied to successful processing or safe hand-off of records to retry or dead-letter infrastructure. 
+    When using @RetryableTopic, retryable exceptions are routed to retry topics, while non-retryable exceptions are directly routed to 
+    the Dead Letter Topic (DLT). If a record fails with a non-retryable exception, Spring Kafka attempts to publish that record to the DLT. 
+    Only after successful publishing to the DLT does Spring Kafka commit the offset for the original record from the main topic. 
+    This ensures that no message is lost and that Kafka guarantees at-least-once delivery semantics.
+
+    However, when DltStrategy.FAIL_ON_ERROR is configured and the DLT publish itself fails (for example, if the DLT topic is unavailable, 
+    broker is down, or authorization fails), Spring Kafka cannot safely move the record anywhere. In this case, the consumer 
+    container throws an exception and stops processing. Since the record was neither processed successfully nor stored in
+    a retry or DLT topic, the offset is not committed. When the consumer restarts or a rebalance occurs, 
+    Kafka will redeliver all records starting from the last committed offset. This can result in reprocessing of multiple records from the batch.
+
+
+
+14. In Apache Kafka, if a consumer is already part of a consumer group and has previously processed messages with committed offsets, 
+but the configuration auto.offset.reset=earliest is set, will the consumer read all old messages again or start from the last committed 
+offset? Explain the behavior with reasoning.
+
+Answer
+
+    If a Kafka consumer is part of an existing consumer group and that group already has committed offsets stored in Kafka, the consumer will 
+    always resume reading from the last committed offset, regardless of the auto.offset.reset configuration. The auto.offset.reset property 
+    is only used when there is no committed offset available for that consumer group and partition. This typically happens when a new consumer 
+    group is created, offsets have expired due to retention policies, or a new partition is added and the group has never consumed from it before.
+    In normal restart scenarios where offsets exist, Kafka ignores the reset policy and continues from where it left off to maintain data 
+    processing continuity and prevent duplicate reads.
+
+    For example, consider a topic where offsets range from 0 to 1000. If a consumer group has previously processed messages and committed offset 500,
+    when the consumer restarts, it will begin consuming from offset 501 even if auto.offset.reset is set to earliest. 
+    The consumer will not go back and read from offset 0 because Kafka already has a valid checkpoint. However, 
+    if the consumer group is new and no offset exists, then auto.offset.reset=earliest would cause the consumer to start reading from offset 0. 
+    This design ensures Kafka provides predictable and reliable message consumption while preventing accidental replay of 
+    large amounts of historical data.
 
 ******************************************************************************************************************************
 

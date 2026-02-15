@@ -1,0 +1,111 @@
+🟢 Basics
+
+What is RxJS and why is it used in Angular?
+
+What is an Observable in RxJS?
+
+What are RxJS operators?
+
+What is the difference between pipeable operators and creation operators?
+
+What is the purpose of the pipe() method?
+
+What are higher-order Observables?
+
+What is the difference between synchronous and asynchronous Observables?
+
+What is a cold observable vs hot observable?
+
+How does RxJS integrate with Angular HttpClient?
+
+What is lazy execution in RxJS?
+
+🔵 Transformation Operators
+
+What does the map() operator do?
+
+When would you use pluck()?
+
+What is the difference between map() and switchMap()?
+
+What is a higher-order mapping operator?
+
+When should you use scan()?
+
+What is the difference between mergeMap() and switchMap()?
+
+What is the difference between concatMap() and mergeMap()?
+
+What is the purpose of exhaustMap()?
+
+In Angular, where is switchMap() commonly used?
+
+How does switchMap() help in cancelling HTTP requests?
+
+🟡 Filtering Operators
+
+What does filter() operator do?
+
+What is debounceTime() and when is it used?
+
+Difference between debounceTime() and throttleTime()?
+
+What is distinctUntilChanged()?
+
+What is take() operator?
+
+What is takeWhile() vs takeUntil()?
+
+How does first() differ from take(1)?
+
+What is skip() operator used for?
+
+What is auditTime()?
+
+When would you use sampleTime()?
+
+🟣 Combination Operators
+
+What does combineLatest() do?
+
+Difference between combineLatest() and withLatestFrom()?
+
+What is forkJoin() and when is it used?
+
+Difference between zip() and combineLatest()?
+
+When should you use merge() operator?
+
+What is race() operator?
+
+🟠 Error Handling & Utility
+
+What is catchError()?
+
+What is retry() operator?
+
+What is retryWhen()?
+
+What is finalize() operator?
+
+What is tap() used for?
+
+Difference between tap() and map()?
+
+What is delay() operator?
+
+What is timeout() operator?
+
+🔴 Angular Practical Scenario Questions
+
+Which operator is best for search auto-complete and why?
+
+Which operator prevents multiple login button clicks?
+
+Which operator helps avoid memory leaks in Angular components?
+
+Which operator is used to cache HTTP responses?
+
+Which operator is best when all API calls must complete sequentially?
+
+Which operator is best when parallel API calls are needed?

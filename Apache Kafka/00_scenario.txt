@@ -166,22 +166,23 @@
     SASL/SSL misconfig on consumer side
 
 2.  Producer latency spikes suddenly with no code change. What could cause this?
-    - Sudden Kafka producer latency spikes with no code change are usually caused by infrastructure, 
+    The time taken by Kafka producer to send a message and get acknowledgment from broker suddenly increases
+    Sudden Kafka producer latency spikes with no code change are usually caused by infrastructure, 
         broker, or config-dependent runtime conditions:
-    - Broker load / disk I/O slow (log flush, compaction, high IO wait) → slower acks
-    - ISR shrink / replica lag with acks=all → producer waits longer
-    - Leader elections / partition reassignments → transient errors + retries
-    - Network latency / packet loss / throttling between producer and brokers
-    - Request queue saturation on brokers → delayed processing/acks
-    - GC pauses / CPU steal on producer JVM host → delayed send thread
-    - Increase in message size or throughput (same code, different traffic) → batching/queueing delays
-    - Batching effects (linger.ms, batch.size) → queues fill, flush timing changes
-    - Quota limits / throttling (broker/client quotas) → forced delays
+        - Broker load / disk I/O slow (log flush, compaction, high IO wait) → slower acks
+        - ISR shrink / replica lag with acks=all → producer waits longer
+        - Leader elections / partition reassignments(moving to other broker) → transient errors + retries
+        - Network latency / packet loss / throttling between producer and brokers
+        - Request queue saturation on brokers → delayed processing/acks
+        - GC pauses / CPU steal on producer JVM host → delayed send thread
+        - Increase in message size or throughput (same code, different traffic) → batching/queueing delays
+        - Batching effects (linger.ms, batch.size) → queues fill, flush timing changes
+        - Quota limits / throttling (broker/client quotas) → forced delays
 
 3.  Messages are duplicated after enabling retries. Why?
     Messages get duplicated after enabling retries because the producer may resend a message when it 
     doesn’t receive an acknowledgment—even though the broker already wrote it.
-     - Ack lost / leader change → producer retries
+     - Ack lost / leader change(after replicating to 50% replicas) → producer retries
      - Broker writes the same record again → duplicate messages
     Fix (one-liner):
      - Enable idempotence: enable.idempotence=true

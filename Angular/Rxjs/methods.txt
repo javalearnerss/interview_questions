@@ -1,0 +1,80 @@
+
+What is the use of pipe() in RxJS (Angular Context)
+The pipe() method is used to combine multiple RxJS operators and apply them to an Observable in a clean, readable, and functional way.
+
+Syntax:
+
+observable.pipe(
+  operator1(),
+  operator2(),
+  operator3()
+)
+
+Example:
+this.http.get('/api/users').pipe(
+  map(users => users.filter(u => u.active)),
+  tap(data => console.log(data)),
+  catchError(err => of([]))
+)
+.subscribe();
+
+What Happens Step-by-Step:
+HTTP request returns Observable
+map() → transforms data
+tap() → side effect (logging)
+catchError() → handles error
+subscribe() → executes stream
+
+Common Operators Used Inside pipe() (Angular)
+Very common in real Angular apps:
+map() → transform response
+switchMap() → API chaining / cancellation
+debounceTime() → search optimization
+filter() → condition filtering
+takeUntil() → unsubscribe handling
+catchError() → error handling
+tap() → logging/debug
+
+-------------------------------------------
+
+this.refData.getIsin(normalized).pipe(
+  finalize(() => (this.loading = false)),
+  takeUntilDestroyed(this.destroyRef)
+)
+
+
+finalize(() => (this.loading = false))
+🔥 What finalize Does
+
+Runs when Observable ends in ANY way:
+Success
+Error
+Unsubscribe
+
+
+takeUntilDestroyed(this.destroyRef)
+🔥 What It Does
+
+Auto-unsubscribes when component is destroyed.
+
+👉 Angular 16+ feature
+👉 Replaces manual unsubscribe or takeUntil(subject)
+-------------------------------------
+
+******************************************************************************************
+
+this.count = res.count ?? 0;
+this.items = res.data ?? [];
+this.statusLabel = 'Done';
+🔥 Big Picture
+👉 Assign values from API response
+👉 Provide default values if response is null or undefined
+👉 Update UI status
+
+?? (Nullish Coalescing Operator)
+⭐ What It Means
+value ?? defaultValue
+
+
+👉 If value is null OR undefined → use defaultValue
+👉 Otherwise → use value
