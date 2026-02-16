@@ -1,7 +1,13 @@
+
+0. How does @Transactional works internally?
+   The @Transactional can be used on class and method both.
+
+
 1. Self Invocation Problem
     Q: Why does @Transactional not work when one method calls another method inside the same class?
-    Expected Insight : Spring uses proxy-based AOP, Internal method call → bypasses proxy → no transaction
-    How to fix?
+       Scenario 1: A non-transactional method calls tranactional method 
+       Scenario 2: A transactiona method calls another tranctional method 
+    
 
 2. Private Method Trap
     Q: Does @Transactional work on private methods?
@@ -40,9 +46,10 @@
     Q: If DB transaction commits but Kafka publish fails, what happens?
 
 14. Rollback Only Marker Trap
-    Q: Why do you see:
+    Q: What is the Rollback Only Marker Trap in Spring transactions, and why can it lead to UnexpectedRollbackException 
+    even when exceptions are caught inside a @Transactional method?
 
-15. Transaction Propagation Interview Killer
+15. Transaction Propagation
 
 
 
@@ -67,3 +74,541 @@ Transaction wrapped: DB updates, Kafka publish, Cache update, Audit logging, Ema
 9. Transaction Around Batch Processing → Massive Rollback
 
 10. DB Transaction + Kafka Publish Without Outbox → Data Drift
+
+
+*****************************************************************************************************************************
+Question 1 : What is the step-by-step flow when a transactional method is called from another bean?
+    
+    When you annotate an Inventory method with @Transactional, Spring creates a proxy around that class. 
+    When another bean (like Booking service) calls this method, the call first goes to the proxy, not directly to your method. 
+    The proxy checks if a transaction already exists for the current thread. It does this using ThreadLocal, w
+    here Spring stores transaction details like the DB connection and transaction status per thread.
+
+    If a transaction already exists, your method joins the same transaction (default propagation = REQUIRED). 
+    If no transaction exists, the proxy asks the TransactionManager to start a new transaction. 
+    The TransactionManager gets a DB connection from the DataSource, disables auto-commit, 
+    and binds that connection to the current thread using ThreadLocal so that all operations in that thread share the same transaction context.
+
+    Then Spring executes your actual Inventory method. When your method internally calls the repository methods, 
+    both run inside the same transaction and same DB connection because repositories fetch the connection from the ThreadLocal context. 
+    They don’t create new transactions; they participate in the already active one.
+
+    The proxy wraps your method execution in a structure similar to a try-catch block. If the method finishes successfully 
+    without any runtime exception, the proxy asks the TransactionManager to commit the transaction, which permanently saves changes from 
+    all repository calls. If any runtime exception occurs, the proxy asks the TransactionManager to rollback the transaction, 
+    undoing all database operations done inside the method.
+
+    Finally, after commit or rollback, Spring removes the connection from ThreadLocal, clears transaction state, 
+    and releases the connection back to the connection pool. This ensures proper resource cleanup and keeps transactions 
+    isolated per thread.
+
+*****************************************************************************************************************************
+Question 1. Self Invocation Problem
+    Q: Why does @Transactional not work when one method calls another method inside the same class?
+       Scenario 1: A non-transactional method calls tranactional method 
+       Scenario 2: A transactiona method calls another tranctional method 
+    
+@Transactional does not work during self-invocation (one method calling another inside the same class) because Spring transactions are 
+applied using proxies. The proxy only intercepts calls that come from outside the bean. When a method inside the same class calls another method, 
+it bypasses the proxy and directly calls the target method, so the transactional logic is never triggered.
+
+In Scenario 1 (Non-transactional method → Transactional method), the transactional method will not start a transaction if it is called 
+internally within the same class. Since the call does not go through the proxy, Spring never gets a chance to apply transaction logic, 
+and the method executes without any transaction.
+
+In Scenario 2 (Transactional method → Another transactional method), the second transactional method will not create or modify transaction 
+behavior if called internally. However, if the first method already started a transaction, the second method will still run inside that existing 
+transaction because everything is executing in the same thread and same transaction context. But any separate transactional settings 
+(like different propagation or isolation) on the second method will be ignored.
+
+To make @Transactional work in such cases, the call must go through the Spring proxy, usually by moving the method to another service 
+class or calling it through the bean reference instead of this.method().
+
+***********************************************************************************************************************************
+
+Question 2. Private Method Trap
+    Q: Does @Transactional work on private methods?
+No, @Transactional does not work on private methods.
+
+Spring applies transactions using proxies, and proxies can only intercept public methods called from outside the class. 
+Private methods are called directly inside the class, bypassing the proxy, so Spring cannot apply transaction logic.
+
+***********************************************************************************************************************************
+
+Question 3. Which exceptions trigger rollback by default?
+    By default, Spring rolls back transactions only for unchecked exceptions.
+    This includes:
+        1. RuntimeException
+        2. Error
+
+    Spring does not rollback by default for checked exceptions (like IOException, SQLException, etc.), unless you explicitly configure it using:
+    @Transactional(rollbackFor = IOException.class)
+
+    If an IOException occurs during file writing, the transaction rolls back (including the DB save) because of rollbackFor = IOException.class.
+
+    @Service
+    public class UserService {
+
+        @Autowired
+        private UserRepository userRepository;
+
+        @Transactional(rollbackFor = IOException.class)
+        public void saveUserAndWriteToFile(User user) throws IOException {
+
+            userRepository.save(user); // Save to DB
+
+            // File operation that may throw IOException
+            try (FileWriter writer = new FileWriter("/restricted/path/user.txt")) {
+                writer.write(user.getName());
+            }
+        }
+    }
+
+
+    Q: If we use @Transactional(rollbackFor = IOException.class), will unchecked exceptions still trigger rollback? Why?
+        Yes. Spring still rolls back for RuntimeException and Error by default. rollbackFor only adds extra checked exceptions for rollback; 
+        it does not change the default behavior.
+
+    Q: Do all JPA methods throw runtime exceptions, and how does that affect transactions?
+        Most JPA methods throw runtime exceptions like PersistenceException or Spring’s DataAccessException. 
+        Because these are unchecked exceptions, Spring automatically rolls back the transaction when they occur, 
+        which is why most database failures using JPA trigger rollback by default.
+
+    Q: What happens if a duplicate record is saved inside a transaction and the record already exists?
+        If a duplicate record violates a database constraint (like a unique key), JPA/Hibernate will throw a runtime exception 
+        (for example DataIntegrityViolationException or ConstraintViolationException). Since this is an unchecked exception, 
+        Spring will automatically roll back the entire transaction, so none of the changes in that transaction will be saved.
+
+    Q: What happens to the return value when a @Transactional method throws an exception and the transaction is rolled back?
+        If a @Transactional method throws an exception that triggers a rollback, the method does not return its value. 
+        Instead, the exception is propagated to the caller, and the caller can only handle the exception, not the return result.
+
+        @Service
+        public class PaymentService {
+            @Transactional
+            public String processPayment() {
+                // DB operation
+                System.out.println("Saving payment record...");
+                // Simulate failure
+                if (true) {
+                    throw new RuntimeException("Payment gateway failed");
+                }
+                return "PAYMENT_SUCCESS";
+            }
+        }
+
+        @Service
+        public class OrderService {
+            @Autowired
+            private PaymentService paymentService;
+            public void placeOrder() {
+                try {
+                    String result = paymentService.processPayment();
+                    System.out.println("Result: " + result);
+
+                } catch (Exception e) {
+                    System.out.println("Exception received: " + e.getMessage());
+                }
+            }
+        }
+***********************************************************************************************************************************
+Question 4. If you call an @Async method from a @Transactional method, does transaction propagate?
+    No, the transaction does not propagate to the @Transactional method. @Async runs in a different thread, 
+    while Spring transactions are bound to the current thread (via ThreadLocal). 
+    So the async method runs without the original transaction unless it starts its own @Transactional context.
+
+    This code shows a transactional Booking service calling an async Inventory service, 
+    where Booking saves data in one transaction and Inventory reserves stock in a separate async transaction.
+
+    If Booking later fails and rolls back, the Inventory reservation may still succeed, 
+    creating a data inconsistency risk because async runs independently of the Booking transaction.
+
+    @Service
+    public class InventoryService {
+        private final InventoryRepository inventoryRepository;
+        public InventoryService(InventoryRepository inventoryRepository) {
+            this.inventoryRepository = inventoryRepository;
+        }
+
+        @Async
+        @Transactional   // New independent transaction
+        public void reserveAsync(String bookingId, String sku, int qty) {
+            System.out.println("Reserving inventory for booking " + bookingId);
+            int updated = inventoryRepository.reserveStock(sku, qty);
+            if (updated == 0) {
+                throw new RuntimeException("Insufficient stock for SKU: " + sku);
+            }
+            System.out.println("Inventory reserved successfully for booking " + bookingId);
+        }
+    }
+
+    @Service
+    public class BookingService {
+
+        private final BookingRepository bookingRepository;
+        private final InventoryService inventoryService;
+
+        public BookingService(BookingRepository bookingRepository, InventoryService inventoryService) {
+            this.bookingRepository = bookingRepository;
+            this.inventoryService = inventoryService;
+        }
+
+        @Transactional
+        public String createBooking(String sku, int qty) {
+            Booking b = bookingRepository.save(new Booking(sku, qty, "CREATED"));
+
+            // ❌ Unsafe: async may reserve even if this transaction rolls back later
+            inventoryService.reserveAsync(b.getId(), sku, qty);
+
+            // simulate failure AFTER async call
+            throw new RuntimeException("Payment failed -> rollback booking");
+
+            // return b.getId();
+        }
+    }
+
+***********************************************************************************************************************************
+Question 5. What does @Transactional(readOnly = true) actually do?
+   Dirty checking
+        Hibernate tracks changes to managed entities in the persistence context. At transaction commit or flush, 
+        it checks if any entity fields have changed (are “dirty”) and issues SQL UPDATEs if needed.
+
+    Flush
+        The process where Hibernate synchronizes in-memory changes to the database (e.g., before a query or at transaction commit).
+   
+    @Transactional(readOnly = true) tells Spring and the ORM (like Hibernate) that the method is only for reading data and will not 
+    modify the database.
+
+    1. When you use @Transactional(readOnly = true), Hibernate knows the transaction is for reading only.
+    2. Hibernate skips dirty checking because it assumes no entity will be modified.
+    3. Hibernate does not perform a flush, so no SQL UPDATE/INSERT/DELETE statements are sent to the database.
+    4. This improves performance and prevents accidental data changes during read operations.
+
+
+    @Service
+    public class UserService {
+
+        @Autowired
+        private UserRepository userRepository;
+
+        @Transactional
+        public void updateUserName(Long userId, String newName) {
+            User user = userRepository.findById(userId).orElseThrow();
+            user.setName(newName); // Modify entity field
+
+            // No call to userRepository.save(user)
+            // Hibernate dirty checking will detect the change and issue an UPDATE at commit
+        }
+    }
+
+
+***********************************************************************************************************************************
+Question 6. Difference between: REQUIRED, REQUIRES_NEW, NESTED
+
+REQUIRED:
+    With REQUIRED propagation, the caller method transaction (placeOrder) covers all internal DB operations and downstream service calls, 
+    so everything commits or rolls back as one unit.
+
+    @Transactional
+    placeOrder()  ← Transaction starts here
+    ├ save()
+    ├ reduceStock()
+    └ dirty checking update
+    Transaction commits here
+
+
+
+    // OrderService.java
+    @Service
+    public class OrderService {
+
+        private final OrderRepository orderRepo;
+        private final InventoryService inventoryService;
+
+        @Transactional // REQUIRED propagation → starts new TX if none exists, or joins existing
+        public Long placeOrder(Long productId, int qty) {
+
+            // Step 1: Create order record in DB (within transaction)
+            Order order = orderRepo.save(new Order(productId, qty, "PENDING"));
+
+            // Step 2: Call inventory → joins SAME transaction (REQUIRED default)
+            // If this fails → entire transaction rolls back (order + inventory)
+            inventoryService.reduceStock(productId, qty);
+
+            // Step 3: Update order status → will be auto persisted via dirty checking
+            order.setStatus("CONFIRMED");
+
+            // Step 4: If method completes successfully → transaction commits
+            // If any RuntimeException occurs → transaction rolls back fully
+            return order.getId();
+        }
+    }
+
+    // InventoryService.java
+    @Service
+    public class InventoryService {
+
+        private final InventoryRepository inventoryRepo;
+
+        @Transactional // REQUIRED (default) -> joins OrderService TX
+        public void reduceStock(Long productId, int qty) {
+            Inventory inv = inventoryRepo.findByProductId(productId)
+                    .orElseThrow(() -> new IllegalStateException("Product not found"));
+
+            if (inv.getAvailable() < qty) {
+                throw new RuntimeException("Out of stock"); // triggers rollback
+            }
+
+            inv.setAvailable(inv.getAvailable() - qty); // dirty checking -> UPDATE
+        }
+    }
+
+
+    
+
+REQUIRES_NEW: 
+    Suspends the current transaction and starts a completely new independent transaction. 
+    Used for side operations like audit logs or notifications where failure should not impact the main order flow.
+
+    With REQUIRES_NEW, Inventory runs in a completely separate transaction from Order.
+    If Order fails later, Inventory stock reduction may still commit, causing stock mismatch.
+    If Inventory fails, Order can still commit, causing overselling risk.
+    This pattern is mainly used for non-critical operations like audit logs or notifications, not core inventory updates.
+
+    @Transactional
+    placeOrder()  ← Order Transaction (TX-1) starts here
+    ├ save()                      (Runs in TX-1)
+    ├ reduceStock()               (TX-1 suspended here)
+    │      └ @Transactional(REQUIRES_NEW)
+    │             reduceStock()   ← New Transaction (TX-2) starts
+    │             stock update    (Runs in TX-2)
+    │             TX-2 commits independently
+    │      └ Return to placeOrder()
+    ├ dirty checking update       (Runs back in TX-1)
+    TX-1 commits OR rolls back (independent of TX-2)
+
+
+    // OrderService.java
+    @Service
+    @RequiredArgsConstructor
+    public class OrderService {
+
+        private final OrderRepository orderRepo;
+        private final InventoryService inventoryService;
+
+        @Transactional // Main Order Transaction
+        public Long placeOrder(Long productId, int qty) {
+
+            // Step 1: Create Order (Part of Order TX)
+            Order order = orderRepo.save(new Order(productId, qty, "PENDING"));
+
+            // Step 2: Call Inventory → Runs in NEW independent transaction
+            inventoryService.reduceStock(productId, qty);
+
+            // Step 3: Simulate later failure in Order flow
+            if (true) {
+                throw new RuntimeException("Payment validation failed");
+            }
+
+            return order.getId();
+        }
+    }
+
+    // InventoryService.java
+    @Service
+    @RequiredArgsConstructor
+    public class InventoryService {
+
+        private final InventoryRepository inventoryRepo;
+
+        @Transactional(propagation = Propagation.REQUIRES_NEW) // NEW independent TX
+        public void reduceStock(Long productId, int qty) {
+
+            Inventory inv = inventoryRepo.findByProductId(productId)
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+
+            if (inv.getAvailable() < qty) {
+                throw new RuntimeException("Out of stock");
+            }
+
+            inv.setAvailable(inv.getAvailable() - qty); // Commits independently
+        }
+    }
+
+NESTED:
+    Runs inside the same transaction but creates a savepoint, allowing partial rollback. 
+    Useful when order can continue even if a sub-step like one warehouse inventory reservation fails.
+
+    @Transactional
+    placeOrder()  ← Order Transaction (TX-1) starts here
+    ├ save()                              (Order saved in TX-1)
+    ├ reserveStock()                      (Runs inside same TX-1)
+    │      └ @Transactional(NESTED)
+    │             reserveStock()          ← SAVEPOINT created inside TX-1
+    │             stock update            (Inventory update attempted)
+    │             if exception occurs:
+    │                 rollback to SAVEPOINT (Only inventory changes undone)
+    │                 Order TX continues
+    │             else:
+    │                 Inventory change kept (Still part of TX-1)
+    │      └ Return to placeOrder()
+    ├ dirty checking update (order status) (Auto persisted in TX-1)
+    TX-1 commits → Order + Inventory persisted together
+    TX-1 rolls back → Everything undone (Order + Inventory)
+
+    // OrderService.java
+    @Service
+    @RequiredArgsConstructor
+    public class OrderService {
+
+        private final OrderRepository orderRepo;
+        private final InventoryService inventoryService;
+
+        @Transactional // Main Order Transaction (TX-1)
+        public Long placeOrder(Long productId, int qty) {
+
+            // Step 1: Create Order
+            Order order = orderRepo.save(new Order(productId, qty, "PENDING"));
+
+            try {
+                // Step 2: Try reserving inventory (NESTED → Savepoint created)
+                inventoryService.reserveStockNested(productId, qty);
+
+            } catch (Exception e) {
+                // Step 3: If inventory fails → only inventory part rolled back
+                System.out.println("Trying alternate warehouse...");
+                inventoryService.reserveFromAlternateWarehouse(productId, qty);
+            }
+
+            // Step 4: Continue order flow
+            order.setStatus("CONFIRMED"); // Dirty checking → part of main TX
+
+            return order.getId();
+        }
+    }
+
+
+    // InventoryService.java
+    @Service
+    @RequiredArgsConstructor
+    public class InventoryService {
+
+        private final InventoryRepository inventoryRepo;
+
+        @Transactional(propagation = Propagation.NESTED) // Savepoint inside Order TX
+        public void reserveStockNested(Long productId, int qty) {
+
+            Inventory inv = inventoryRepo.findByProductId(productId)
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+
+            if (inv.getAvailable() < qty) {
+                throw new RuntimeException("Primary warehouse out of stock"); // Rollback to savepoint
+            }
+
+            inv.setAvailable(inv.getAvailable() - qty);
+        }
+
+        public void reserveFromAlternateWarehouse(Long productId, int qty) {
+            System.out.println("Reserved from alternate warehouse");
+        }
+    }
+
+    Question:
+    If we are catching the exception when Inventory fails, why do we still need Propagation.NESTED instead of REQUIRED?
+
+    Answer:
+    With REQUIRED, Inventory runs in the same transaction as Order. If Inventory throws an exception, 
+    Spring marks the whole transaction as rollback-only, and catching the exception does not reset it—so Order will still fail 
+    at commit time (often with UnexpectedRollbackException). With NESTED, Spring creates a savepoint, so if Inventory fails it 
+    rolls back only that part, allowing the main Order transaction to continue and commit successfully.
+
+
+***********************************************************************************************************************************
+
+Question 7: Should you call external payment API inside DB transaction?
+    Generally, no—don’t call an external payment API inside a DB transaction. External calls can be slow/unreliable, 
+    which keeps DB locks open longer, increases timeouts, and can cause contention;
+
+    Booking–Payment Context Explanation
+
+        You should not call a payment API inside a booking DB transaction because payment is an external network call 
+        (slow + unreliable), while DB transactions should be short and fast.
+
+            Start Booking TX
+            ↓
+            Save Booking (PENDING)
+            ↓
+            Call Payment API (wait 2–5 sec)
+            ↓
+            Payment Success/Fail
+            ↓
+            Commit/Rollback Booking
+    
+    Problems:
+        DB locks held during payment call
+        If payment gateway is slow → booking TX blocks
+        If gateway times out → DB TX may roll back unnecessarily
+        High load → DB connection pool exhaustion
+        
+***********************************************************************************************************************************
+
+Questions 8. Why sometimes @Transactional works on interface but not always?
+
+    Even if your code is same, Spring may decide to wrap your service using:
+    👉 Interface proxy
+    👉 Class proxy
+
+    This decision can change based on project settings, Spring Boot version, dependencies, or configuration defaults.
+
+    // InventoryService.java (INTERFACE)
+    public interface InventoryService {
+
+        // ❗ This MAY work in some projects, but is not reliable across proxy types/configs
+        @Transactional
+        void reserve(String productId, int qty);
+    }
+
+
+    // InventoryServiceImpl.java (IMPLEMENTATION)
+    @Service
+    public class InventoryServiceImpl implements InventoryService {
+
+        private final InventoryRepository inventoryRepository;
+
+        @Override
+        public void reserve(String productId, int qty) {
+            Inventory inv = inventoryRepository.findByProductId(productId)
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+
+            if (inv.getAvailable() < qty) {
+                throw new RuntimeException("Out of stock");
+            }
+
+            inv.setAvailable(inv.getAvailable() - qty); // dirty checking update
+        }
+    }
+
+    In Project A
+        Spring uses interface proxy → Sees annotation → Transaction works ✅
+
+    In Project B
+        Spring uses class proxy → Looks at InventoryServiceImpl → No annotation → No transaction ❌
+
+    Same code → Different behavior 
+
+    ✅ Why Spring Chooses Different Proxy Style (Simple Version)
+        Spring may switch because of:
+        Some configs force class proxy
+        Some libraries need class proxy
+        Some tests use different defaults
+        Some Spring Boot versions change default behavior
+
+    Interface Proxy (JDK Proxy):
+    Spring creates a proxy using the service interface, so @Transactional on the interface method may work because the proxy calls the interface method.
+
+    Class Proxy (CGLIB Proxy):
+    Spring creates a proxy using the implementation class, so @Transactional must be on the class method; interface annotations may be ignored.
+
+***********************************************************************************************************************************
+10. Why LazyInitializationException occurs even inside transaction sometimes?
+
