@@ -21,33 +21,46 @@ Violation:
 
 
     // Java
-    public class Bird {
-        public void fly() {
-            System.out.println("Bird is flying");
-        }
+    public abstract class Bird {
+        public abstract void eat();
+
+        public abstract void fly();
     }
+
 
     // Java
     public class Sparrow extends Bird {
         @Override
+        public void eat() {
+            System.out.println("Sparrow is eating seeds.");
+        }
+
+        @Override
         public void fly() {
-            System.out.println("Sparrow is flying");
+            System.out.println("Sparrow is flying.");
         }
     }
 
     // Java
     public class Penguin extends Bird {
         @Override
+        public void eat() {
+            System.out.println("Penguin is eating fish.");
+        }
+
+        @Override
         public void fly() {
             throw new UnsupportedOperationException("Penguin can't fly");
         }
     }
-
     // Java
     public class BirdWatcher {
-        public void observe(Bird bird) {
-            System.out.println("BirdWatcher: Let's watch the bird fly!");
-            bird.fly(); // Assumes all birds can fly
+        public void watchBird(Bird bird) {
+            System.out.println("Watching a bird...");
+            System.out.println("First, let's see it eat...");
+            bird.eat();
+            System.out.println("Now let's see it fly...");
+            bird.fly();
         }
     }
 
@@ -56,11 +69,11 @@ Violation:
         public static void main(String[] args) {
             BirdWatcher watcher = new BirdWatcher();
 
-            Bird sparrow = new Sparrow();
-            watcher.observe(sparrow); // OK
+        Bird sparrow = new Sparrow();
+        watcher.watchBird(sparrow); // Works fine: Sparrow can eat and fly
 
-            Bird penguin = new Penguin();
-            watcher.observe(penguin); // Throws exception: violates LSP
+        Bird penguin = new Penguin();
+        watcher.watchBird(penguin); // Throws exception: violates LSP
         }
     }
 

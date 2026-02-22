@@ -1,3 +1,5 @@
+Clients should not be forced to depend on methods they don’t use.
+
 Interface Segregation Principle says interfaces should be small and specific so classes don’t implement methods they don’t use.
 
 Split large, general-purpose interfaces into smaller, more specific ones.

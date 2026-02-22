@@ -6,7 +6,8 @@ Dependency Inversion Principle (DIP) is one of the SOLID design principles in ob
 
 Simple meaning:
 
-Instead of directly creating or depending on concrete classes, classes should depend on interfaces or abstractions. This makes code flexible, testable, and easy to change.
+Instead of directly creating or depending on concrete classes, classes should depend on interfaces or abstractions. 
+This makes code flexible, testable, and easy to change.
 
 ---------------------------------------------------------------------------------------------------
 DIP Violation :
