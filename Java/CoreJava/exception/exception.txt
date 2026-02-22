@@ -1,86 +1,49 @@
 Java Exception Handling Interview Questions
 🔹 Basic Exception Handling Questions
-
-What is an Exception in Java?
-
-Difference between Error and Exception?
-
-What is checked vs unchecked exception?
-
-What is Exception hierarchy in Java?
-
-What is try-catch block?
-
-What is finally block?
-
-Can we write try block without catch?
-
-Can we write try without finally?
-
-Can we have multiple catch blocks?
-
-What is stack trace?
+    What is an Exception in Java?
+    Difference between Error and Exception?
+    What is checked vs unchecked exception?
+    What is Exception hierarchy in Java?
+    What is try-catch block?
+    What is finally block?
+    Can we write try block without catch?
+    Can we write try without finally?
+    Can we have multiple catch blocks?
+    What is stack trace?
 
 🔹 Intermediate Level Questions
-
-What is throw vs throws?
-
-What is custom exception?
-
-How do you create user-defined exception?
-
-What is try-with-resources?
-
-What is AutoCloseable interface?
-
-What happens if exception occurs in finally block?
-
-Can finally block be skipped?
-
-What is multi-catch block?
-
-What is exception chaining?
-
-What is suppressed exception?
+    What is throw vs throws?
+    What is custom exception?
+    How do you create user-defined exception?
+    What is try-with-resources?
+    What is AutoCloseable interface?
+    What happens if exception occurs in finally block?
+    Can finally block be skipped?
+    What is multi-catch block?
+    What is exception chaining?
+    What is suppressed exception?
 
 🔹 Advanced / Senior Level Questions
-
-Why checked exceptions are controversial?
-
-How exception handling impacts performance?
-
-Best practices for exception design?
-
-Should you catch Throwable? Why not?
-
-When should you rethrow exception?
-
-What is fail-fast vs fail-safe error handling strategy?
-
-Exception handling in multi-threaded applications?
-
-What is lost exception problem?
-
-How JVM handles exception internally?
-
-What happens when exception is not handled?
+    Why checked exceptions are controversial?
+    How exception handling impacts performance?
+    Best practices for exception design?
+    Should you catch Throwable? Why not?
+    When should you rethrow exception?
+    What is fail-fast vs fail-safe error handling strategy?
+    Exception handling in multi-threaded applications?
+    What is lost exception problem?
+    How JVM handles exception internally?
+    What happens when exception is not handled?
 
 🔹 Scenario-Based Questions (Very Important)
-
 👉 If exception occurs in try and finally both — which executes?
-
 👉 You must log exception but not stop execution — how design?
-
 👉 How do you design global exception handling in enterprise apps?
-
 👉 How do you handle exceptions in microservices?
-
 👉 If database connection fails — retry or throw?
-
 👉 How do you design exception hierarchy for large system?
 
 🔹 Tricky / Trap Questions
-
 ⚡ Can we catch multiple exceptions in one catch?
 👉 Yes (Java 7 multi-catch)
 
@@ -97,28 +60,14 @@ What happens when exception is not handled?
 👉 Yes (wrapped in ExceptionInInitializerError)
 
 🔹 Coding Based Questions
-
 Write custom exception class.
-
 Implement try-with-resources example.
-
 Demonstrate exception chaining.
-
 Demonstrate multi-catch block.
 
 🔹 Real Production Discussion Questions
-
 ✔ When should you avoid checked exceptions?
 ✔ Logging vs throwing — best practice?
 ✔ Should business exceptions be checked or unchecked?
 ✔ Exception handling in REST APIs (mapping to HTTP status)
 ✔ Circuit breaker vs exception retry
-
-⭐ Must Prepare (If Interview is Near)
-
-Focus on:
-✅ Checked vs Unchecked
-✅ finally block behavior
-✅ try-with-resources
-✅ Custom exceptions
-✅ Exception design best practices

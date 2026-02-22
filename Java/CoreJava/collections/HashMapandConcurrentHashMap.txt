@@ -1,119 +1,68 @@
 HashMap Interview Questions
 🔹 Basic HashMap Questions
-
 What is HashMap in Java?
-
 How HashMap stores data internally?
-
 What is hashing?
-
 What is hash collision?
-
 What is load factor?
-
 Default capacity and load factor of HashMap?
-
 Difference between HashMap and Hashtable?
-
 Can HashMap have null key and null values?
-
 Is HashMap thread-safe?
-
 What is bucket in HashMap?
 
 🔹 HashMap Internal Working (Very Important)
-
 How HashMap works internally in Java 8+?
-
 What is hash spreading (hash perturbation)?
-
 What is treeification in HashMap?
-
 When does HashMap convert LinkedList to Red-Black Tree?
-
 What is resizing and rehashing?
-
 What is threshold?
-
 Why power of 2 size is used?
-
 How equals() and hashCode() are used in HashMap?
-
 What happens if hashCode() is same for all objects?
-
 What happens if equals() is not overridden?
 
 🔹 Advanced HashMap Questions
-
 Why HashMap is not thread-safe?
-
 What was infinite loop issue in HashMap before Java 8?
-
 How iteration order works in HashMap?
-
 Difference between HashMap vs LinkedHashMap vs TreeMap?
-
 Memory overhead of HashMap?
-
 How to make HashMap thread safe?
-
 How fail-fast iterator works?
-
 How HashMap handles high collision scenarios?
-
 Why Red-Black tree used instead of AVL tree?
-
 How HashMap performance degrades?
 
 ✅ ConcurrentHashMap Interview Questions
 🔹 Basic ConcurrentHashMap Questions
-
 What is ConcurrentHashMap?
-
 Difference between HashMap and ConcurrentHashMap?
-
 Can ConcurrentHashMap have null key or value?
-
 Is ConcurrentHashMap fully synchronized?
-
 What is segment locking (Java 7)?
 
 🔹 ConcurrentHashMap Internal Working (Java 8+)
-
 How ConcurrentHashMap works internally in Java 8?
-
 What is CAS (Compare And Swap)?
-
 What is bucket-level locking?
-
 What is lock striping?
-
 How resizing happens in ConcurrentHashMap?
 
 🔹 Advanced ConcurrentHashMap Questions
-
 How ConcurrentHashMap achieves high concurrency?
-
 What is weakly consistent iterator?
-
 How computeIfAbsent() works internally?
-
 Difference between synchronizedMap and ConcurrentHashMap?
-
 Performance comparison under high concurrency?
 
 ✅ Scenario-Based Questions (Very Important for Senior Roles)
-
 👉 When would you choose ConcurrentHashMap over synchronized HashMap?
-
 👉 High read, low write system — which map will you use?
-
 👉 Cache design — HashMap or ConcurrentHashMap?
-
 👉 Multiple threads updating same key — what happens?
-
 👉 How do you design lock-free cache using ConcurrentHashMap?
-
 👉 How do you avoid contention in ConcurrentHashMap?
 
 ✅ Tricky / Trap Questions
@@ -131,11 +80,7 @@ Performance comparison under high concurrency?
 👉 Yes (Java 8+)
 
 ✅ Coding Questions (Common)
-
-Implement custom HashMap (basic version).
-
-Design thread-safe cache using ConcurrentHashMap.
-
-Count word frequency using ConcurrentHashMap.
-
-LRU cache using HashMap + Doubly Linked List.
+    Implement custom HashMap (basic version).
+    Design thread-safe cache using ConcurrentHashMap.
+    Count word frequency using ConcurrentHashMap.
+    LRU cache using HashMap + Doubly Linked List.
