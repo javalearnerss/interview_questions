@@ -1,0 +1,142 @@
+
+The Liskov Substitution Principle (LSP) is the third SOLID principle.
+
+It states: "Objects of a superclass should be replaceable with objects of a subclass without affecting the correctness of the program."
+
+The problem LSP solves: Prevents subclasses from breaking the behavior expected from the base class, ensuring that derived classes extend base classes without changing their intended behavior.
+
+
+Summary:
+
+LSP solves the problem where subclasses override or extend base class methods in a way that violates the expectations or contracts of the base class.
+
+This prevents bugs and unexpected behavior when using polymorphism, making code more robust and maintainable.
+
+Example: If a subclass throws exceptions or changes method semantics, code using the base class may break when a subclass is substituted. LSP ensures this does not happen.
+
+Violation:
+    1. Show a violation of the Liskov Substitution Principle (LSP) using a Bird example.
+    2. Problem: Subclass Penguin cannot fly, but base class Bird has a fly() method.
+    3. Substituting Penguin for Bird breaks expected behavior.
+
+
+    // Java
+    public class Bird {
+        public void fly() {
+            System.out.println("Bird is flying");
+        }
+    }
+
+    // Java
+    public class Sparrow extends Bird {
+        @Override
+        public void fly() {
+            System.out.println("Sparrow is flying");
+        }
+    }
+
+    // Java
+    public class Penguin extends Bird {
+        @Override
+        public void fly() {
+            throw new UnsupportedOperationException("Penguin can't fly");
+        }
+    }
+
+    // Java
+    public class BirdWatcher {
+        public void observe(Bird bird) {
+            System.out.println("BirdWatcher: Let's watch the bird fly!");
+            bird.fly(); // Assumes all birds can fly
+        }
+    }
+
+    // Java
+    public class Main {
+        public static void main(String[] args) {
+            BirdWatcher watcher = new BirdWatcher();
+
+            Bird sparrow = new Sparrow();
+            watcher.observe(sparrow); // OK
+
+            Bird penguin = new Penguin();
+            watcher.observe(penguin); // Throws exception: violates LSP
+        }
+    }
+
+This design violates LSP because substituting a Penguin for a Bird causes unexpected exceptions.
+A better design would avoid forcing all birds to implement fly(), or use interfaces for flying birds only.
+
+
+---------------------------------------------------------------------------------------------------
+
+Fix:
+    Use interfaces for behaviors (Flyable, Swimmable).
+    Use a base class Bird for common properties.
+    Use dependency injection and polymorphism to avoid explicit instanceof checks.
+    Create a BirdService class to process birds and invoke their behaviors.
+    Use a list of birds and process them in a clean, extensible way.
+
+
+    // Java
+    public abstract class Bird {
+        public void eat() {
+            System.out.println(getClass().getSimpleName() + " is eating");
+        }
+    }
+
+    // Java
+    public interface Flyable {
+        void fly();
+    }
+
+    // Java
+    public interface Swimmable {
+        void swim();
+    }
+
+    // Java
+    public class Sparrow extends Bird implements Flyable {
+        @Override
+        public void fly() {
+            System.out.println("Sparrow is flying");
+        }
+    }
+
+    // Java
+    public class Penguin extends Bird implements Swimmable {
+        @Override
+        public void swim() {
+            System.out.println("Penguin is swimming");
+        }
+    }
+
+
+    // Java
+    public class BirdService {
+        public void processBird(Bird bird) {
+            bird.eat();
+
+            if (bird instanceof Flyable flyable) {
+                flyable.fly();
+            }
+
+            if (bird instanceof Swimmable swimmable) {
+                swimmable.swim();
+            }
+        }
+    }
+
+    // Java
+    public class BirdDemo {
+        public static void main(String[] args) {
+            BirdService service = new BirdService();
+
+            Bird sparrow = new Sparrow();
+            Bird penguin = new Penguin();
+
+            service.processBird(sparrow);
+            service.processBird(penguin);
+        }
+    }
+

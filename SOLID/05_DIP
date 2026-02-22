@@ -1,0 +1,137 @@
+Dependency Inversion Principle (DIP) is one of the SOLID design principles in object-oriented programming.
+
+➡️ High-level modules should not depend on low-level modules. Both should depend on abstractions (interfaces).
+
+➡️ Abstractions should not depend on details; details should depend on abstractions.
+
+Simple meaning:
+
+Instead of directly creating or depending on concrete classes, classes should depend on interfaces or abstractions. This makes code flexible, testable, and easy to change.
+
+---------------------------------------------------------------------------------------------------
+DIP Violation :
+
+class EmailService {
+    void send(String msg) {
+        System.out.println("Sending EMAIL: " + msg);
+    }
+}
+
+class NotificationManager {
+    private EmailService emailService = new EmailService();
+
+    void notifyUser(String msg) {
+        emailService.send(msg);
+    }
+}
+
+Problems:
+    NotificationManager depends directly on EmailService.
+    If tomorrow you want SMS → must change the manager.
+    Hard to test.
+
+
+Fix:
+
+Step 1 — Create abstraction (interface)
+
+    interface MessageService {
+        void send(String msg);
+    }
+
+Step 2 — Low-level modules depend on abstraction
+
+    class EmailService implements MessageService {
+        public void send(String msg) {
+            System.out.println("Sending EMAIL: " + msg);
+        }
+    }
+
+    class SmsService implements MessageService {
+        public void send(String msg) {
+            System.out.println("Sending SMS: " + msg);
+        }
+    }
+
+Step 3 — High-level module depends on abstraction
+
+    class NotificationManager {
+        private MessageService service;
+
+        NotificationManager(MessageService service) {
+            this.service = service;
+        }
+
+        void notifyUser(String msg) {
+            service.send(msg);
+        }
+    }
+
+Step 4 — Usage (Switch implementation easily)
+
+public class Main {
+    public static void main(String[] args) {
+
+        MessageService email = new EmailService();
+        NotificationManager manager1 =
+                new NotificationManager(email);
+        manager1.notifyUser("Hello via Email");
+
+        MessageService sms = new SmsService();
+        NotificationManager manager2 =
+                new NotificationManager(sms);
+        manager2.notifyUser("Hello via SMS");
+    }
+}
+
+High-level module
+➡️ NotificationManager
+
+Low-level modules
+➡️ EmailService, SmsService
+
+Abstraction
+➡️ MessageService
+
+Now:
+
+✔ High-level module does NOT depend on concrete classes
+✔ Both depend on abstraction (interface)
+✔ Easy to extend (add WhatsAppService)
+✔ Easy testing (mock interface)
+
+
+---------------------------------------------------------------------------------------------------
+
+➡️ Abstractions should not depend on details; details should depend on abstractions. What does this means?
+
+Simple meaning:
+
+➡️ Interfaces (abstractions) should be independent.
+➡️ Concrete classes (details) should follow the interface, not the other way around.
+
+Very simple explanation:
+
+First create a general contract (interface).
+
+Then let specific implementations follow that contract.
+
+interface Payment {   // abstraction
+    void pay();
+}
+
+class CreditCard implements Payment {  // detail
+    public void pay() {}
+}
+
+Here:
+
+Payment does NOT know about CreditCard.
+
+CreditCard depends on Payment.
+
+One-line easy memory:
+
+“Define rules first, implementations follow the rules.”
+
+-------------------------------------------------------------

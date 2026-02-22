@@ -1,0 +1,96 @@
+Interface Segregation Principle says interfaces should be small and specific so classes don’t implement methods they don’t use.
+
+Split large, general-purpose interfaces into smaller, more specific ones.
+Example: Instead of a single Worker interface with unrelated methods, use separate interfaces for each responsibility.
+
+
+    Show ISP violation: a single interface forces classes to implement methods they don’t need.
+    Example: Worker interface with work() and eat(). Robot must implement eat(), which is irrelevant.
+
+    Fix: Split into Workable and Eatable interfaces. Human implements both. Robot only implements Workable.
+    Use industry standard code: interfaces for behaviors, classes implement only what they need.
+
+Violation Example (‘Worker’ interface):
+
+    public interface Worker {
+        void work();
+        void eat();
+    }
+
+
+    public class Human implements Worker {
+
+        @Override
+        public void work() {
+            System.out.println("Human is working");
+        }
+
+        @Override
+        public void eat() {
+            System.out.println("Human is eating");
+        }
+    }
+
+
+    // Java
+    public class Robot implements Worker {
+
+        @Override
+        public void work() {
+            System.out.println("Robot is working");
+        }
+
+        @Override
+        public void eat() {
+            // Irrelevant for Robot, but must implement
+            throw new UnsupportedOperationException("Robot can't eat");
+        }
+    }
+
+
+Industry Standard Fix (Split interfaces):
+
+    public interface Workable {
+        void work();
+    }
+
+
+    public interface Eatable {
+        void eat();
+    }
+
+
+    
+    public class Human implements Workable, Eatable {
+
+        @Override
+        public void work() {
+            System.out.println("Human is working");
+        }
+
+        @Override
+        public void eat() {
+            System.out.println("Human is eating");
+        }
+    }
+
+
+    
+    public class Robot implements Workable {
+
+        @Override
+        public void work() {
+            System.out.println("Robot is working");
+        }
+    }
+
+    
+    public class Robot implements Workable {
+
+        @Override
+        public void work() {
+            System.out.println("Robot is working");
+        }
+    }
+
+The above fix follows the interface segregation principle : Classes only depend on interfaces relevant to their behavious.

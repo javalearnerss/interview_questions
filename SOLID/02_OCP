@@ -1,0 +1,95 @@
+The Open/Closed Principle (OCP) is the second SOLID principle.
+It states: “Software entities (classes, modules, functions) should be open for extension, but closed for modification.”
+This means you should be able to add new functionality by adding new code, not by changing existing code.
+Achieve this by using abstraction (interfaces, abstract classes) and polymorphism.
+
+
+Violation:
+1. Show how the current implementation violates the Open/Closed Principle (OCP) and is incomplete.
+2. Demonstrate the problem: Each payment type needs different data (e.g., card number, pin, bank account).
+3. Every time a new payment type or new data is needed, you must modify the processPayment method, making the code hard to maintain and extend.
+
+    // Java
+    public class PaymentProcessor {
+        public void processPayment(String type, double amount, String cardNo, String pin, String bankAccount) {
+            if ("creditcard".equalsIgnoreCase(type)) {
+                if (cardNo == null || pin == null) {
+                    throw new IllegalArgumentException(
+                        "Card number and PIN required for credit card payment");
+                }
+                System.out.println("Processing credit card payment of $" + amount +
+                                " with card: " + cardNo + " and pin: " + pin);
+                // Credit card logic
+            } else if ("paypal".equalsIgnoreCase(type)) {
+                System.out.println("Processing PayPal payment of $" + amount);
+                // PayPal logic
+            } else if ("bank".equalsIgnoreCase(type)) {
+                if (bankAccount == null) {
+                    throw new IllegalArgumentException(
+                        "Bank account required for bank transfer");
+                }
+                System.out.println("Processing bank transfer of $" + amount +
+                                " from account: " + bankAccount);
+                // Bank transfer logic
+            } else {
+                throw new IllegalArgumentException("Unknown payment type: " + type);
+            }
+        }
+    }
+
+
+Problem with above class:
+1. The method signature grows as you add more payment types and their required data.
+2. You must keep adding parameters and if-else logic, making the code error-prone and violating OCP.
+3. Adding a new payment method or changing requirements for an existing one requires modifying this class, risking bugs in existing logic.
+
+OCP Solution:
+1. Use a PaymentMethod interface and separate classes for each payment type.
+2. Each class handles its own required data and logic.
+3. The processor uses the interface, so new payment types can be added without modifying existing code.
+
+
+    // Java
+    public interface PaymentMethod {
+        void pay(double amount);
+    }
+
+    // Java
+    public class CreditCardPayment implements PaymentMethod {
+        @Override
+        public void pay(double amount) {
+            System.out.println("Paid $" + amount + " using Credit Card.");
+        }
+    }
+
+    // Java
+    public class PayPalPayment implements PaymentMethod {
+        @Override
+        public void pay(double amount) {
+            System.out.println("Paid $" + amount + " using PayPal.");
+        }
+    }
+
+    // Java
+    public class PaymentProcessor {
+        public void processPayment(PaymentMethod method, double amount) {
+            method.pay(amount);
+        }
+    }
+
+    // Java
+    public class Main {
+        public static void main(String[] args) 
+        {
+            PaymentProcessor processor = new PaymentProcessor();
+            PaymentMethod creditCard = new CreditCardPayment();
+            PaymentMethod payPal = new PayPalPayment();
+            processor.processPayment(creditCard, 100.0);
+            processor.processPayment(payPal, 200.0);
+            // To add a new payment method, just implement PaymentMethod and use it here.
+        }
+    }
+
+Summary:
+You can add new payment methods by creating new classes that implement PaymentMethod, without changing PaymentProcessor or existing payment classes. This follows the Open/Closed Principle.
+

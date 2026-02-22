@@ -1,0 +1,89 @@
+Single Responsibility Principle (SRP)
+
+The Single Responsibility Principle (SRP) states that a class should have only one reason to change, meaning it should have only one job or responsibility.
+
+
+1. SRP Violation — Wrong Design
+
+Instead of separating reading and writing, imagine we combine both responsibilities into one class.
+
+// Java
+public class FileUtil {
+
+    // Responsibility 1 → Reading file
+    public String readFile(String filePath) {
+        // Logic to read file
+        return "file content";
+    }
+
+    // Responsibility 2 → Writing file
+    public void writeFile(String filePath, String content) {
+        // Logic to write file
+    }
+}
+
+// Java
+public class Main {
+
+    public static void main(String[] args) {
+
+        FileUtil fileUtil = new FileUtil();
+
+        String content = fileUtil.readFile("input.txt");
+        fileUtil.writeFile("output.txt", content);
+    }
+}
+
+Why this violates SRP
+
+FileUtil has multiple reasons to change:
+1️⃣ Read logic changes
+If file reading changes (new format, encoding, buffering, compression), this class changes.
+
+2️⃣ Write logic changes
+If writing logic changes (append mode, encryption, permissions), the same class changes again.
+
+➡ One class handling multiple responsibilities = SRP violation
+
+2. Fix:
+
+
+Example: Separate file reading and file writing responsibilities into different classes.
+
+// Java
+public class FileReaderUtil {
+
+    public String readFile(String filePath) {
+        // Logic to read file and return content
+        return "file content";
+    }
+}
+
+
+// Java
+public class FileWriterUtil {
+
+    public void writeFile(String filePath, String content) {
+        // Logic to write content to file
+    }
+}
+
+
+// Java
+public class Main {
+
+    public static void main(String[] args) {
+
+        FileReaderUtil reader = new FileReaderUtil();
+        String content = reader.readFile("input.txt");
+
+        FileWriterUtil writer = new FileWriterUtil();
+        writer.writeFile("output.txt", content);
+    }
+}
+
+Summary:
+Each class has a single responsibility:
+FileReaderUtil only reads files
+FileWriterUtil only writes files
+This makes the code easier to maintain and extend, following SRP.
