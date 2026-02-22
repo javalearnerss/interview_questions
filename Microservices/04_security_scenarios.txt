@@ -1,258 +1,109 @@
 Microservices Security Scenario-Based Interview Questions (Experienced)
-🔐 1️⃣ Service-to-Service Authentication Scenario
-✅ Scenario
-
-You have 25 Spring Boot microservices communicating internally.
-
-Questions
-
-How will services authenticate each other?
-
-JWT propagation OR OAuth Client Credentials OR mTLS — when to use what?
-
-Where do you validate tokens — Gateway OR each service?
-
-👉 What interviewer expects
-
-Zero trust mindset
-
-Defense in depth
-
-Gateway + service-level validation
-
-🚨 2️⃣ Token Leakage Production Incident
-✅ Scenario
-
-Access tokens appeared in logs in production.
-
-Questions
-
-How do you immediately mitigate?
-
-How do you prevent in future?
-
-How do you rotate compromised tokens?
-
-👉 Expected Thinking
-
-Mask logs
-
-Reduce token TTL
-
-Rotate signing keys
-
-Audit access
-
-🔥 3️⃣ Public API vs Internal API Security
-✅ Scenario
-
-Public clients + internal services both call same service.
-
-Questions
-
-Same auth mechanism or different?
-
-How do you separate internal vs external traffic?
-
-👉 Expected
-
-API Gateway for external
-
-mTLS / private network for internal
-
-Different scopes / audiences
-
-💣 4️⃣ Compromised Microservice Scenario
-✅ Scenario
-
-One microservice is compromised by attacker.
-
-Questions
-
-How do you stop lateral movement?
-
-What should already be in place?
-
-👉 Expected
-
-mTLS
-
-Network policies
-
-Least privilege tokens
-
-Service identity
-
-🧱 5️⃣ Secrets Management Scenario
-✅ Scenario
-
-Developer stored DB password in application.yml.
-
-Questions
-
-Why is this dangerous?
-
-How should secrets be stored?
-
-👉 Expected
-
-Vault / AWS Secrets Manager
-
-K8s Secrets (encrypted at rest)
-
-Short lived credentials
-
-🌐 6️⃣ API Gateway Bypass Scenario
-✅ Scenario
-
-Attacker directly calls internal service URL bypassing gateway.
-
-Questions
-
-How do you prevent?
-
-Is gateway alone enough?
-
-👉 Expected
-
-Service-level auth
-
-Private networking
-
-Mutual TLS
-
-Network firewall rules
-
-🧵 7️⃣ Async Security Scenario (Kafka / Events)
-✅ Scenario
-
-Events contain sensitive data.
-
-Questions
-
-Do you encrypt payload?
-
-How do you authenticate producer?
-
-👉 Expected
-
-Message encryption
-
-Topic ACL
+1️⃣ Service-to-Service Authentication Scenario
+    You have 25 Spring Boot microservices communicating internally.
+    Questions
+    1. How will services authenticate each other?
+    2. JWT propagation OR OAuth Client Credentials OR mTLS — when to use what?
+    3. Where do you validate tokens — Gateway OR each service?
+
+
+2️⃣ Token Leakage Production Incident
+    Access tokens appeared in logs in production.
+    Questions
+    1. How do you immediately mitigate?
+    2. How do you prevent in future?
+    3. How do you rotate compromised tokens?
+
+3️⃣ Public API vs Internal API Security
+    Public clients + internal services both call same service.
+    Questions
+    1.Same auth mechanism or different?
+    2. How do you separate internal vs external traffic?
+
+
+    API Gateway for external
+    mTLS / private network for internal
+
+4️⃣ Compromised Microservice Scenario
+    One microservice is compromised by attacker.
+    Questions
+    1. How do you stop lateral movement?
+    2. What should already be in place?
+
+
+    mTLS
+    Network policies
+    Least privilege tokens
+    Service identity
+
+5️⃣ Secrets Management Scenario
+    Developer stored DB password in application.yml.
+    Questions
+    Why is this dangerous?
+    How should secrets be stored?
+
+
+    Vault / AWS Secrets Manager
+    K8s Secrets (encrypted at rest)
+    Short lived credentials
+
+6️⃣ API Gateway Bypass Scenario
+    Attacker directly calls internal service URL bypassing gateway.
+    Questions
+    1. How do you prevent?
+    2. Is gateway alone enough?
+
+    Service-level auth
+    Private networking
+    Mutual TLS
+    Network firewall rules
+
+7️⃣ Async Security Scenario (Kafka / Events)
+    Events contain sensitive data.
+    Questions
+    1. Do you encrypt payload?
+    2. How do you authenticate producer?
+
+
+    Message encryption
+    Topic ACL
 
 Service identity auth
 
-🧪 8️⃣ Zero Trust Migration Scenario
-✅ Scenario
+8️⃣ Zero Trust Migration Scenario
+    Company moving from trusted internal network → Zero Trust.
+    Questions
+    What changes in microservices security model?
+    What becomes mandatory?
 
-Company moving from trusted internal network → Zero Trust.
 
-Questions
+    Every call authenticated
+    Every call authorized
+    No implicit trust
 
-What changes in microservices security model?
+9️⃣ Performance vs Security Tradeoff Scenario
+    Security team wants token validation on every service call → latency increase.
+    Questions
+    How do you optimize?
+    Cache tokens? Risk?
 
-What becomes mandatory?
 
-👉 Expected
+    Token introspection cache
+    Short cache TTL
+    Risk vs performance tradeoff
 
-Every call authenticated
+0️⃣ Key Rotation Scenario (Very Common)
+    JWT signing key rotated.
+    Questions
+    How do services handle old tokens?
+    How do you do zero downtime key rotation?
 
-Every call authorized
 
-No implicit trust
+    Multiple keys support (kid header)
+    Grace period    
+    JWKS endpoint
 
-⚡ 9️⃣ Performance vs Security Tradeoff Scenario
-✅ Scenario
 
-Security team wants token validation on every service call → latency increase.
-
-Questions
-
-How do you optimize?
-
-Cache tokens? Risk?
-
-👉 Expected
-
-Token introspection cache
-
-Short cache TTL
-
-Risk vs performance tradeoff
-
-🔑 🔥 10️⃣ Key Rotation Scenario (Very Common)
-✅ Scenario
-
-JWT signing key rotated.
-
-Questions
-
-How do services handle old tokens?
-
-How do you do zero downtime key rotation?
-
-👉 Expected
-
-Multiple keys support (kid header)
-
-Grace period
-
-JWKS endpoint
-
-⭐ Ultra Senior Scenarios (Architect Level)
-🚨 11️⃣ Multi-Region Security
-
-How do you manage identity across regions?
-
-How do you sync revocation lists?
-
-🚨 12️⃣ Insider Threat Scenario
-
-Employee with valid access abusing system.
-
-Questions:
-
-How detect?
-
-How limit blast radius?
-
-Expected:
-
-Audit trails
-
-Behavior anomaly detection
-
-Least privilege
-
-🚨 13️⃣ Supply Chain Attack Scenario
-
-Dependency compromised.
-
-Questions:
-
-How do you protect build pipeline?
-
-Runtime protection?
-
-🚨 14️⃣ Data Classification Scenario
-
-PII + Non-PII data mixed.
-
-Questions:
-
-How do you enforce encryption rules?
-
-Field-level encryption?
-
-🚨 15️⃣ Session vs Token Debate
-
-Mobile + Web + Microservices.
-
-Questions:
-
-When session still valid?
-
-When token mandatory?
 
 
 -----------------

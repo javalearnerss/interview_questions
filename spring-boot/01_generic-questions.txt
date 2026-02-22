@@ -50,131 +50,72 @@ REST & Web
 
 Data & JPA
 1. What is Spring Data JPA?
-
-Difference between JPA and Hibernate?
-
-What is CrudRepository vs JpaRepository?
-
-How does Spring Boot configure DataSource automatically?
-
-What is @Entity?
-
-What is @Transactional?
-
-What is the difference between save() and saveAndFlush()?
-
-How does Spring Boot manage database migrations?
-
-What is lazy vs eager fetching?
-
-How do you handle pagination in Spring Data?
+2. Difference between JPA and Hibernate?
+3. What is CrudRepository vs JpaRepository?
+4. How does Spring Boot configure DataSource automatically?
+5. What is @Entity?
+6. What is @Transactional?
+7. What is the difference between save() and saveAndFlush()?
+8. How does Spring Boot manage database migrations?
+9. What is lazy vs eager fetching?
+10. How do you handle pagination in Spring Data?
 
 Security
-
 What is Spring Security?
-
 How does Spring Boot auto-configure Spring Security?
-
 What is Authentication and Authorization?
-
 What is the default security behavior in Spring Boot?
-
 How do you disable default security?
-
 What is JWT and how is it used in Spring Boot?
-
 What is UserDetailsService?
-
 What is PasswordEncoder?
-
 How does CSRF protection work?
-
 How do you secure REST APIs in Spring Boot?
 
 Microservices & Cloud
-
 What is Spring Cloud?
-
 Difference between Spring Boot and Spring Cloud?
-
 What is service discovery?
-
 What is Eureka?
-
 What is a config server?
-
 How does Spring Boot support distributed configuration?
-
 What is circuit breaker?
-
 What is Resilience4j?
-
 What is API Gateway in Spring Cloud?
-
 How does Spring Boot handle inter-service communication?
 
 Actuator & Monitoring
-
 What is Spring Boot Actuator?
-
 What are actuator endpoints?
-
 How do you secure actuator endpoints?
-
 Difference between /health and /info?
-
 How do you customize actuator endpoints?
-
 How does Spring Boot support metrics?
-
 What is Micrometer?
-
 How does Spring Boot integrate with Prometheus?
-
 What is readiness vs liveness probe?
-
 How does actuator help in production?
 
 Testing
-
 How do you test Spring Boot applications?
-
 What is @SpringBootTest?
-
 What is @WebMvcTest?
-
 Difference between unit test and integration test?
-
 How do you mock beans in Spring Boot?
-
 What is @MockBean?
-
 How do you test REST APIs?
-
 What is Testcontainers?
-
 How do you test repositories?
-
 How does Spring Boot manage test configurations?
 
 Performance & Internals
-
 How does Spring Boot reduce startup time?
-
 What is Spring Boot DevTools?
-
 How does auto-configuration impact performance?
-
 How do you disable unused auto-configurations?
-
 What is classpath scanning?
-
 How does Spring Boot handle thread pools?
-
 What is the default task executor?
-
 How does Spring Boot manage memory?
-
 What is graceful shutdown?
-
 How do you tune Spring Boot for production?

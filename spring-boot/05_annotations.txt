@@ -24,6 +24,7 @@
 4. How does auto-configuration actually work internally?
    Spring Boot auto-configuration works by:
       1. Scanning the classpath for spring.factories files in all dependencies.
+        - META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
       2. Loading all classes listed under org.springframework.boot.autoconfigure.EnableAutoConfiguration.
       3. Each auto-configuration class is a @Configuration class with @Conditional annotations.
       4. At startup, Spring evaluates the conditions (e.g., is a certain class present? is a property set?).
@@ -34,9 +35,10 @@
 
 @Configuration
 1. Why are @Bean methods inside @Configuration class proxied?
-   @Configuration classes are enhanced using CGLIB proxies so Spring can intercept calls to @Bean methods. When one @Bean 
-   method calls another inside the same class, the proxy checks the Spring container first and returns the already created 
-   singleton bean, instead of executing the method again and creating a new instance.
+   Spring creates a CGLIB proxy around a @Configuration class so that calls to @Bean methods go through the Spring container, 
+   not directly to the method. When one @Bean method calls another inside the same class, 
+   the proxy checks the Spring container first and returns the already created singleton bean, 
+   instead of executing the method again and creating a new instance.
    This ensures:
       Singleton scope is preserved
       Bean dependencies are managed correctly
@@ -229,6 +231,27 @@ When do you need to explicitly define it?
          notificationService.sendEmail("user@gmail.com");
          System.out.println("Request completed");
 
+         @Service
+         public class ReportService {
+
+            @Async
+            public CompletableFuture<String> generateReport() {
+
+               System.out.println("Running in thread: " +
+                        Thread.currentThread().getName());
+
+               // simulate long work
+               try {
+                     Thread.sleep(3000);
+               } catch (InterruptedException e) {
+                     Thread.currentThread().interrupt();
+               }
+
+               String result = "Report Generated Successfully";
+
+               return CompletableFuture.completedFuture(result);
+            }
+         }
 
          Why does @Async fail if method is called internally?
          When you call an @Async method from another bean, the call goes through the proxy → Spring intercepts it → submits it to the async executor.
