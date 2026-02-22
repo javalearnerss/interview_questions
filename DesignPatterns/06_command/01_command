@@ -1,0 +1,126 @@
+Command Pattern
+The Command Pattern is a behavioral design pattern.
+It encapsulates a request as an object, allowing you to parameterize clients with different requests, queue or log requests, and support undoable operations.
+
+Components:
+    Command interface: declares an execute method.
+    ConcreteCommand: implements the command interface, binding an action and its receiver.
+    Receiver: knows how to perform the work.
+    Invoker: asks the command to execute the request.
+    Client: creates and configures commands.
+
+Real Use Case: GUI Button Actions (Undo/Redo in Text Editor)
+    Each button click (e.g., Copy, Paste, Undo) is encapsulated as a command object.
+    The invoker (button) calls execute on the command.
+    The receiver (editor) performs the actual operation.
+
+Pseudocode Plan
+    Implement a simple remote control using the Command Pattern.
+    There is a Light (Receiver) with on/off methods.
+    Define a Command interface with an execute() method.
+    Create two concrete commands: LightOnCommand and LightOffCommand.
+    The RemoteControl (Invoker) can set and execute commands.
+
+// Java
+package com.example.command;
+
+// Command interface
+public interface Command {
+
+    void execute();
+}
+
+// Java
+package com.example.command;
+
+// Receiver
+public class Light {
+
+    public void on() {
+        System.out.println("Light is ON");
+    }
+
+    public void off() {
+        System.out.println("Light is OFF");
+    }
+}
+
+
+// Java
+package com.example.command;
+
+// Concrete Command
+public class LightOnCommand implements Command {
+
+    private final Light light;
+
+    public LightOnCommand(Light light) {
+        this.light = light;
+    }
+
+    @Override
+    public void execute() {
+        light.on();
+    }
+}
+
+
+// Java
+package com.example.command;
+
+// Concrete Command
+public class LightOffCommand implements Command {
+
+    private final Light light;
+
+    public LightOffCommand(Light light) {
+        this.light = light;
+    }
+
+    @Override
+    public void execute() {
+        light.off();
+    }
+}
+
+// Java
+package com.example.command;
+
+// Invoker
+public class RemoteControl {
+
+    private Command command;
+
+    public void setCommand(Command command) {
+        this.command = command;
+    }
+
+    public void pressButton() {
+        command.execute();
+    }
+}
+
+
+// Java
+package com.example.command;
+
+// Client
+public class Main {
+
+    public static void main(String[] args) {
+
+        Light light = new Light();
+
+        Command lightOn  = new LightOnCommand(light);
+        Command lightOff = new LightOffCommand(light);
+
+        RemoteControl remote = new RemoteControl();
+
+        remote.setCommand(lightOn);
+        remote.pressButton();   // Output: Light is ON
+
+        remote.setCommand(lightOff);
+        remote.pressButton();   // Output: Light is OFF
+    }
+}
+

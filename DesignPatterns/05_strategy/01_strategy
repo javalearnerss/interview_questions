@@ -1,0 +1,84 @@
+
+Define a family of interchangeable algorithms (strategies), encapsulate each one, and let the client choose which to use at runtime.
+
+Pseudocode Plan
+    Define a CompressionStrategy interface.
+    Implement two strategies: ZipCompressionStrategy and TarCompressionStrategy (instead of RAR).
+    Create a Compressor context class that uses a CompressionStrategy.
+    Demonstrate usage in a Main class, showing how to switch strategies at runtime.
+
+
+// Java
+package com.example.strategy;
+
+public interface CompressionStrategy {
+
+    void compress(String fileName);
+}
+
+// Java
+package com.example.strategy;
+
+public class ZipCompressionStrategy implements CompressionStrategy {
+
+    @Override
+    public void compress(String fileName) {
+        System.out.println("Compressing " + fileName + " using ZIP compression.");
+        // Actual ZIP compression logic would go here
+    }
+}
+
+
+// Java
+package com.example.strategy;
+
+public class TarCompressionStrategy implements CompressionStrategy {
+
+    @Override
+    public void compress(String fileName) {
+        System.out.println("Compressing " + fileName + " using TAR compression.");
+        // Actual TAR compression logic would go here
+    }
+}
+
+// Java
+package com.example.strategy;
+
+public class Compressor {
+
+    private CompressionStrategy strategy;
+
+    public Compressor(CompressionStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public void setStrategy(CompressionStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public void compressFile(String fileName) {
+        strategy.compress(fileName);
+    }
+}
+
+
+// Java
+package com.example.strategy;
+
+public class Compressor {
+
+    private CompressionStrategy strategy;
+
+    public Compressor(CompressionStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public void setStrategy(CompressionStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public void compressFile(String fileName) {
+        strategy.compress(fileName);
+    }
+}
+

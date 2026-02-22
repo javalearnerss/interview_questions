@@ -1,0 +1,121 @@
+
+Imagine you want to visit a famous person in a big office. You can’t go straight to their room — you first meet a receptionist at the front desk. The receptionist checks if you have an appointment, maybe asks for your ID, and only then lets you in. Sometimes, the receptionist might even answer simple questions for you, so you don’t need to disturb the famous person at all.
+
+In software, the Proxy pattern works the same way. The proxy is like the receptionist: it stands between you and the real object, controlling access, checking permissions, or doing extra work before passing your request along. This way, you don’t interact with the real object directly, but through the proxy, which can add security, logging, or other features as needed.
+
+Example: Database Connection Pool Proxy
+
+A connection pool provides proxy objects for database connections. The proxy controls access, manages pooling (e.g., returns the connection to the pool instead of closing it), and can add logging or monitoring.
+
+
+// Java
+package com.example.db;
+
+public interface Connection {
+
+    void executeQuery(String sql);
+
+    void close();
+}
+
+
+// Java
+package com.example.db;
+
+public class RealConnection implements Connection {
+
+    @Override
+    public void executeQuery(String sql) {
+        System.out.println("Executing SQL: " + sql);
+    }
+}
+
+
+// Java
+package com.example.db;
+
+public class ConnectionProxy implements Connection {
+
+    private final RealConnection realConnection;
+    private final ConnectionPool pool;
+
+    public ConnectionProxy(RealConnection realConnection, ConnectionPool pool) {
+        this.realConnection = realConnection;
+        this.pool = pool;
+    }
+
+    @Override
+    public void executeQuery(String sql) {
+        System.out.println("Proxy: Logging query");
+        realConnection.executeQuery(sql);
+    }
+
+    @Override
+    public void close() {
+        System.out.println("Proxy: Returning connection to pool");
+        pool.releaseConnection(this);
+    }
+
+    public RealConnection getRealConnection() {
+        return realConnection;
+    }
+}
+
+
+
+// Java
+package com.example.db;
+
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class ConnectionPool {
+
+    private final Queue<RealConnection> pool = new LinkedList<>();
+
+    public ConnectionPool(int size) {
+        for (int i = 0; i < size; i++) {
+            pool.add(new RealConnection());
+        }
+    }
+
+    public Connection getConnection() {
+        RealConnection realConn = pool.poll();
+        if (realConn == null)
+            throw new RuntimeException("No connections available");
+        return new ConnectionProxy(realConn, this);
+    }
+
+    public void releaseConnection(ConnectionProxy proxy) {
+        pool.offer(proxy.getRealConnection());
+    }
+}
+
+
+// Java
+import com.example.db.*;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        ConnectionPool pool = new ConnectionPool(2);
+
+        Connection conn = pool.getConnection();
+        conn.executeQuery("SELECT * FROM trades");
+        conn.close(); // Returns to pool, not actually closed
+    }
+}
+
+
+1. Connection pools in Java (like HikariCP, Apache DBCP) use the Proxy pattern to manage and control access to real database connections.
+2. When you use a connection pool (like HikariCP), you request a connection from the pool.
+3. The pool does not give you the real JDBC connection object. Instead, it gives you a proxy object that implements the same java.sql.Connection interface.
+4. The proxy intercepts method calls (especially close()), so when you call close(), the connection is returned to the pool instead of being physically closed.
+5. This allows the pool to efficiently reuse connections, manage resources, and add features like monitoring, leak detection, and transaction management.
+6. If the real connection was given directly, the pool could not intercept close() and would lose control over the connection lifecycle.
+
+Summary (Key Points)
+The proxy is used so the pool can manage, reuse, and monitor connections.
+The proxy ensures that close() returns the connection to the pool, not to the database.
+This improves performance and resource management in your application.

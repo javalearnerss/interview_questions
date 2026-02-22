@@ -1,0 +1,116 @@
+Definition:
+The Chain of Responsibility pattern lets you pass a request along a chain of handlers. Each handler decides whether to process the request or pass it to the next handler in the chain.
+
+Pseudocode plan:
+1. Use a order processing analogy: Each order has a state (NEW, AMEND, CANCEL).
+2. There are specialized handlers: NewOrderHandler, AmendOrderHandler, CancelOrderHandler.
+3. Each handler checks if it can process the order based on its state.
+4. If it can, it processes the order; if not, it passes the order to the next handler in the chain.
+5. If no handler can process the order, it is ignored or logged.
+
+Analogy explanation (order chain only):
+1. Imagine a order processing system where every order comes in with a specific state: NEW, AMEND, or CANCEL. There is a chain of handlers, each responsible for one state:
+
+    a. The first handler checks if the order is NEW. If yes, it processes it. If not, it passes the order to the next handler.
+    b. The second handler checks if the order is AMEND. If yes, it processes it. If not, it passes the order to the next handler.
+    c. The third handler checks if the order is CANCEL. If yes, it processes it. If not, the order is ignored.
+
+2. Each handler only knows how to process its assigned state. If a order doesn’t match, it moves down the chain until a handler processes it or the chain ends.
+
+
+This is the Chain of Responsibility pattern:
+Each handler gets a chance to process the order, and the order moves through the chain until it finds the right handler. This makes the system flexible and easy to extend (add more states/handlers) without changing the existing logic.
+
+
+public class Order {
+
+    private final String id;
+    private final String state;
+
+    public Order(String id, String state) {
+        this.id = id;
+        this.state = state;
+    }
+
+    public String getId() { return id; }
+
+    public String getState() { return state; }
+}
+
+
+public abstract class OrderHandler {
+
+    protected OrderHandler next;
+
+    public void setNext(OrderHandler next) {
+        this.next = next;
+    }
+
+    public void handle(Order order) {
+        if (!process(order) && next != null) {
+            next.handle(order);
+        } else if (!process(order)) {
+            System.out.println(
+                "No handler for order: "
+                + order.getId()
+                + " with state: "
+                + order.getState()
+            );
+        }
+    }
+
+    protected abstract boolean process(Order order);
+}
+
+
+public class NewOrderHandler extends OrderHandler {
+
+    @Override
+    protected boolean process(Order order) {
+        if ("NEW".equalsIgnoreCase(order.getState())) {
+            System.out.println("Processing NEW order: " + order.getId());
+            return true;
+        }
+        return false;
+    }
+}
+
+
+public class AmendOrderHandler extends OrderHandler {
+
+    @Override
+    protected boolean process(Order order) {
+        if ("AMEND".equalsIgnoreCase(order.getState())) {
+            System.out.println("Processing AMEND order: " + order.getId());
+            return true;
+        }
+        return false;
+    }
+}
+
+
+
+public class CancelOrderHandler extends OrderHandler {
+
+    @Override
+    protected boolean process(Order order) {
+        if ("CANCEL".equalsIgnoreCase(order.getState())) {
+            System.out.println("Processing CANCEL order: " + order.getId());
+            return true;
+        }
+        return false;
+    }
+}
+
+
+public class CancelOrderHandler extends OrderHandler {
+
+    @Override
+    protected boolean process(Order order) {
+        if ("CANCEL".equalsIgnoreCase(order.getState())) {
+            System.out.println("Processing CANCEL order: " + order.getId());
+            return true;
+        }
+        return false;
+    }
+}

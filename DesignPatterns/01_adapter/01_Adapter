@@ -1,0 +1,123 @@
+
+The Adapter design pattern allows two incompatible interfaces to work together by introducing an adapter class.
+
+Story and Problem Explanation:
+
+Imagine you run a service that needs to send notifications to users. Some users want to get emails, others want SMS messages. 
+You have two different providers: one for email, one for SMS. But each provider has its own way of sending messages—different method names, 
+different parameters.
+
+If you write your code to use the email provider directly, it won’t work for SMS, and vice versa. You’d have to write separate code 
+for each provider, making your system complicated and hard to maintain.
+
+The Adapter pattern solves this by introducing a common interface, like NotificationSender, with a method sendNotification(message, recipient). 
+You then write an EmailNotificationAdapter and an SmsNotificationAdapter. Each adapter knows how to talk to its provider, 
+translating the generic sendNotification call into the specific method the provider expects.
+
+Now, your main code can use NotificationSender for both email and SMS. You can add new notification types in the future 
+(like push notifications) just by writing a new adapter, without changing your main logic. This keeps your code clean, flexible, and easy to extend.
+
+
+1. Define NotificationSender interface with sendNotification(String message, String recipient).
+2. Create two provider classes: EmailProvider and SmsProvider, each with their own specific send methods.
+3. Implement EmailNotificationAdapter and SmsNotificationAdapter that wrap their respective providers and implement NotificationSender.
+
+    package com.example.notification;
+
+    public interface NotificationSender {
+        void sendNotification(String message, String recipient);
+    }
+
+
+    // Java
+    package com.example.notification;
+
+    // Simulates a third-party email provider
+    public class EmailProvider {
+
+        public void sendEmail(String emailAddress, String content) {
+            System.out.println("Email sent to " + emailAddress + ": " + content);
+        }
+    }
+
+    // Java
+    package com.example.notification;
+
+    // Simulates a third-party SMS provider
+    public class SmsProvider {
+
+        public void sendSms(String phoneNumber, String text) {
+            System.out.println("SMS sent to " + phoneNumber + ": " + text);
+        }
+    }
+
+    // Java
+    package com.example.notification;
+
+    public class EmailNotificationAdapter implements NotificationSender {
+
+        private final EmailProvider emailProvider;
+
+        public EmailNotificationAdapter(EmailProvider emailProvider) {
+            this.emailProvider = emailProvider;
+        }
+
+        @Override
+        public void sendNotification(String message, String recipient) {
+            emailProvider.sendEmail(recipient, message);
+        }
+    }
+
+
+    // Java
+    package com.example.notification;
+
+    public class SmsNotificationAdapter implements NotificationSender {
+
+        private final SmsProvider smsProvider;
+
+        public SmsNotificationAdapter(SmsProvider smsProvider) {
+            this.smsProvider = smsProvider;
+        }
+
+        @Override
+        public void sendNotification(String message, String recipient) {
+            smsProvider.sendSms(recipient, message);
+        }
+    }
+
+    // Java
+    package com.example.notification;
+
+    public class Main {
+
+        public static void main(String[] args) {
+
+            NotificationSender emailSender =
+                    new EmailNotificationAdapter(new EmailProvider());
+
+            NotificationSender smsSender =
+                    new SmsNotificationAdapter(new SmsProvider());
+
+            emailSender.sendNotification("Hello via Email!", "alice@example.com");
+            smsSender.sendNotification("Hello via SMS!", "+1234567890");
+        }
+    }
+
+
+1. In the email and SMS notification example:
+    There are two different providers: one for email, one for SMS. Each has its own method for sending messages.
+    Your application wants to use a single interface (e.g., NotificationSender) to send notifications, regardless of the provider.
+    You create adapters (EmailNotificationAdapter, SmsNotificationAdapter) that implement NotificationSender and internally call the specific provider's method.
+
+2. This way, your application code interacts only with NotificationSender, and the adapters handle the differences in provider interfaces.
+
+
+Technical explanation:
+1. The Adapter pattern defines a common interface (NotificationSender) for your application.
+2. Each adapter class implements this interface and translates the generic method call (sendNotification) into the specific method 
+    required by the provider (sendEmail or sendSms).
+3. This decouples your application logic from the details of each provider, making it easy to add or switch providers without 
+    changing your main code.
+4. The pattern is useful when integrating third-party libraries or legacy systems with different APIs into a unified workflow.
+
