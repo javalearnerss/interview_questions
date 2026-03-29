@@ -1,0 +1,59 @@
+Authentication Scenarios
+Your microservices architecture has 10 services. How would you implement centralized authentication?
+A user logs in through an API Gateway. How would you propagate authentication to downstream services?
+If a user logs in once, how would you enable Single Sign-On (SSO) across multiple microservices?
+How would you implement JWT authentication in Spring Boot 3?
+A token expires while a user is calling APIs. How would you handle token refresh?
+If a JWT token is stolen, how would you invalidate it immediately?
+How would you implement login using username/password + JWT generation?
+How would you implement custom authentication logic in Spring Security?
+How would you authenticate users stored in a database instead of in-memory?
+How would you authenticate using external identity providers like Google or Okta?
+
+Authorization Scenarios
+You need admin-only APIs. How would you implement role-based access?
+Some APIs should be accessible to multiple roles. How would you configure that?
+How would you secure APIs using method-level security?
+How would you implement dynamic permissions from database?
+How would you restrict API access based on user ownership of data?
+A user should access only their own orders. How would you implement this?
+How would you implement fine-grained authorization in Spring Security?
+How would you manage role hierarchy (Admin > Manager > User)?
+How would you implement multi-tenant authorization?
+How would you secure sensitive endpoints like /admin or /internal APIs?
+
+Microservices Security Scenarios
+Your system has 50 microservices. How would you handle authentication efficiently?
+How would microservices validate JWT tokens independently?
+How would you implement token relay through Spring Cloud Gateway?
+How would a Feign client send JWT token to another service?
+If one microservice calls another, how do you maintain security context?
+How would you secure internal service-to-service communication?
+How would you handle machine-to-machine authentication?
+How would you secure public APIs vs internal APIs?
+How would you prevent unauthorized microservice calls?
+If a microservice is compromised, how do you limit the blast radius?
+
+OAuth2 / Authorization Server Scenarios
+Your company wants central authentication server. How would you design it?
+How would you integrate Spring Authorization Server with microservices?
+How would you implement OAuth2 Resource Server in microservices?
+How would you handle access token and refresh token lifecycle?
+How would you integrate Keycloak / Okta / Auth0 with Spring Boot?
+How would you support social login (Google, GitHub)?
+How would you configure OAuth2 client credentials flow?
+When would you use authorization code flow vs client credentials flow?
+How would you secure frontend + backend authentication using OAuth2?
+How would you implement OpenID Connect for user identity?
+
+Security Attack Scenarios
+Your API is vulnerable to CSRF attacks. How would you prevent them?
+How would you configure CORS properly for microservices?
+How would you prevent JWT token replay attacks?
+How would you prevent Brute Force login attacks?
+How would you secure sensitive API headers?
+How would you protect APIs from XSS attacks?
+How would you implement rate limiting for login endpoints?
+How would you detect suspicious authentication attempts?
+How would you secure file upload APIs?
+How would you secure Kafka events or messaging between microservices?

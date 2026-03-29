@@ -1,0 +1,19 @@
+3. Spring Security Architecture Design Questions for Microservices
+
+These questions test system design knowledge.
+
+1. Design authentication architecture for 100 microservices.
+2. Where should authentication happen: Gateway or each service?
+3. How do microservices validate JWT tokens independently?
+4. How do you implement central authentication server?
+5. How do you implement Single Sign-On (SSO)?
+6. How do you propagate security context between services?
+7. How do you handle token expiration across services?
+8. How do you implement role-based authorization in microservices?
+9. How do you secure service-to-service communication?
+10. How do you prevent unauthorized internal service calls?
+11. How do you secure public APIs vs internal APIs?
+12. How do you implement multi-tenant security?
+13. How do you implement fine-grained authorization?
+14. How do you handle token revocation?
+15. How do you scale authentication for millions of users?

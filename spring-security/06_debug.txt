@@ -1,0 +1,24 @@
+2. 20 Spring Security Debugging Questions (Very Common)
+
+Interviewers love asking problem-solving questions.
+
+JWT authentication works locally but fails in production. How would you debug it?
+API always returns 403 Forbidden. What could be wrong?
+API returns 401 Unauthorized even though token is sent.
+SecurityContextHolder is empty after authentication. Why?
+Your custom filter is not executing. How do you debug it?
+@PreAuthorize is not working. What might be missing?
+Feign client call returns 401 between microservices.
+OAuth2 resource server rejects a valid token.
+CORS error occurs even though configuration exists.
+CSRF token mismatch occurs for REST APIs.
+Password authentication fails even though password is correct.
+JWT token signature validation fails.
+Spring Security configuration not applied.
+Authentication works but roles are not applied.
+Gateway authentication works but downstream service returns 401.
+Refresh token not generating new access token.
+Multiple filters execute in wrong order.
+Principal is null in controller.
+Authorization header missing in downstream calls.
+Custom AuthenticationProvider never gets invoked.

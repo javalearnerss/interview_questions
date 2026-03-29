@@ -1,0 +1,127 @@
+Basic Spring Security Questions
+    1. What is Spring Security and why is it used?
+    2. What are the core features of Spring Security?
+    3. What is the difference between Authentication and Authorization?
+    4. What are the main components of Spring Security architecture?
+    5. What is SecurityContext in Spring Security?
+    6. What is SecurityContextHolder?
+    7. What is AuthenticationManager?
+    8. What is AuthenticationProvider?
+    9. What is UserDetailsService?
+    10. What is UserDetails interface?
+
+Spring Boot 3 / Spring Security 6 Questions
+    1. What are the major changes in Spring Security 6?
+    2. Why was WebSecurityConfigurerAdapter removed?
+    3. What replaces WebSecurityConfigurerAdapter in Spring Boot 3?
+    4. What is SecurityFilterChain?
+    5. What is HttpSecurity used for?
+    6. What is the difference between requestMatchers() and antMatchers()?
+    7. What is AuthorizationManager in Spring Security 6?
+
+Filters and Security Chain
+    1. What is the Spring Security Filter Chain?
+    2. What are the important filters in Spring Security?
+    3. What is OncePerRequestFilter?
+    4. What is UsernamePasswordAuthenticationFilter?
+    5. How does Spring Security process a request internally?
+    6. How do you add a custom filter in Spring Security?
+
+Authentication Questions
+    1. What are the different types of authentication supported by Spring Security?
+    2. What is Basic Authentication?
+    3. What is Form Based Authentication?
+    4. What is JWT Authentication?
+    5. What is OAuth2 Authentication?
+    6. What is LDAP Authentication?
+    7. What is AuthenticationEntryPoint?
+
+Authorization Questions
+    1. What is Role Based Access Control (RBAC)?
+    2. What is Authority vs Role in Spring Security?
+    3. What is @PreAuthorize?
+    4. What is @PostAuthorize?
+    5. What is @Secured annotation?
+    6. What is method level security?
+    7. What is @EnableMethodSecurity?
+
+Password Security
+    1. What is PasswordEncoder?
+    2. Why should passwords be encoded?
+    3. What are the different password encoders in Spring Security?
+    4. What is BCryptPasswordEncoder?
+    5. What is DelegatingPasswordEncoder?
+
+JWT Questions (Important for Microservices)
+    1. What is JWT (JSON Web Token)?
+    2. What are the three parts of a JWT?
+    3. How does JWT authentication work?
+    4. How does Spring Security validate JWT tokens?
+    5. How do you create a JWT filter?
+    6. What is Bearer token authentication?
+    7. What is the difference between JWT and Session authentication?
+
+OAuth2 / OpenID Questions
+    1. What is OAuth2?
+    2. What are OAuth2 roles?
+    3. What is Authorization Server?
+    4. What is Resource Server?
+    5. What is Client Application?
+    6. What is OpenID Connect (OIDC)?
+    7. What is the difference between OAuth2 and OpenID Connect?
+    8. What are OAuth2 grant types?
+
+Microservices Security Questions
+    1. How do you secure microservices architecture?
+    2. What is API Gateway authentication?
+    3. Where should authentication happen in microservices?
+    4. How does JWT propagate between microservices?
+    5. How do Feign clients pass tokens?
+    6. How do you secure service-to-service communication?
+    7. What is token relay in microservices?
+    8. How do you validate JWT in multiple microservices?
+
+Spring Cloud Security Questions
+    1. How does Spring Security work with Spring Cloud Gateway?
+    2. How do you secure Spring Cloud Gateway routes?
+    3. What is Token Relay filter?
+    4. How does OAuth2 client work in microservices?
+    5. How do microservices call each other securely?
+
+CSRF / CORS / Security Attacks
+    1. What is CSRF attack?
+    2. How does Spring Security prevent CSRF?
+    3. Why is CSRF disabled for REST APIs?
+    4. What is CORS?
+    5. How do you configure CORS in Spring Security?
+    6. What is XSS attack?
+
+Session vs Stateless
+    1. What is stateful authentication?
+    2. What is stateless authentication?
+    3. Why are microservices usually stateless?
+    4. How do you disable sessions in Spring Security?
+
+Advanced Questions
+    1. What is OAuth2AuthorizedClientManager?
+    2. How do you use Feign with OAuth2?
+    3. How does Spring Authorization Server work?
+    4. What is Opaque token vs JWT token?
+    5. How do you rotate JWT signing keys?
+    6. How do you secure Kafka events between microservices?
+    7. How do you implement multi-tenant security?
+    8. How do you implement custom authentication provider?
+    9. How do you implement custom user authentication?
+    10. How do you debug Spring Security issues?
+
+Scenario-Based Interview Questions
+    1. How would you design authentication for 100 microservices?
+    2. How would you secure internal microservice communication?
+    3. How would you implement single sign-on (SSO)?
+    4. How would you secure public APIs vs internal APIs?
+    5. How would you secure Feign clients with OAuth2?
+    6. How would you implement role-based APIs?
+    7. How would you secure Kafka consumers/producers?
+    8. How would you secure API Gateway + microservices architecture?
+    9. What security approach would you choose for high-scale microservices?
+    10. How would you handle token expiration and refresh tokens?

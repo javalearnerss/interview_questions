@@ -1,0 +1,34 @@
+1. Top 30 Spring Security Coding Interview Questions
+
+These questions usually require writing code or explaining configuration.
+
+1. Write a Spring Boot 3 security configuration using SecurityFilterChain.
+2. Implement JWT authentication in Spring Boot.
+3. Write a custom OncePerRequestFilter to validate JWT.
+4. Create a login API that generates a JWT token.
+5. Implement UserDetailsService with database authentication.
+6. Write code to secure APIs with roles (ADMIN, USER).
+7. Implement method-level security using @PreAuthorize.
+8. Configure PasswordEncoder using BCrypt.
+9. Write a custom AuthenticationProvider.
+10. Implement stateless authentication (disable session).
+11. Configure CORS in Spring Security.
+12. Disable CSRF for REST APIs.
+13. Implement custom AuthenticationEntryPoint.
+14. Add a custom filter before UsernamePasswordAuthenticationFilter.
+15. Configure multiple security configurations for different endpoints.
+16. Implement OAuth2 Resource Server using JWT.
+17. Write configuration for Spring Authorization Server.
+18. Secure Spring Cloud Gateway with OAuth2.
+19. Implement JWT token validation in microservices.
+20. Write code to extract user details from JWT token.
+21. Configure role hierarchy in Spring Security.
+22. Implement custom access denied handler.
+23. Implement database-based roles and permissions.
+24. Implement logout functionality in JWT authentication.
+25. Configure Feign client to pass JWT token.
+26. Implement refresh token mechanism.
+27. Configure OAuth2 login with Google.
+28. Implement API rate limiting with Spring Security.
+29. Write security configuration for public and protected APIs.
+30. Implement token blacklist mechanism for logout.

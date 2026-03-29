@@ -1,0 +1,26 @@
+Top 25 Tricky Spring Security Interview Questions
+1. Why does Spring Security use a filter chain instead of interceptors?
+2. What happens internally when a request hits a Spring Security protected endpoint?
+3. Why is SecurityContextHolder thread-local? What problem does it solve?
+4. What is the difference between AuthenticationManager and AuthenticationProvider?
+5. If you have multiple AuthenticationProviders, how does Spring Security decide which one to use?
+6. What is the difference between hasRole() and hasAuthority()?
+7. Why does Spring Security automatically prefix roles with ROLE_?
+8. What happens if SecurityContextHolder is empty inside a controller?
+9. What is the difference between 401 Unauthorized and 403 Forbidden in Spring Security?
+10. Why is CSRF disabled for REST APIs but enabled for web applications?
+11. What is the difference between OncePerRequestFilter and GenericFilterBean?
+12. Why must a JWT filter be placed before UsernamePasswordAuthenticationFilter?
+13. What happens if your JWT filter runs after UsernamePasswordAuthenticationFilter?
+14. Why does Spring Security sometimes return 403 even when authentication is correct?
+15. What is the difference between @PreAuthorize and @PostAuthorize?
+16. Why might @PreAuthorize not work even though the annotation is present?
+17. What is the difference between stateless and stateful authentication in Spring Security?
+18. Why are sessions disabled in JWT-based authentication?
+19. What happens if a JWT token expires while the user is making requests?
+20. How can you invalidate a JWT token before expiration?
+21. Why is JWT not always recommended for logout functionality?
+22. In microservices, why should each service validate JWT independently?
+23. How does Spring Cloud Gateway propagate authentication to downstream services?
+24. What problem does Token Relay solve in microservices security?
+25. If two microservices communicate internally, should they use user JWT tokens or service credentials?
