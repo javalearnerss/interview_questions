@@ -163,12 +163,13 @@ State Management
 
     ------------------------------------------------------------------------------
 
-    Reactive Forms in Angular are model-driven forms, where the form structure and logic are defined in the TypeScript component class, not in the template.
+    Reactive Forms in Angular are model-driven forms, where the form structure and logic are defined in the TypeScript component class, 
+    not in the template.
         They provide:
-        More control over validation
-        Better scalability for complex forms
-        Easier unit testing
-        Reactive programming using Observables
+            More control over validation
+            Better scalability for complex forms
+            Easier unit testing
+            Reactive programming using Observables
 
 
         Example - register.component.ts
@@ -188,9 +189,9 @@ State Management
 
             ngOnInit() {
                 this.registerForm = new FormGroup({
-                name: new FormControl('', Validators.required),
-                email: new FormControl('', [Validators.required, Validators.email]),
-                password: new FormControl('', [Validators.required, Validators.minLength(6)])
+                    name: new FormControl('', Validators.required),
+                    email: new FormControl('', [Validators.required, Validators.email]),
+                    password: new FormControl('', [Validators.required, Validators.minLength(6)])
                 });
             }
 
