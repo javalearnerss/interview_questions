@@ -268,7 +268,7 @@ Kafka producer common properties
 | delivery.timeout.ms                   | Maximum time to deliver a message.                                                                  |
 | enable.idempotence                    | Enables idempotent producer for exactly-once semantics.                                             |
 | transactional.id                      | Transactional identifier for transactional producer.                                                |
-| max.in.flight.requests.per.connection | Maximum number of unacknowledged requests per connection.                                           |
+| max.in.flight.requests.per.connection | how many requests can be sent to a broker simultaneously (without waiting for responses) over a single connection |
 | security.protocol                     | Security protocol (PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL).                                       |
 | ssl.*                                 | SSL configuration properties.                                                                       |
 | sasl.*                                | SASL configuration properties.                                                                      |
