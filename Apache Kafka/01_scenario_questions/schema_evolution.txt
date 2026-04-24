@@ -1,0 +1,147 @@
+🧬 Schema & Data Evolution Scenarios
+
+1. Producer deploys a schema change and consumers crash. What went wrong?
+2. Old consumers break after a new field is added. Why?
+3. Schema Registry is down — what happens?
+4. Different teams evolve schemas independently. How do you prevent outages?
+5. A backward-compatible change still causes issues. Why?
+6. How do you safely remove a field from events?
+7. A schema change corrupts downstream data. How do you recover?
+8. Schema compatibility rules are bypassed in production. What’s the impact?
+9. Replay of old events fails due to schema mismatch. Why?
+10. How do you test schema changes before production?
+
+
+
+=====================================================================================================
+Question: Schema Registry is down — what happens?
+
+Answer:
+When the Schema Registry is down, the impact depends on whether producers and consumers already have the required schemas cached.
+
+In a typical order processing system, when a producer sends a message, it needs the schema ID from the registry 
+(especially if it’s registering a new schema). If the registry is down and the producer is trying to use a new schema version, 
+it will fail to register it and cannot send messages. However, if the schema was already registered earlier and is cached locally, 
+the producer can continue sending messages using the existing schema ID.
+
+On the consumer side, when a message is read, the consumer uses the schema ID in the message to fetch the schema from the registry. 
+If the registry is down but the schema has been previously fetched and cached, the consumer can still deserialize messages successfully. 
+But if it encounters a new schema ID that it has never seen before, it won’t be able to fetch the schema, 
+leading to deserialization failure and message processing errors.
+
+So, the system may partially continue working due to caching, but any interaction requiring new or uncached schemas will fail. 
+That’s why in production systems, Schema Registry is deployed with high availability and caching is heavily relied upon.
+
+========================================================================================================
+
+Question: Different teams evolve schemas independently. How do you prevent outages?
+In a Kafka-based order processing system, multiple teams (Order Service, Payment Service, and Analytics Service) independently evolve the same event schema. For example, the Order team adds a new field email, while another team later changes amount from double to string. How can such independent schema changes lead to outages, and how do you prevent them?
+
+Answer:
+When teams evolve schemas independently without coordination, incompatible changes can break consumers. For instance, adding a new field like email is usually safe if done as an optional field with a default value—old consumers will ignore it, and new consumers can use it. However, if another team changes the data type of amount from double to string, existing consumers expecting a numeric value will fail during deserialization, causing runtime errors and potential outages.
+
+To prevent this, organizations enforce Schema Registry compatibility rules (typically BACKWARD or FULL), which automatically reject breaking changes like type modifications or field removals. Teams are required to follow safe evolution practices, such as only adding optional fields and never changing existing field types. Additionally, schemas are validated through CI/CD pipelines and treated as contracts between services, ensuring that even if teams work independently, their changes remain compatible and do not break the system.
+
+=========================================================================
+
+Question:
+A backward-compatible schema change still causes issues. Why?
+
+Answer:
+Even if a change is technically backward compatible, it can still cause issues in real systems due to how consumers are implemented and how data is used.
+
+For example, in an order processing system, suppose the original schema is:
+
+{ orderId, amount }
+
+A new version adds a field:
+
+{ orderId, amount, email }
+
+This is backward compatible because new consumers can read old messages (using a default for email). However, issues can still occur in practice:
+
+If consumer code assumes email is always present, it may break when reading older messages where the default value is empty or null.
+If business logic changes based on the new field (e.g., sending notifications using email), older messages may lead to incorrect behavior rather than outright failure.
+If downstream systems (like databases or APIs) treat the new field as mandatory, they may reject or mishandle older data.
+If there is tight coupling to schema structure (e.g., strict validation, null checks missing), runtime errors can still happen.
+
+So, even though the schema change is technically safe from a compatibility perspective, application-level assumptions and logic can still cause failures.
+
+===================================================================================
+
+Question:
+How do you safely remove a field from events in Kafka (e.g., in an order processing system)?
+
+Answer:
+In Kafka, you never remove a field abruptly, because existing consumers may still depend on it. Instead, you follow a gradual deprecation strategy to avoid breaking the system.
+
+For example, suppose the original order event is:
+
+{ orderId, amount, email }
+
+Now you want to remove email.
+
+First, you stop using the field but keep it in the schema. Mark it as deprecated and ensure all consumers are updated to no longer rely on email. At this stage, producers may still send it, or send it as empty/null, but no service should depend on it anymore.
+
+Next, once you are confident that all consumers have been updated, you can create a new schema version where the field is removed. This step is only safe if your compatibility mode allows it (typically requires careful handling or switching compatibility settings).
+
+In some cases, teams introduce a new version of the event (e.g., OrderV2) without the field and gradually migrate consumers to the new topic or schema, ensuring zero disruption.
+
+
+
+==============================================================================================================
+Question:
+A schema change corrupts downstream data. How do you recover?
+
+Answer:
+In a real system like order processing, a bad schema change (for example, changing amount from double to string or misinterpreting a field) can lead to incorrect data being written to downstream systems like databases or analytics pipelines. Recovery involves both stopping the damage and fixing the corrupted data.
+
+The first step is to immediately roll back or fix the schema in Schema Registry by reverting to the last known good version or deploying a corrected version. At the same time, you may pause consumers or stop producers temporarily to prevent further bad data from flowing.
+
+Next, you identify the affected data window—for example, all events produced after the faulty schema was deployed. Using Kafka’s durability, you can reprocess messages by resetting consumer offsets to an earlier point (before the bad schema change) and replaying the events with the corrected schema. If the corrupted data has already been written to downstream systems, you may need to clean or delete incorrect records and re-ingest the corrected data.
+
+In more advanced setups, teams use dead-letter queues (DLQ) to capture failed messages and replay them later, or maintain idempotent processing so that reprocessing does not create duplicates.
+
+
+======================================================================
+
+Question:
+Replay of old events fails due to schema mismatch. Why?
+
+Answer:
+Replay of old events can fail due to schema mismatch when the current consumer schema is not compatible with the schema used when the old events were produced. Even though Kafka stores the schema ID with each message, during replay the consumer still performs schema resolution between the writer schema (old) and the reader schema (current). If incompatible changes were introduced—such as removing a field, changing a data type, or adding a new field without a default value—the consumer may not be able to map the old data to its expected structure.
+
+For example, in an order system, old events were produced with:
+
+{ orderId, amount }
+
+Later, the schema was changed to:
+
+{ orderId, amount, email }
+
+If email was added without a default value, and now a new consumer tries to replay old events, those old messages don’t contain email. Since the consumer expects it, deserialization fails. Similarly, if amount was changed from double to string, old messages will not match the new schema, causing failures during replay.
+
+So, even though events were valid when produced, replay fails because the current schema is no longer compatible with historical data. This is why maintaining backward/forward compatibility is critical, especially for systems that rely on replay and reprocessing.
+
+
+==========================================================================================
+
+Question:
+How do you test schema changes before production (e.g., in an order processing system)?
+
+Answer:
+In a real order processing system, schema changes are tested through a combination of compatibility checks, automated tests, and staging validation before they are allowed into production.
+
+First, the new schema is validated against existing versions using Schema Registry compatibility rules (BACKWARD, FORWARD, or FULL). This ensures that unsafe changes—like removing fields or changing data types—are rejected early.
+
+Next, teams run unit and integration tests where producers generate events using the new schema and consumers (both old and new versions) attempt to read them. For example, if a new field email is added to { orderId, amount }, tests verify that:
+
+Old consumers can still read messages (ignore email)
+New consumers can read both old and new messages (use default for email)
+
+Then, in a staging or pre-production environment, real-like data is produced and consumed across services (Order, Payment, Analytics) to ensure end-to-end compatibility. Many teams also perform replay testing, where historical Kafka data is replayed using the new schema to confirm that old events can still be processed correctly.
+
+Additionally, schemas are stored in version control and validated through CI/CD pipelines, often with automated checks and sometimes contract testing between teams to ensure no downstream service is broken.
+
+
+=================================================================

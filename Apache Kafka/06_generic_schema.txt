@@ -1,8 +1,413 @@
 Schema & Data Evolution
-    How do you manage schema evolution in Kafka?
-    What happens when producers and consumers use different schemas?
-    How do you handle backward and forward compatibility?
-    Schema Registry — why and when?
-    What schema mistakes cause outages?
-    How do you version events safely?
-    What happens if schema compatibility rules are ignored?
+    1. How do you manage schema evolution in Kafka?
+    2. What happens when producers and consumers use different schemas?
+    3. How do you handle backward and forward compatibility?
+    4. Schema Registry — why and when?
+    5. What schema mistakes cause outages?
+    6. How do you version events safely?
+    7. What happens if schema compatibility rules are ignored?
+
+
+
+=========================================================================================================
+0. What is schema in kafka and why it needed?
+
+A schema is the structure (format) of a Kafka message.
+    It defines: field names, data types, message layout
+
+Schema:
+    User → { name: string, age: int }
+
+Message:
+    { name: "Sandeep", age: 25 }
+
+In Kafka, schemas are used to:
+    -> Ensure producers and consumers agree on the message structure.
+    
+    -> Enable data validation and compatibility checks.
+        1. What is Data Validation?
+
+        It means: Ensuring the data being sent matches the schema
+
+        Example Schema (Avro)
+            {
+                "type": "record",
+                "name": "User",
+                "fields": [
+                    {"name": "id", "type": "int"},
+                    {"name": "name", "type": "string"}
+                ]
+            }
+        
+        Valid Message ✅
+            {
+                "id": 101,
+                "name": "Sandeep"
+            }
+        
+        Invalid Message ❌
+            {
+                "id": "101",     // WRONG: should be int
+                "name": "Sandeep"
+            }
+
+        👉 Producer will fail before sending this to Kafka
+        👉 This prevents bad data entering the system
+
+        2. What is Compatibility Check?
+            It means: When schema changes, it should NOT break existing consumers
+
+            Example Scenario
+                Old Schema (v1)
+                {
+                    "id": "int",
+                    "name": "string"
+                }  
+            
+            New Schema (v2)
+                {
+                    "id": "int",
+                    "name": "string",
+                    "email": "string"
+                }
+
+            Case 1: Safe Change ✅ (Backward Compatible)
+
+            Add new field with default
+
+            {
+                "id": "int",
+                "name": "string",
+                "email": {
+                    "type": "string",
+                    "default": ""
+                }
+            }
+
+            👉 Old consumers don’t know email
+            👉 They still work fine → default is used
+
+            Case 2: Breaking Change ❌
+                {
+                    "id": "string",   // changed from int → string
+                    "name": "string"
+                }
+
+            👉 Old consumers expect id as int
+            👉 Now they will crash
+
+    -> Support schema evolution (changing message structure over time without breaking consumers).
+
+Commonly, schemas are defined using formats like Avro, Protobuf, or JSON Schema. 
+These formats are supported by Kafka serializers/deserializers.
+
+A schema registry (such as Confluent Schema Registry) is often used to store and manage schemas. 
+Producers serialize messages according to a schema and register it in the registry. 
+Consumers retrieve the schema from the registry to deserialize messages correctly.
+
+In order processing system, a schema defines the structure of an order message (e.g., orderId, customerId, items, totalAmount).
+    1. The producer (order service) serializes order data using this schema and sends it to a Kafka topic.
+    2. The schema is registered in a schema registry, so all consumers know the message structure.
+    3. Consumers (e.g., shipping, billing services) read from the topic, retrieve the schema, and deserialize the message.
+    4. If the order structure changes (e.g., adding a discount field), a new schema version is registered. 
+    As long as the change is compatible, old and new consumers can process messages without errors.
+
+This ensures reliable communication and evolution of data formats in distributed systems using Kafka.
+
+=========================================================================================================
+1. How do you manage schema evolution in Kafka?
+
+    Schema evolution = changing the structure of your message over time WITHOUT breaking existing systems
+
+    Schema evolution in Kafka is managed using a Schema Registry where schemas are versioned and validated against 
+    compatibility rules (usually backward compatibility). Changes like adding optional fields with defaults are allowed, 
+    ensuring existing consumers continue to work without breaking.
+
+    In a real system (like an Order Service), schemas change over time—e.g., adding a new field like email. 
+    To handle this safely, we use Schema Registry with compatibility rules.
+
+    🔹 Key steps
+        1. Use Schema Registry
+            * Store schemas centrally
+            * Each schema gets a version
+            * Producers and consumers use this registry
+
+        2. Enable compatibility mode
+        Most commonly:
+            * Backward compatibility (most used)
+            * New schema works with old consumers
+                Example: add a field with default value
+
+                Other modes: Forward compatibility, Full compatibility
+
+        3. Follow safe evolution rules
+        ✔ Allowed:
+            * Add new optional fields (with default)
+            * Add new schema versions
+
+        ❌ Avoid:
+            * Removing fields
+            * Changing data types
+
+        4. Producer & Consumer behavior
+            *. Producer registers new schema version
+            *. Message contains schema ID + data
+            *. Consumer fetches schema and deserializes correctly
+
+    Question:
+    In Kafka, if a producer evolves the schema by adding a new field (e.g., currency in a Trade message) and registers a new schema version, 
+    how does an existing consumer with an older Trade class (without the new field) continue to work when it fetches the latest schema 
+    from the Schema Registry?
+
+    Answer:
+    When a consumer reads a Kafka message, it does not simply use the latest schema; instead, it uses the specific schema version (schema ID) 
+    embedded in that message. During deserialization, systems like Avro perform schema resolution between the writer schema 
+    (used by the producer) and the reader schema (expected by the consumer’s class). 
+    If the change is backward compatible—such as adding a new field with a default value—the extra field (like currency) is safely 
+    ignored by the consumer because its class does not define it. The consumer only maps the fields it knows
+     (tradeId, symbol, quantity, price), allowing it to continue functioning without any code changes.
+
+=============================================================================================================================================
+2. Question: What happens when producers and consumers use different schemas in Kafka? 
+
+    Note : Producer uses new schema while consumer still not updated the schema
+
+    Answer:
+    When producers and consumers use different schemas, Kafka itself does not fail because it only stores data as bytes. 
+    During consumption, the deserializer performs schema resolution between the writer schema (used by the producer) 
+    and the reader schema (derived from the consumer’s class). Even though the message contains a schema ID and the consumer 
+    fetches that schema from the registry, it does not directly map that schema to the object. Instead, 
+    it compares the writer schema with what the consumer expects and maps only the matching fields. 
+    If the schemas are compatible, the message is read successfully; otherwise, deserialization fails.
+
+    For example, in a trade system, the producer updates the schema by adding a new field:
+
+    Old schema:
+    { tradeId, symbol, quantity, price }
+
+    New schema (producer):
+    { tradeId, symbol, quantity, price, currency }
+
+    Now, an old consumer still uses the old Trade class without currency. When it reads the message, 
+    it fetches the new schema (which includes currency), but during deserialization, it only maps the fields 
+    it understands (tradeId, symbol, quantity, price) and ignores the extra currency field. 
+    This is possible because schema resolution allows extra fields in the writer schema to be safely ignored, 
+    so the consumer continues to work without any changes.
+
+    However, if the producer had changed price from double to string, the consumer would fail during deserialization 
+    because this is an incompatible change. Therefore, different schemas work fine as long as they are compatible, 
+    which is why Schema Registry enforces compatibility rules.
+
+
+
+=============================================================================================================================================
+3. How do you handle backward and forward compatibility?
+
+    Backward compatibility: The new schema (used by the consumer) can read data written with the old schema (used by the producer).
+
+        Producer: old schema
+        Consumer: new schema
+        Example: You add an optional field in the new schema. 
+                The consumer (new schema) reads old messages (without the new field) and uses the default value.
+        
+    Forward compatibility: The old schema (used by the consumer) can read data written with the new schema (used by the producer).
+
+        Producer: new schema
+        Consumer: old schema
+        Example: You add an optional field in the new schema. The consumer (old schema) ignores the new field and reads only the fields it knows.
+
+
+    Summary Table
+
+    | Compatibility | Producer Schema | Consumer Schema | What happens?                                |
+    | ------------- | --------------- | --------------- | -------------------------------------------- |
+    | Backward      | Old             | New             | New consumer reads old data (uses defaults)  |
+    | Forward       | New             | Old             | Old consumer reads new data (ignores extras) |
+
+
+    Key:
+    "New schema can read data written with the old schema" means:
+        * If you deploy a new consumer with the new schema, it can read old messages produced with the old schema (backward compatibility).
+    "Old consumers can read messages produced by new producers" means:
+        * If you deploy a new producer with the new schema, old consumers with the old schema can still read messages (forward compatibility), 
+          as long as changes are compatible.
+
+    Question:
+    How do you manage backward and forward compatibility in Kafka schema evolution?
+
+    Answer:
+    * Set compatibility mode in Schema Registry (BACKWARD/FORWARD/FULL) based on use case.
+    * Add only optional fields with default values to avoid breaking consumers.
+    * Never remove or rename existing fields; deprecate them instead.
+    * Use schema versioning and test new schemas against old data/messages.
+    * Roll out changes safely (update consumers first for backward, producers first for forward).
+
+    Example:
+    In an order processing system, you define a schema for order events containing fields like orderId, amount, and status. 
+    To handle backward compatibility, when introducing a new field such as deliveryDate, you make it optional with a 
+    default value so that new consumers can still read older messages without issues. For forward compatibility, 
+    older consumers are designed to ignore any unknown fields like deliveryDate, allowing them to process newer messages safely. 
+    You should avoid removing or renaming existing fields like amount and instead mark them as deprecated. 
+    Using a Schema Registry helps enforce compatibility modes such as BACKWARD or FULL while managing schema evolution. 
+    Additionally, maintain proper versioning of schemas (v1, v2) and validate changes before producing new messages. 
+    It is important to test consumers with both old and new versions of order events. Finally, 
+    follow a safe deployment strategy by updating consumers first for backward compatibility and producers first for 
+    forward compatibility to ensure smooth processing.
+
+=============================================================================================================================================
+4. Schema Registry — why and when?
+
+    What
+    * A schema registry is a centralized service for storing and managing message schemas (e.g., Avro, Protobuf, JSON Schema) used by 
+    Kafka producers and consumers in a trade processing system. It tracks schema versions and enforces compatibility rules.
+
+    Why (for trade processing):
+        * Ensures all trade producers and consumers agree on the trade message structure (e.g., tradeId, amount, instrument).
+        * Enables safe schema evolution (e.g., adding new fields like currency or tradeType) without breaking existing trade processing services.
+        * Prevents incompatible schema changes using compatibility checks, reducing risk of outages or data loss.
+        * Supports data validation and governance, which is critical for financial systems.
+    
+    When to use:
+        * When using structured serialization (Avro, Protobuf, JSON Schema) for trade messages.
+        * When multiple services (e.g., order management, risk, settlement) produce/consume the same trade topics.
+        * When you need to evolve trade message formats over time.2
+        * In production or regulated environments where data contracts must be managed centrally.
+    
+    When not needed:
+        * If using simple string or byte[] messages without structured schemas.
+        * For small, experimental, or tightly-coupled trade processing projects where schema changes are manually coordinated 
+          and compatibility is not a concern.
+
+=============================================================================================================================================
+5 Question: What schema mistakes can cause outages in Kafka-based systems?
+
+   Common Schema Evolution Mistakes
+    ❌ Removing required fields:
+        If you remove a required field like tradeId or amount from the trade schema, consumers expecting these fields will fail 
+        to deserialize messages, causing processing outages.
+
+    ❌ Changing field types incompatibly:
+        Changing amount from double to string in the schema will break consumers that expect a numeric value, 
+        leading to runtime errors and message loss.
+
+    ❌ Renaming fields:
+        Renaming tradeDate to executionDate without updating all consumers will cause them to miss or misinterpret the field, 
+        resulting in incorrect trade processing or failures.
+
+    ❌ Removing or changing default values:
+        If you remove the default value for an optional field like brokerId, older consumers may not be able to handle missing data, 
+        causing deserialization errors.
+
+    ❌ Not registering new schema versions:
+        If a producer uses a new schema (e.g., adds currency field) but does not register it, consumers may not fetch the correct schema, leading to failures.
+
+    ❌ Disabling or misconfiguring schema compatibility:
+        Allowing incompatible schemas (e.g., removing tradeId) to be registered can break all downstream consumers, causing system-wide outages.
+
+    ❌ Using different schema versions without compatibility:
+        If the producer writes messages with a new schema and the consumer uses an old incompatible schema, deserialization will fail and trades will not be processed.
+    
+    ❌ Not handling unknown fields in consumers:
+        If a new field like tradeType is added and consumers are not configured to ignore unknown fields, they may crash when processing new messages.
+
+    ❌ Registering schemas under the wrong subject:
+        If the trade schema is registered under the wrong topic or subject, consumers may fetch an incorrect schema, causing deserialization errors 
+        and outages.
+
+=============================================================================================================================================
+6. How do you version events safely?
+
+    Steps for Schema Evolution (Avro Example)
+    1. Define initial schema (e.g., Avro):
+        src/main/avro/TradeEvent-v1.avsc
+    2. Register schema in schema registry
+    3. Producer uses v1 schema to serialize and send events
+    4. When evolving:
+        * Create TradeEvent-v2.avsc (add optional field, keep compatibility)
+        * Register v2 in schema registry
+        * Update producer to use v2 schema
+        * Consumers can use v1 or v2 schema (depending on compatibility)
+    5. Set compatibility mode:
+        Use REST API or UI to set compatibility (e.g., BACKWARD)
+    6. Update consumer code as needed
+    7. Test with both old and new consumers/producers
+
+    TradeEvent-v1.avsc
+        {
+            "type": "record",
+            "name": "TradeEvent",
+            "fields": [
+                {"name": "tradeId", "type": "string"},
+                {"name": "amount", "type": "double"}
+            ]
+        }
+
+    TradeEvent-v2.avsc
+        {
+            "type": "record",
+            "name": "TradeEvent",
+            "fields": [
+                {"name": "tradeId", "type": "string"},
+                {"name": "amount", "type": "double"},
+                {"name": "currency", "type": ["null", "string"], "default": null}
+            ]
+        }
+
+    In practice, safe versioning also involves:
+        * Never changing field types (e.g., amount from double → string ❌)
+        * Never removing required fields ❌
+        * Always adding fields as optional or with defaults ✅
+        * Using compatibility settings in Schema Registry to prevent invalid schema updates
+
+=============================================================================================================================================
+7. What happens if schema compatibility rules are ignored?
+
+    Schema compatibility rules ensure that changes to message schemas do not break existing producers or consumers.
+    
+    If these rules are ignored (e.g., by disabling compatibility checks in the schema registry or making incompatible changes):
+    * Producers may write messages that consumers cannot deserialize.
+    * Consumers may crash or throw exceptions when reading incompatible messages.
+    * Data loss or corruption can occur if messages cannot be processed.
+    * Outages may happen in downstream systems relying on Kafka data.
+    * Manual intervention may be required to fix or reprocess data.
+    * Difficulties in rolling back or evolving schemas safely.
+
+
+=============================================================================================================================================
+
+
+Questions: Why do we need a default value for a new field?
+
+        When you add a new field, old messages in Kafka don’t have that field.
+
+        🔹 Example (Trade system)
+            * Old schema (messages already in Kafka)
+                { tradeId, symbol, quantity, price }
+            * New schema (consumer updated)
+                { tradeId, symbol, quantity, price, currency }
+            🔸 Problem without default
+
+        Old message:
+
+            { tradeId: "T1", symbol: "AAPL", quantity: 10, price: 100 }
+
+        New consumer expects:
+
+        currency  ❗ (missing)
+
+        👉 What value should it assign?
+        👉 It doesn’t exist → deserialization fails ❌
+
+        🔸 Solution with default
+
+            New schema:
+
+            { "name": "currency", "type": "string", "default": "USD" }
+
+            Now when old message is read:
+
+            👉 System fills:
+
+            currency = "USD"
+
+            ✅ Consumer works fine
