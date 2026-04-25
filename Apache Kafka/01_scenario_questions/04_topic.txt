@@ -1,0 +1,106 @@
+
+
+🧱 Topic & Partition Design Scenarios
+
+1. Topic was created with too few partitions and now can’t keep up. What are your options?
+    Increase partitions (most common)
+        kafka-topics --alter --topic X --partitions N
+        Pros: more parallelism (more consumers/throughput)
+        Cons: order per key changes, key→partition mapping changes, can increase rebalancing
+
+    Scale consumers + tune processing
+        Works only if you already have enough partitions (max parallelism = partitions)
+        Optimize handler, batch processing, async IO, max.poll.records, etc.
+
+    Split the topic
+        Create X.v2 (or shard topics like X-0..X-7) and route producers by key/tenant
+        Pros: clean sharding + better isolation
+        Cons: app changes, migration complexity
+
+    Add broker capacity
+        More brokers / faster disks / better network if brokers are saturated
+
+    Reduce data volume
+        Compression, smaller payloads, drop non-critical events, sampling
+
+2. One partition becomes a hotspot. How do you fix it without downtime?
+    Fix a hotspot without downtime by reducing skew and moving load while keeping consumers running:
+
+    Confirm it’s key skew
+        Check if most records share the same/low-cardinality key (or null key).
+
+    Add partitions + rolling update (no downtime)
+        Increase partitions for the topic. Consumers will rebalance, but service stays up.
+
+    Change partitioning to spread the hot key
+        Add a shard suffix: key = userId + ":" + (hash(orderId) % N)
+        Or custom partitioner that splits only hot keys
+        Do this via a rolling deploy of producers.
+
+    Split traffic gradually
+        Create a new topic topic.v2 with more partitions and dual-write (or route a % of keys) → then cut over consumers.
+
+    Short-term mitigations
+        Throttle that producer, compress, batch more, or scale brokers if IO-bound.
+
+3. Increasing partitions breaks message ordering. Why?
+    Partition is chosen by: hash(key) % numPartitions
+    When numPartitions increases, the modulo result changes
+    So the same key can start landing on a different partition
+    Then events for that key are split across partitions → no global ordering for that key anymore
+
+
+4. A topic grows faster than expected and disk fills up. What do you do?
+    Immediate containment
+        Stop/reduce the producer (feature flag / rate-limit) to stop the bleed.
+        Add disk/capacity fast: expand volume / add brokers (if you can quickly).
+        Lower retention temporarily:
+            reduce retention.ms / retention.bytes
+            if safe, use cleanup.policy=delete (not compact-only)
+        Run preferred leader / rebalancing only if needed (avoid making it worse during crisis).
+
+    Find the cause
+        Which producer/app is spiking? (client.id, ACL user, metrics)
+        Is it larger messages, higher rate, or retention misconfig?
+        Any stuck consumers causing retries/dup publishes upstream?
+
+5. Retention cleanup causes performance degradation. Why?
+    Segment deletions trigger lots of disk IO (delete + metadata updates).
+    Log compaction (if enabled) scans and rewrites segments → very IO/CPU intensive.
+    Frequent cleanup (small segment.ms / aggressive retention.ms) runs too often.
+    Slow disks (HDD / saturated SSD) amplify the impact.
+    Large partitions mean bigger segments to scan/delete.
+
+6. Compacted topic loses data unexpectedly. How?
+    Only the latest value per key is kept
+        Older records with the same key are deleted during compaction.
+
+    Tombstones (null values)
+        Producing key + null value marks the key for deletion → after delete.retention.ms, the key disappears completely.
+
+    Misunderstood retention vs compaction
+        If cleanup.policy=compact,delete, old segments can still be deleted by time/size retention.
+
+    Wrong / missing keys
+        Records with null keys are not compacted (can be deleted by retention), or changing keys makes data look “lost”.
+
+    Aggressive compaction settings
+        Small segment.ms/bytes or frequent cleaner runs → faster removal than expected.
+
+7. Partition reassignment causes lag spikes. Why?
+    Partition reassignment causes lag spikes because it temporarily steals resources and pauses normal flow.
+    Why it happens:
+        Data copying: replicas are moved between brokers → heavy disk + network IO.
+        Throttling kicks in: Kafka slows replication to protect the cluster, delaying fetch/produce.
+        Leader movement: leadership changes force consumers to reconnect and catch up.
+        Cache cold starts: new leaders don’t have data in page cache → slower reads.
+        Extra coordination: metadata updates and ISR changes add overhead.
+
+8. Multi-tenant topics cause noisy-neighbor issues. How do you isolate?
+
+9. What happens if partition leaders move frequently?
+    Produce/consume latency spikes (clients must discover new leader + retry).
+    More request errors/timeouts (NotLeaderForPartition, LeaderNotAvailable) → extra retries.
+    Consumer lag increases (fetch pauses during leader change, then catch-up).
+    Higher broker load (metadata updates, controller work, replica sync/ISR churn).
+    Risk of reduced durability if ISR shrinks often (replicas falling out of sync).

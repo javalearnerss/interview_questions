@@ -1,0 +1,135 @@
+🔥 Kafka Consumer Scenarios
+
+1.  Consumer lag keeps increasing but CPU and memory look normal. How do you debug this?
+    When lag increases but CPU/memory look normal, assume the consumer is not actually making progress
+    (stuck on I/O, blocked, rebalancing, or reading the wrong partitions). Debug in this order:
+        1) Confirm where lag is coming from
+            Check per-partition lag (is it one partition/hot key or all partitions?)
+            Compare produce rate vs consume rate for the topic
+
+        2) Check for rebalances (most common “looks normal” cause)
+            Look for logs like: revoking partitions / re-joining group
+            If rebalances are frequent, investigate:
+            long processing delaying poll()
+            max.poll.interval.ms too low
+            GC pauses / network stalls causing missed heartbeats
+
+        3) Verify the consumer is polling + committing
+            Is poll() being called continuously?
+            Are offsets actually advancing in the group?
+            If offsets aren’t moving: you’re stuck in processing or blocked downstream
+
+        4) Look for downstream bottlenecks (CPU can still be normal)
+            Common hidden blockers:
+            DB/API calls slow or throttled
+            Connection pool exhausted
+            Synchronous logging / remote calls
+            Lock contention (threads waiting, not using CPU)
+
+        5) Check partition assignment vs capacity
+            Too few consumers vs partitions → some consumers handle many partitions
+            One “hot partition” (skewed key) → only one consumer falls behind
+
+        6) Check fetch/processing settings
+            max.poll.records too high → long processing per poll (lag grows)
+            fetch.min.bytes / fetch.max.wait.ms too aggressive → slow fetch cadence
+            Very small batches → high overhead (but CPU may still look “fine”)
+
+        7) Look for poison messages / infinite retry
+            Same offset repeatedly failing (exceptions + retries)
+            Partition appears “stuck” on one record → use DLQ / skip strategy
+
+2.  After a deployment, consumers stop processing messages but offsets keep committing. What went wrong?
+    This usually means the consumer is committing offsets without actually processing records.
+    What likely went wrong:
+        Auto-commit enabled → offsets commit on a timer even if processing logic is broken
+        Manual commit placed too early (before processing code)
+        Exception swallowed after poll() → code skips processing but still commits
+        Processing thread not running after deploy (misconfigured thread pool / feature flag)
+        Wrong deserializer / schema change → records fail silently but commits continue
+
+3.  Kafka consumers restart frequently during peak traffic. Why?
+    Kafka consumers restarting frequently during peak traffic is usually due to missed heartbeats or 
+    timeouts under load.
+    Common reasons:
+        Processing takes too long, so poll() isn’t called within max.poll.interval.ms
+        GC pauses / memory pressure during high load cause heartbeat delays
+        Downstream calls (DB/API) slow down and block consumer threads
+        Too large batches (max.poll.records) increase processing time per poll
+        Rebalance storms triggered by slow or unstable consumers
+
+4.  One consumer instance is much slower than others in the same group. How do you investigate?
+    If one consumer is much slower than others in the same group, I’d investigate in this order:
+    Check partition assignment → see if that consumer owns a hot partition (skewed key, uneven traffic)
+    Compare per-partition lag → confirm whether slowness is data-related or instance-specific
+    Inspect processing path → slow DB/API calls, locks, or retries on that instance
+    Check GC / pauses → GC logs, heap pressure, stop-the-world pauses
+    Verify configs & version → same code, same configs, same resources as others
+
+5.  Consumers process messages twice after a restart. Is this expected? How do you prevent it?
+    Yes — this is expected in Kafka under the default at-least-once delivery model.
+    Why it happens:
+        The consumer processes messages
+        It crashes or restarts before committing offsets
+        On restart, Kafka resumes from the last committed offset
+        Those messages are processed again
+        So duplicates after restart are normal unless you design for them.
+    How to prevent or handle it:
+        Use manual commits after successful processing
+        Make consumers idempotent (dedup by eventId, UPSERTs, unique keys)
+        For Kafka→Kafka pipelines, use transactions / exactly-once semantics
+        Avoid committing offsets before downstream writes
+
+6.  A consumer crashes on a specific message and keeps reprocessing it forever. What do you do?
+    This is a classic poison message scenario.
+
+    What’s happening:
+    The consumer fails on the same record, restarts, reads it again (offset not committed), 
+    and crashes repeatedly.
+
+    What to do:
+        Identify the bad record (log topic/partition/offset)
+        Skip or isolate it:
+            Send it to a DLQ (Dead Letter Queue)
+            Or manually seek past the offset after logging
+        Add bounded retries (retry N times, then give up)
+        Fix the root cause (bad data, schema mismatch, deserialization issue)
+
+7.  Rebalancing happens too frequently and throughput collapses. What causes this?
+    Frequent rebalancing with throughput collapse is usually caused by consumers 
+    repeatedly leaving and rejoining the group.
+    Common causes:
+        Long processing time → poll() not called within max.poll.interval.ms
+        GC pauses / JVM stalls under load → missed heartbeats
+        Blocking downstream calls (DB/API) in the poll thread
+        Too many consumer restarts (crash loops, bad liveness probes)
+        Over-aggressive configs (session.timeout.ms, heartbeat.interval.ms)
+        Eager rebalancing strategy instead of cooperative
+
+8.  Consumers fall behind only at night. What could explain this?
+    If consumers fall behind only at night, it’s usually due to environmental or workload 
+    changes, not Kafka itself.
+    Common explanations:
+        Batch jobs / ETL / backups at night slowing DBs or APIs used by consumers
+        Traffic spike (end-of-day processing, reports, settlements) increasing produce rate
+        Fewer consumer instances (autoscaling scales down at night)
+        Resource contention (shared infra, noisy neighbors)
+        Network throttling or maintenance windows
+        GC pressure due to larger messages or batch sizes at night
+        
+9.  One partition is always lagging while others are fine. Why?
+    This almost always points to a hot partition problem.
+    Why it happens:
+        Skewed keys → many messages use the same key, all routed to one partition
+        Uneven traffic pattern → one business entity (user/order/account) dominates
+        Slow processing for that partition’s data (heavier DB calls, retries)
+        Single-threaded consumption per partition → it can’t be parallelized further
+
+10. After scaling consumers, throughput doesn’t improve. Why?
+    This usually means you’ve hit a parallelism or bottleneck limit.
+    Common reasons:
+        Partitions ≤ consumers → extra consumers sit idle (no more parallelism)
+        Hot partition → one partition dominates traffic; scaling consumers won’t help
+        Downstream bottleneck → DB/API is the real limiter
+        Single-threaded processing per partition → can’t parallelize within a partition
+        Broker or network limits → fetch/produce can’t go faster

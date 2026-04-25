@@ -1,0 +1,161 @@
+
+
+🚀 Kafka Producer Scenarios
+
+1.  Producer logs show “message sent successfully” but consumers don’t receive anything. How do you debug?
+    Debug this like a checklist — most “sent but not consumed” issues are topic/offset/group/config problems, 
+    not Kafka “losing” messages.
+    1) Confirm the producer really wrote to the right place
+    Verify topic name (env prefix, typo, wrong cluster/region)
+    Check if records exist with: kafka-console-consumer --from-beginning (no group)
+
+    2) Check consumer group offsets (most common)
+    Consumer might be reading but from a different point:
+    wrong group.id
+    auto.offset.reset=latest + new group (skips old messages)
+    offsets already at end
+    Use kafka-consumer-groups --describe to see current offsets vs log end
+
+    3) Check subscription & partition assignment
+    Ensure consumer is subscribed to the same topic
+    Confirm it owns partitions (no rebalancing loop)
+
+    4) Check filtering / deserialization
+    Message might be fetched but dropped:
+    deserializer/schema mismatch
+    app-level filtering (key/type mismatch)
+    exceptions swallowed
+
+    5) Check security / connectivity (if applicable)
+    ACLs allow producer but not consumer
+    SASL/SSL misconfig on consumer side
+
+2.  Producer latency spikes suddenly with no code change. What could cause this?
+    The time taken by Kafka producer to send a message and get acknowledgment from broker suddenly increases
+    Sudden Kafka producer latency spikes with no code change are usually caused by infrastructure, 
+        broker, or config-dependent runtime conditions:
+        - Broker load / disk I/O slow (log flush, compaction, high IO wait) → slower acks
+        - ISR shrink / replica lag with acks=all → producer waits longer
+        - Leader elections / partition reassignments(moving to other broker) → transient errors + retries
+        - Network latency / packet loss / throttling between producer and brokers
+        - Request queue saturation on brokers → delayed processing/acks
+        - GC pauses / CPU steal on producer JVM host → delayed send thread
+        - Increase in message size or throughput (same code, different traffic) → batching/queueing delays
+        - Batching effects (linger.ms, batch.size) → queues fill, flush timing changes
+        - Quota limits / throttling (broker/client quotas) → forced delays
+
+3.  Messages are duplicated after enabling retries. Why?
+    Messages get duplicated after enabling retries because the producer may resend a message when it 
+    doesn’t receive an acknowledgment—even though the broker already wrote it.
+     - Ack lost / leader change(after replicating to 50% replicas) → producer retries
+     - Broker writes the same record again → duplicate messages
+    Fix (one-liner):
+     - Enable idempotence: enable.idempotence=true
+     → broker deduplicates retries
+
+4.  Producers start timing out intermittently under load. What do you tune?
+    Intermittent producer timeouts under load — tune these (in order):
+        Increase send capacity
+            batch.size ↑, linger.ms ↑ (better batching)
+            buffer.memory ↑ (avoid local buffer exhaustion)
+            Monitor max.block.ms / bufferpool-wait (timeouts often come from waiting for buffer)
+
+        Reduce request pressure
+            compression.type = lz4 or snappy
+            max.in.flight.requests.per.connection (keep reasonable; with idempotence ≤ 5)
+
+        Handle broker/ACK latency
+            acks=all + slow replicas can cause timeouts → check ISR, disk/network
+            request.timeout.ms ↑ (if brokers are slow but healthy)
+            delivery.timeout.ms ↑ (upper bound for retries + waiting)
+
+        Retry/backoff correctly
+            retries high (or default), retry.backoff.ms ↑ slightly to avoid retry storms
+
+        Rule of thumb line:
+        If timeouts happen only under load, it’s usually buffer pressure (client-side) or broker 
+        ack latency (server-side)—tune accordingly.
+
+5.  A producer crash causes message loss. How is that possible?
+    A producer crash can still cause message loss when the message was never durably stored or 
+    the app thought it sent but didn’t verify:
+        - Async send without checking: app doesn’t get()/callback, process crashes before send completes.
+        - Buffered in client: record is only in producer memory (buffer.memory/batch) and not yet sent.
+        - acks=0 or acks=1 + leader dies: ack returned before replicas copied → leader crash can lose it.
+        - Retries disabled / low timeouts: transient error + crash before resend.
+        - linger.ms/batching window: message waiting to batch when crash happens.
+        - Not flushing on shutdown: no flush()/close() → in-flight records dropped.
+
+6.  Large messages cause producer OOM errors. How do you fix it?
+    Large messages can blow up producer memory because they sit in client buffers, batches, 
+    and sometimes compressed copies.
+    Fixes (practical + interview-ready):
+        - Reduce message size: send only needed fields, compress payload upstream, use efficient 
+        formats (Avro/Protobuf), avoid huge JSON.
+        - Store payload externally: put large blobs in S3/DB, send only a key + URL/id in Kafka.
+        - Raise Kafka size limits (only if you must):
+            Producer: max.request.size ↑
+            Broker: message.max.bytes ↑ (and topic-level if used)
+            Consumer: fetch.max.bytes, max.partition.fetch.bytes ↑ (otherwise consumers break)
+        - Prevent producer memory pressure:
+            buffer.memory ↑ (more room)
+            Reduce batching for big records: batch.size ↓, linger.ms ↓
+            compression.type = lz4/snappy (often helps, but doesn’t fix truly huge records)
+
+    Rule of thumb:
+    Kafka is best for events, not big blobs—use Kafka for references, not raw large payloads.
+
+7.  Producer throughput drops after enabling compression. Why?
+    Producer throughput can drop after enabling compression because compression is CPU-intensive 
+    and shifts the bottleneck from network to the producer CPU.
+        Why it happens:
+            CPU overhead for compressing batches (especially gzip)
+            Small batches (batch.size low / linger.ms low) → poor compression efficiency
+            High message rate → producer threads spend more time compressing than sending
+            Content already compressed (JSON with Base64, images) → no size gain, only CPU cost
+        What to tune:
+            Use faster codecs: lz4 or snappy (avoid gzip unless bandwidth is the bottleneck)
+            Increase batching: batch.size ↑, linger.ms ↑
+            Scale producers or add threads (more producers, not more partitions per producer)
+            Disable compression for already-compressed payloads
+
+8.  Messages are unevenly distributed across partitions. What’s wrong?
+    Uneven partition distribution is usually a keying/partitioner issue:
+        Same or skewed key (e.g., userId=UNKNOWN, constant key) → most records hash to 1–2 partitions.
+        Null key + sticky partitioner → producer tends to “stick” to one partition per batch; across time it balances, but can look uneven in short windows.
+        Custom partitioner bug → always returns same partition / bad modulo logic.
+        Key has hotspots (few “heavy” users/tenants) → natural skew even with correct hashing.
+        Too few partitions vs traffic pattern → one partition becomes a hotspot.
+    Fixes:
+        Choose a high-cardinality key (or add a sharding suffix: key = userId + ":" + (hash(orderId)%N)).
+        If ordering not required, consider no key (round-robin-ish over time) or a better key.
+        Remove/fix the custom partitioner.
+        Add partitions only if you can handle rebalancing and key remapping consequences.
+
+9.  One producer floods Kafka and impacts all other services. How do you isolate it?
+    Isolate the “noisy” producer by putting hard limits around it at multiple layers:
+    - Separate topic / cluster (best isolation)
+        Put that workload on its own topics (and ideally its own cluster if it’s truly abusive).
+    - Quota it on the broker
+        Use Kafka client quotas (per client.id / user / IP) to cap produce bandwidth/requests so it can’t starve others.
+    - Dedicated resources
+        Separate brokers for that workload (broker rack/tagging, separate cluster)
+        Dedicated partitions / replication factor tuned for it
+    - Backpressure at the producer
+        Lower max.in.flight, limit concurrency, set sane buffer.memory + max.block.ms, rate-limit in app.
+    - Multi-tenant hygiene
+        Use separate service accounts / credentials and ACLs, so quotas and monitoring can target that one producer cleanly.
+
+10. Producer sends data faster than consumers can handle. How do you handle backpressure?
+    Handle backpressure by slowing producers or absorbing load safely:
+        - Let Kafka buffer, but cap it
+            Consumers scale out (more instances) and/or scale up partitions; add disk/IO on brokers.
+        - Rate-limit at producer
+            Token bucket / QPS limit, or block on send() by keeping buffer.memory bounded + low max.block.ms 
+            (forces the app to slow down instead of OOM).
+        - Shed or degrade non-critical traffic
+            Drop/skip low-priority events, sample logs/metrics events, or route to a “dead letter / overflow” topic.
+        - Use retry + DLQ with limits
+            Don’t retry forever; cap attempts and push failures to DLQ.
+        - Consumer-side tuning
+            Increase parallelism (more consumers/partitions), optimize processing, and tune max.poll.records / batching.
