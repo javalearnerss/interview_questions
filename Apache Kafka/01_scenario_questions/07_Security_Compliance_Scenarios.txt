@@ -1,0 +1,12 @@
+🔐 Security & Compliance Scenarios
+
+Unauthorized consumer reads sensitive data. How did this happen?
+ACL misconfiguration blocks production traffic. How do you recover?
+Certificates expire and Kafka clients start failing. What breaks?
+A team bypasses security using shared credentials. How do you prevent this?
+Audit team asks who accessed which topics. How do you answer?
+Kafka credentials leak. What’s your immediate action?
+TLS handshake failures happen intermittently. Why?
+IAM-based auth works in one region but not another. Why?
+Security changes break older consumers. Why?
+How do you rotate secrets without downtime?

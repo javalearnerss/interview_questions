@@ -1,0 +1,32 @@
+🎯 Schema Registry Scenario-Based Interview Questions
+
+FOUNDATION (3 questions):
+1. What is schema evolution and why is it needed in Kafka?
+2. Explain backward compatibility, forward compatibility, and full compatibility with examples.
+3. What is Schema Registry and what problems does it solve?
+
+PRODUCER-CONSUMER ISSUES (4 questions):
+4. Producer deploys a schema change and consumers crash. What went wrong?
+5. Old consumers break after a new field is added. Why?
+6. A backward-compatible change still causes issues. Why?
+7. A required field is added without a default value. What happens to old messages during replay?
+
+SCHEMA REGISTRY AVAILABILITY (2 questions):
+8. Schema Registry is down — what happens to producers and consumers?
+9. What's the impact of Schema Registry caching on system performance?
+
+SAFE EVOLUTION (3 questions):
+10. Different teams evolve schemas independently. How do you prevent outages?
+11. How do you safely remove a field from events without breaking consumers?
+12. You change the data type: `amount: double` → `amount: string`. How do you handle this in production?
+
+RECOVERY & DEBUGGING (2 questions):
+13. A schema change corrupts downstream data. How do you recover?
+14. Replay of old events fails due to schema mismatch. Why?
+
+TESTING & DEPLOYMENT (1 question):
+15. How do you test schema changes before production and what's the safe deployment order?
+
+
+
+--------------------------------------------------------------------------------------------------------------------------
