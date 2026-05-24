@@ -1,0 +1,218 @@
+For **10 years experience**, you should prepare like a senior candidate: fewer random problems, more pattern mastery, speed, and explanation quality.
+
+A good target is:
+
+**2-3 questions per day on weekdays**  
+**4-5 questions per day on weekends**  
+Total: around **70-90 strong questions** in **5-6 weeks**
+
+Do not try to solve 300 questions. For senior interviews, depth matters more.
+
+**Daily Split**
+
+If you have **2 hours/day**:
+
+1. **1 medium question** from the main topic
+2. **1 revision question** from an older topic
+3. **15-20 minutes explanation practice**
+
+If you have **3 hours/day**:
+
+1. **2 medium questions**
+2. **1 easy/medium revision question**
+3. **20 minutes system/design or verbal explanation practice**
+
+**Weekly Topic Plan**
+
+**Week 1: Arrays, Hashing, Two Pointers, Sliding Window**
+
+Solve **15-18 questions**.
+
+Per day:
+- 2 questions/day
+- Weekend: 4-5 questions
+
+Topics:
+1. Two Sum
+2. Best Time to Buy/Sell Stock
+3. Product of Array Except Self
+4. Maximum Subarray
+5. Container With Most Water
+6. 3Sum
+7. Longest Substring Without Repeating Characters
+8. Minimum Window Substring
+9. Sliding Window Maximum
+10. Subarray Sum Equals K
+
+Why: These are the most common screening patterns.
+
+**Week 2: Stack, Queue, Binary Search, Linked List**
+
+Solve **14-16 questions**.
+
+Per day:
+- 2 questions/day
+
+Topics:
+1. Valid Parentheses
+2. Min Stack
+3. Daily Temperatures
+4. Next Greater Element
+5. Largest Rectangle in Histogram
+6. Binary Search
+7. Search in Rotated Sorted Array
+8. Find Minimum in Rotated Sorted Array
+9. Merge Two Sorted Lists
+10. Reverse Linked List
+11. Detect Cycle
+12. LRU Cache
+
+Why: Senior interviews often check clean implementation and edge cases here.
+
+**Week 3: Trees and Graphs**
+
+Solve **16-20 questions**.
+
+Per day:
+- 2-3 questions/day
+
+Topics:
+1. Tree traversals
+2. Maximum Depth
+3. Diameter of Binary Tree
+4. Lowest Common Ancestor
+5. Binary Tree Level Order Traversal
+6. Validate BST
+7. Kth Smallest in BST
+8. Number of Islands
+9. Clone Graph
+10. Course Schedule
+11. Pacific Atlantic Water Flow
+12. Rotting Oranges
+13. Word Ladder
+
+Why: Trees/graphs are very common for experienced candidates.
+
+**Week 4: Backtracking and Dynamic Programming Basics**
+
+Solve **14-18 questions**.
+
+Per day:
+- 2 questions/day
+
+Backtracking:
+1. Subsets
+2. Permutations
+3. Combination Sum
+4. Generate Parentheses
+5. Word Search
+6. N-Queens
+
+DP:
+1. Climbing Stairs
+2. House Robber
+3. Coin Change
+4. Longest Common Subsequence
+5. Longest Increasing Subsequence
+6. Partition Equal Subset Sum
+
+Why: You need pattern confidence, not brute memorization.
+
+**Week 5: Advanced DP, Heaps, Intervals, Design-Style Coding**
+
+Solve **12-15 questions**.
+
+Per day:
+- 2 questions/day
+
+Topics:
+1. Merge Intervals
+2. Insert Interval
+3. Meeting Rooms II
+4. Top K Frequent Elements
+5. Kth Largest Element
+6. Find Median from Data Stream
+7. Task Scheduler
+8. Edit Distance
+9. Word Break
+10. Stock Buy/Sell with Cooldown
+11. Implement Trie
+12. LRU Cache
+13. LFU Cache
+
+Why: Senior interviews often include design-like coding problems.
+
+**Week 6: Revision and Mock Interviews**
+
+Solve **10-12 questions only**, but deeply.
+
+Per day:
+- 1 fresh question
+- 1 old question repeated
+- 1 verbal walkthrough
+
+Focus:
+1. Re-solve failed questions
+2. Practice explaining tradeoffs
+3. Time yourself
+4. Write bug-free code
+5. Discuss complexity clearly
+
+**Best Daily Formula**
+
+For your experience level:
+
+```text
+Day target:
+2 questions + 1 revision
+```
+
+Example:
+
+```text
+Question 1: New medium pattern question
+Question 2: New medium/hard question
+Revision: Re-solve one old question in 20 minutes
+```
+
+**Recommended Total Count**
+
+| Topic | Questions |
+|---|---:|
+| Arrays / Hashing | 12-15 |
+| Two Pointers / Sliding Window | 10-12 |
+| Stack / Queue | 8-10 |
+| Binary Search | 6-8 |
+| Linked List | 6-8 |
+| Trees | 12-15 |
+| Graphs | 10-12 |
+| Backtracking | 8-10 |
+| Dynamic Programming | 12-15 |
+| Heap / Intervals | 8-10 |
+| Design-style coding | 5-7 |
+
+Total: around **90-110 questions**.
+
+If time is short, do **70 high-quality questions**.
+
+**Interview Readiness Rule**
+
+You are ready when you can do this consistently:
+
+1. Solve medium questions in **25-35 minutes**
+2. Explain brute force first
+3. Improve to optimal approach
+4. Code cleanly without many bugs
+5. Explain time and space complexity
+6. Handle edge cases without interviewer hints
+
+For 10 years experience, also practice saying:
+
+```text
+I would choose this approach because...
+The tradeoff is...
+This handles edge cases like...
+If input grows, this may become a bottleneck...
+```
+
+That senior-level explanation matters as much as the code.

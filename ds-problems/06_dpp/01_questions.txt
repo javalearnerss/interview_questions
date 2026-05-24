@@ -1,0 +1,293 @@
+Dynamic Programming Questions Practice List
+
+Total target: 35-50 questions
+Minimum strong foundation: 20 important questions
+Estimated time: 20-30 days
+
+
+How to Study Dynamic Programming
+
+For every DP question, follow this order:
+
+1. Identify the changing state.
+2. Write the recursive solution.
+3. Add memoization.
+4. Convert to tabulation if possible.
+5. Optimize space if the pattern allows it.
+
+Do not start directly with tabulation. First understand the recurrence.
+
+
+Pattern 1: Basic 1D DP
+
+1. Fibonacci Number
+2. Climbing Stairs
+3. Min Cost Climbing Stairs
+4. House Robber
+5. House Robber II
+6. Decode Ways
+
+What this pattern teaches:
+- How to define a simple state like `dp[i]`.
+- How current answer depends on previous answers.
+- Memoization and tabulation basics.
+- Space optimization using previous variables.
+
+
+Pattern 2: Grid DP
+
+1. Unique Paths
+2. Unique Paths II
+3. Minimum Path Sum
+4. Triangle
+5. Dungeon Game
+6. Cherry Pickup II
+
+What this pattern teaches:
+- How to move through a grid.
+- State usually depends on row and column.
+- Common transitions come from top, left, down, or diagonal.
+- Some grid DP problems are solved from bottom to top.
+
+
+Pattern 3: Subsequence DP
+
+1. Longest Common Subsequence
+2. Longest Palindromic Subsequence
+3. Distinct Subsequences
+4. Edit Distance
+5. Shortest Common Supersequence
+6. Delete Operation for Two Strings
+
+What this pattern teaches:
+- Compare two strings using indexes.
+- If characters match, move both indexes.
+- If characters do not match, try possible choices.
+- Most problems use a 2D DP table.
+
+
+Pattern 4: Substring DP
+
+1. Longest Palindromic Substring
+2. Palindromic Substrings
+3. Longest Common Substring
+4. Minimum Insertions to Make a String Palindrome
+5. Palindrome Partitioning II
+
+What this pattern teaches:
+- Substring means characters must be continuous.
+- Use start and end indexes.
+- Many problems use gap-based DP.
+- Palindrome checks are a common subproblem.
+
+
+Pattern 5: Knapsack DP
+
+1. 0/1 Knapsack
+2. Subset Sum Problem
+3. Partition Equal Subset Sum
+4. Target Sum
+5. Count Subsets with Given Sum
+6. Minimum Subset Sum Difference
+
+What this pattern teaches:
+- For each item, choose or skip.
+- State usually means index and remaining target.
+- Convert recursion into a 2D table.
+- Many interview DP problems are knapsack variations.
+
+
+Pattern 6: Unbounded Knapsack DP
+
+1. Unbounded Knapsack
+2. Coin Change
+3. Coin Change II
+4. Rod Cutting
+5. Combination Sum IV
+
+What this pattern teaches:
+- Items can be used multiple times.
+- Stay on the same index when reusing an item.
+- Understand difference between minimum ways and total ways.
+- Order may or may not matter depending on the problem.
+
+
+Pattern 7: Longest Increasing Subsequence DP
+
+1. Longest Increasing Subsequence
+2. Number of Longest Increasing Subsequences
+3. Largest Divisible Subset
+4. Longest String Chain
+5. Russian Doll Envelopes
+
+What this pattern teaches:
+- Compare current element with previous elements.
+- Build the best answer ending at each index.
+- Learn both O(n^2) DP and binary search optimization.
+- Useful for sequence-building problems.
+
+
+Pattern 8: Stock Buy and Sell DP
+
+1. Best Time to Buy and Sell Stock
+2. Best Time to Buy and Sell Stock II
+3. Best Time to Buy and Sell Stock III
+4. Best Time to Buy and Sell Stock IV
+5. Best Time to Buy and Sell Stock with Cooldown
+6. Best Time to Buy and Sell Stock with Transaction Fee
+
+What this pattern teaches:
+- Track buy and sell states.
+- Add constraints like transaction count, cooldown, and fee.
+- State often includes day, holding status, and transactions left.
+- This is one of the most common advanced DP patterns.
+
+
+Pattern 9: Partition DP
+
+1. Matrix Chain Multiplication
+2. Burst Balloons
+3. Minimum Cost to Cut a Stick
+4. Boolean Parenthesization
+5. Palindrome Partitioning II
+
+What this pattern teaches:
+- Try every possible partition point.
+- Solve left and right parts recursively.
+- Combine answers to get the best result.
+- Usually solved using interval DP.
+
+
+Pattern 10: DP on Trees
+
+1. Diameter of Binary Tree
+2. Binary Tree Maximum Path Sum
+3. House Robber III
+4. Longest ZigZag Path in a Binary Tree
+5. Maximum Sum BST in Binary Tree
+
+What this pattern teaches:
+- Get answers from left and right subtrees.
+- Return useful information to the parent.
+- Sometimes the final answer is different from the returned value.
+- Tree DP often uses postorder traversal.
+
+
+Most Important 20 Questions
+
+Follow this order first:
+
+1. Climbing Stairs
+2. Min Cost Climbing Stairs
+3. House Robber
+4. Unique Paths
+5. Minimum Path Sum
+6. Longest Common Subsequence
+7. Longest Palindromic Subsequence
+8. Edit Distance
+9. Longest Palindromic Substring
+10. 0/1 Knapsack
+11. Subset Sum Problem
+12. Partition Equal Subset Sum
+13. Target Sum
+14. Coin Change
+15. Coin Change II
+16. Longest Increasing Subsequence
+17. Best Time to Buy and Sell Stock II
+18. Best Time to Buy and Sell Stock with Cooldown
+19. Matrix Chain Multiplication
+20. House Robber III
+
+
+25-Day Practice Plan
+
+Day 1-2: DP Basics
+1. Fibonacci Number
+2. Climbing Stairs
+3. Min Cost Climbing Stairs
+
+Day 3-4: House Robber Pattern
+1. House Robber
+2. House Robber II
+3. Decode Ways
+
+Day 5-6: Grid DP
+1. Unique Paths
+2. Unique Paths II
+3. Minimum Path Sum
+4. Triangle
+
+Day 7-9: Subsequence DP
+1. Longest Common Subsequence
+2. Longest Palindromic Subsequence
+3. Distinct Subsequences
+4. Edit Distance
+5. Shortest Common Supersequence
+
+Day 10-11: Substring DP
+1. Longest Palindromic Substring
+2. Palindromic Substrings
+3. Longest Common Substring
+4. Palindrome Partitioning II
+
+Day 12-15: Knapsack DP
+1. 0/1 Knapsack
+2. Subset Sum Problem
+3. Partition Equal Subset Sum
+4. Target Sum
+5. Count Subsets with Given Sum
+6. Minimum Subset Sum Difference
+
+Day 16-17: Unbounded Knapsack
+1. Unbounded Knapsack
+2. Coin Change
+3. Coin Change II
+4. Rod Cutting
+
+Day 18-19: LIS Pattern
+1. Longest Increasing Subsequence
+2. Number of Longest Increasing Subsequences
+3. Largest Divisible Subset
+4. Longest String Chain
+
+Day 20-21: Stock DP
+1. Best Time to Buy and Sell Stock
+2. Best Time to Buy and Sell Stock II
+3. Best Time to Buy and Sell Stock III
+4. Best Time to Buy and Sell Stock with Cooldown
+5. Best Time to Buy and Sell Stock with Transaction Fee
+
+Day 22-23: Partition DP
+1. Matrix Chain Multiplication
+2. Burst Balloons
+3. Minimum Cost to Cut a Stick
+
+Day 24: DP on Trees
+1. Binary Tree Maximum Path Sum
+2. House Robber III
+3. Longest ZigZag Path in a Binary Tree
+
+Day 25: Revision
+1. Climbing Stairs
+2. House Robber
+3. Unique Paths
+4. Longest Common Subsequence
+5. Edit Distance
+6. Partition Equal Subset Sum
+7. Coin Change
+8. Longest Increasing Subsequence
+9. Stock with Cooldown
+10. Matrix Chain Multiplication
+
+
+Completion Rule
+
+For each DP pattern:
+
+1. Solve the recursive version first.
+2. Add memoization.
+3. Convert to tabulation.
+4. Optimize space only after the tabulation is clear.
+5. Re-solve important questions after 2-3 days.
+
+If you can solve Climbing Stairs, House Robber, Unique Paths, Longest Common Subsequence, Edit Distance, Partition Equal Subset Sum, Coin Change, Longest Increasing Subsequence, Stock with Cooldown, and Matrix Chain Multiplication without help, your DP foundation is strong.

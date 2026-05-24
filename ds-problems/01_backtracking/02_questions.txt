@@ -1,0 +1,196 @@
+Backtracking Questions Practice List
+
+Total target: 25-35 questions
+Minimum strong foundation: 16 important questions
+Estimated time: 12-20 days
+
+Pattern 1: Basic Recursion / Pick or Not Pick
+
+1. Print all subsequences of a string
+2. Generate all subsets
+3. Generate binary strings of length n
+4. Generate all strings using given characters
+5. Sum of all subsets
+
+What this pattern teaches:
+- At every step, choose one option.
+- Recurse on the remaining problem.
+- Undo the choice before trying the next option.
+
+
+Pattern 2: Subsets and Combinations
+
+1. Subsets
+2. Subsets II
+3. Combination Sum
+4. Combination Sum II
+5. Combinations from 1 to n
+
+What this pattern teaches:
+- Use a start index.
+- Move forward when an element should not be reused.
+- Stay at the same index when repetition is allowed.
+- Skip duplicates when needed.
+
+
+Pattern 3: Permutations
+
+1. Permutations
+2. Permutations II
+3. String permutations
+4. K-th permutation sequence
+
+What this pattern teaches:
+- Order matters.
+- Try every unused element at each position.
+- Use a visited array or swapping.
+- Handle duplicate values carefully.
+
+
+Pattern 4: Valid State / Pruning
+
+1. Generate Parentheses
+2. Remove Invalid Parentheses
+3. Different Ways to Add Parentheses
+4. Score or validation-based parentheses problems
+
+What this pattern teaches:
+- Stop recursion early when the current state cannot become valid.
+- Use rules to reduce unnecessary recursive calls.
+- Build only valid answers whenever possible.
+
+
+Pattern 5: Partitioning
+
+1. Palindrome Partitioning
+2. Restore IP Addresses
+3. Word Break II
+4. Partition Equal Subset Sum
+5. Partition to K Equal Sum Subsets
+
+What this pattern teaches:
+- Try every possible cut.
+- Validate the current part.
+- Recurse on the remaining part.
+- Use memoization when repeated states appear.
+
+
+Pattern 6: Grid Backtracking
+
+1. Rat in a Maze
+2. Word Search
+3. Number of Islands using DFS
+4. Unique Paths III
+5. Knight's Tour
+
+What this pattern teaches:
+- Check boundaries.
+- Mark cells as visited.
+- Explore all directions.
+- Unmark cells while returning.
+
+
+Pattern 7: Constraint Satisfaction
+
+1. N-Queens
+2. Sudoku Solver
+3. M-Coloring Problem
+4. Crossword Puzzle
+5. Graph Coloring
+6. Hamiltonian Path
+7. Hamiltonian Cycle
+
+What this pattern teaches:
+- Try one valid value at a time.
+- Check all constraints before placing a value.
+- Undo the value if the path fails.
+- Use pruning to avoid impossible branches.
+
+
+Most Important 16 Questions
+
+Follow this order first:
+
+1. Print all subsequences
+2. Generate all subsets
+3. Subsets II
+4. Combination Sum
+5. Combination Sum II
+6. Permutations
+7. Permutations II
+8. Generate Parentheses
+9. Palindrome Partitioning
+10. Restore IP Addresses
+11. Word Search
+12. Rat in a Maze
+13. N-Queens
+14. Sudoku Solver
+15. Partition to K Equal Sum Subsets
+16. Remove Invalid Parentheses
+
+
+15-Day Practice Plan
+
+Day 1-2: Basic Recursion
+1. Print all subsequences
+2. Generate all subsets
+3. Generate binary strings
+4. Sum of all subsets
+
+Day 3-4: Subsets and Combinations
+1. Subsets
+2. Subsets II
+3. Combination Sum
+4. Combination Sum II
+5. Combinations from 1 to n
+
+Day 5-6: Permutations
+1. Permutations
+2. Permutations II
+3. String permutations
+4. K-th permutation sequence
+
+Day 7-8: Valid State / Pruning
+1. Generate Parentheses
+2. Remove Invalid Parentheses
+3. Different Ways to Add Parentheses
+
+Day 9-10: Partitioning
+1. Palindrome Partitioning
+2. Restore IP Addresses
+3. Word Break II
+4. Partition to K Equal Sum Subsets
+
+Day 11-12: Grid Backtracking
+1. Rat in a Maze
+2. Word Search
+3. Unique Paths III
+4. Knight's Tour
+
+Day 13-14: Constraint Satisfaction
+1. N-Queens
+2. Sudoku Solver
+3. M-Coloring Problem
+4. Crossword Puzzle
+
+Day 15: Revision
+1. Subsets
+2. Combination Sum
+3. Permutations
+4. Generate Parentheses
+5. Palindrome Partitioning
+6. Word Search
+7. N-Queens
+8. Sudoku Solver
+
+
+Completion Rule
+
+For each pattern:
+
+1. Solve 1 question by watching or reading explanation.
+2. Solve 1 similar question with hints.
+3. Solve 2-3 questions completely alone.
+4. Re-solve the same questions after 2-3 days.
+
+If you can solve Subsets, Combination Sum, Permutations, Generate Parentheses, Word Search, N-Queens, and Sudoku Solver without help, your backtracking foundation is strong.

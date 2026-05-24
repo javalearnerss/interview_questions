@@ -1,0 +1,408 @@
+To understand backtracking well, solve around **25-35 questions** total.
+
+You do **not** need 100 questions. Backtracking becomes clear when you master the main patterns one by one.
+
+**Step 1: Basic Recursion Choice Pattern**
+
+Solve **4-5 questions**.
+
+Goal: understand "choose, explore, unchoose".
+
+Questions:
+1. Print all subsequences of a string
+2. Generate all subsets
+3. Generate binary strings of length `n`
+4. Generate all strings using given characters
+5. Sum of all subsets
+
+Pattern:
+
+```text
+At every step:
+1. Pick one option
+2. Recurse
+3. Undo the choice
+```
+
+Move on when you can draw the recursion tree yourself.
+
+**Step 2: Subsets / Combinations Pattern**
+
+Solve **4-5 questions**.
+
+Goal: learn how to use an index and avoid reusing previous elements.
+
+Questions:
+1. Subsets
+2. Subsets II
+3. Combination Sum
+4. Combination Sum II
+5. Combinations from `1` to `n`
+
+Key idea:
+
+```text
+Use start index
+for i from start to n:
+    choose nums[i]
+    recurse with i + 1 or i
+    remove nums[i]
+```
+
+Use `i` again when repetition is allowed.  
+Use `i + 1` when repetition is not allowed.
+
+**Step 3: Permutations Pattern**
+
+Solve **3-4 questions**.
+
+Goal: understand visited arrays and swapping.
+
+Questions:
+1. Permutations
+2. Permutations II
+3. String permutations
+4. K-th permutation sequence
+
+Key idea:
+
+```text
+Try every unused element at every position.
+```
+
+Common template:
+
+```text
+for each element:
+    if not used:
+        choose
+        recurse
+        unchoose
+```
+
+**Step 4: Parentheses / Valid State Pattern**
+
+Solve **3-4 questions**.
+
+Goal: learn pruning using validity rules.
+
+Questions:
+1. Generate Parentheses
+2. Remove Invalid Parentheses
+3. Different Ways to Add Parentheses
+4. Score/validation-based parentheses problems
+
+Key idea:
+
+```text
+Only continue recursion if the current state can still become valid.
+```
+
+Example:
+
+```text
+open <= n
+close <= open
+```
+
+**Step 5: Partitioning Pattern**
+
+Solve **4-5 questions**.
+
+Goal: split string/array into valid groups.
+
+Questions:
+1. Palindrome Partitioning
+2. Restore IP Addresses
+3. Word Break II
+4. Partition Equal Subset Sum
+5. Partition to K Equal Sum Subsets
+
+Key idea:
+
+```text
+Try every possible cut.
+If left part is valid:
+    recurse on remaining part
+```
+
+Example:
+
+```text
+for end from start to n:
+    piece = s[start:end]
+    if piece is valid:
+        choose piece
+        recurse(end)
+        unchoose
+```
+
+**Step 6: Grid Backtracking Pattern**
+
+Solve **4-5 questions**.
+
+Goal: learn movement, visited cells, and boundary checks.
+
+Questions:
+1. Rat in a Maze
+2. Word Search
+3. Number of Islands using DFS
+4. Unique Paths III
+5. Knight's Tour
+
+Key idea:
+
+```text
+Check boundary
+Check visited
+Mark visited
+Explore 4 directions
+Unmark visited
+```
+
+Common directions:
+
+```text
+up, down, left, right
+```
+
+**Step 7: Constraint Satisfaction Pattern**
+
+Solve **4-5 questions**.
+
+Goal: solve problems where each move must satisfy multiple rules.
+
+Questions:
+1. N-Queens
+2. Sudoku Solver
+3. M-Coloring Problem
+4. Crossword Puzzle
+5. Graph Coloring
+
+Key idea:
+
+```text
+Find an empty position
+Try all possible values
+Check if value is valid
+Recurse
+Undo if it fails
+```
+
+This is the classic interview backtracking pattern.
+
+**Best Practice Plan**
+
+Solve in this order:
+
+1. Subsets
+2. Subsets II
+3. Permutations
+4. Permutations II
+5. Combination Sum
+6. Combination Sum II
+7. Generate Parentheses
+8. Palindrome Partitioning
+9. Restore IP Addresses
+10. Word Search
+11. Rat in a Maze
+12. N-Queens
+13. Sudoku Solver
+14. Partition to K Equal Sum Subsets
+15. Remove Invalid Parentheses
+
+These **15 questions** give strong interview-level understanding.
+
+After that, solve another **10-15 mixed questions** for speed and confidence.
+
+**How Many Per Pattern?**
+
+| Pattern | Questions Needed |
+|---|---:|
+| Basic recursion | 4-5 |
+| Subsets/combinations | 4-5 |
+| Permutations | 3-4 |
+| Parentheses/valid state | 3-4 |
+| Partitioning | 4-5 |
+| Grid backtracking | 4-5 |
+| Constraint satisfaction | 4-5 |
+
+Total: around **25-35 questions**.
+
+**Simple Rule**
+
+For each pattern:
+
+1. Solve 1 question by watching/reading explanation.
+2. Solve 1 similar question with hints.
+3. Solve 2-3 questions completely alone.
+4. Re-solve the same questions after 2-3 days.
+
+That is how the pattern becomes permanent.
+
+**Question Roadmap With Explanation**
+
+Use this list step by step. Do not jump directly to hard problems like Sudoku.
+
+**Pattern 1: Basic Recursion / Pick or Not Pick**
+
+Solve these first because they teach the basic recursion tree.
+
+1. Print all subsequences of a string
+   - At every character, you have 2 choices: take it or skip it.
+   - This builds the foundation for subset problems.
+
+2. Generate all subsets
+   - Same idea as subsequences, but with an array.
+   - Learn how every element creates two branches.
+
+3. Generate binary strings of length `n`
+   - At every position, place `0` or `1`.
+   - This makes recursion depth very easy to understand.
+
+4. Sum of all subsets
+   - Generate every subset and calculate its sum.
+   - Helps you carry extra state in recursion.
+
+**Pattern 2: Subsets and Combinations**
+
+Solve these after basic recursion. Here, order does not matter.
+
+1. Subsets
+   - Generate all possible groups.
+   - Use an index to move forward.
+
+2. Subsets II
+   - Same as subsets, but the array has duplicates.
+   - Learn how to skip duplicate choices.
+
+3. Combination Sum
+   - Pick numbers whose sum becomes target.
+   - Same number can be used multiple times.
+
+4. Combination Sum II
+   - Pick numbers whose sum becomes target.
+   - Each number can be used only once.
+
+5. Combinations from `1` to `n`
+   - Choose `k` numbers from `1` to `n`.
+   - Good for practicing the `start` index pattern.
+
+**Pattern 3: Permutations**
+
+Solve these when you understand combinations. Here, order matters.
+
+1. Permutations
+   - Arrange all numbers in every possible order.
+   - Use a `visited` array or swapping.
+
+2. Permutations II
+   - Generate unique permutations when duplicates exist.
+   - Learn duplicate handling in permutation problems.
+
+3. String permutations
+   - Same as array permutations, but with characters.
+   - Helps you become comfortable with string recursion.
+
+4. K-th permutation sequence
+   - Find a specific permutation.
+   - This is more mathematical, so solve it after normal permutations.
+
+**Pattern 4: Valid State / Pruning**
+
+These questions teach you to stop bad recursion early.
+
+1. Generate Parentheses
+   - Add `(` or `)` only if the current string can still become valid.
+   - Important rule: closing brackets cannot be more than opening brackets.
+
+2. Remove Invalid Parentheses
+   - Remove minimum brackets to make the string valid.
+   - Teaches pruning and avoiding duplicate answers.
+
+3. Different Ways to Add Parentheses
+   - Try every possible place to split the expression.
+   - Good for recursive divide-and-conquer thinking.
+
+**Pattern 5: Partitioning**
+
+These questions teach you how to cut a string or array into valid parts.
+
+1. Palindrome Partitioning
+   - Try every possible substring.
+   - Continue only if the substring is a palindrome.
+
+2. Restore IP Addresses
+   - Split a string into 4 valid IP parts.
+   - Teaches strict validation during recursion.
+
+3. Word Break II
+   - Split a string into valid dictionary words.
+   - Teaches recursion with memoization.
+
+4. Partition to K Equal Sum Subsets
+   - Divide numbers into `k` groups with equal sum.
+   - Teaches bucket-based backtracking.
+
+**Pattern 6: Grid Backtracking**
+
+These questions teach movement in 2D grids.
+
+1. Rat in a Maze
+   - Move from start to end.
+   - Mark a cell visited, explore directions, then unmark it.
+
+2. Word Search
+   - Find whether a word exists in a grid.
+   - Match one character at a time using DFS.
+
+3. Unique Paths III
+   - Visit every empty square exactly once.
+   - Teaches path counting with strict conditions.
+
+4. Knight's Tour
+   - Move a knight to visit all squares.
+   - This is harder, so solve it after simple grid problems.
+
+**Pattern 7: Constraint Satisfaction**
+
+These are classic interview backtracking problems.
+
+1. N-Queens
+   - Place queens so that no queen attacks another.
+   - Learn row, column, and diagonal checks.
+
+2. Sudoku Solver
+   - Fill empty cells using digits `1` to `9`.
+   - Every move must satisfy row, column, and box rules.
+
+3. M-Coloring Problem
+   - Color a graph using at most `m` colors.
+   - Adjacent nodes cannot have the same color.
+
+4. Crossword Puzzle
+   - Place words into a crossword grid.
+   - Teaches checking, placing, and undoing longer choices.
+
+**Final Step-by-Step Practice Order**
+
+Follow this exact order if you want a clean learning path:
+
+1. Print all subsequences
+2. Generate all subsets
+3. Subsets II
+4. Combination Sum
+5. Combination Sum II
+6. Permutations
+7. Permutations II
+8. Generate Parentheses
+9. Palindrome Partitioning
+10. Restore IP Addresses
+11. Word Search
+12. Rat in a Maze
+13. N-Queens
+14. Sudoku Solver
+15. Partition to K Equal Sum Subsets
+16. Remove Invalid Parentheses
+
+After these 16 questions, solve 10-15 mixed questions from the same patterns.

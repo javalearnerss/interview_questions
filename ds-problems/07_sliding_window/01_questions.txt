@@ -1,0 +1,190 @@
+Sliding Window Questions Practice List
+
+Total target: 25-35 questions
+Minimum strong foundation: 15 important questions
+Estimated time: 10-15 days
+
+
+How to Study Sliding Window
+
+For every sliding window question, ask:
+
+1. Is the window size fixed or variable?
+2. What condition makes the window valid?
+3. When should the right pointer move?
+4. When should the left pointer move?
+5. What answer should be updated for each valid window?
+
+Sliding window is mostly used for arrays and strings when the problem asks for a continuous subarray or substring.
+
+
+Pattern 1: Fixed Size Window
+
+1. Maximum Sum Subarray of Size K
+2. Average of Subarrays of Size K
+3. First Negative Number in Every Window of Size K
+4. Maximum of All Subarrays of Size K
+5. Count Occurrences of Anagrams
+
+What this pattern teaches:
+- Window size is already given.
+- Add the right element.
+- Remove the left element when size becomes greater than `k`.
+- Update answer when window size equals `k`.
+
+
+Pattern 2: Variable Size Window
+
+1. Longest Subarray with Sum K
+2. Smallest Subarray with Sum Greater Than or Equal to K
+3. Minimum Size Subarray Sum
+4. Longest Subarray with Sum Less Than or Equal to K
+5. Max Consecutive Ones III
+
+What this pattern teaches:
+- Window size changes based on a condition.
+- Expand the right pointer to include more elements.
+- Shrink the left pointer when the condition is broken.
+- Update the answer when the window becomes valid.
+
+
+Pattern 3: String Window with HashMap
+
+1. Longest Substring Without Repeating Characters
+2. Longest Substring with At Most K Distinct Characters
+3. Longest Repeating Character Replacement
+4. Minimum Window Substring
+5. Permutation in String
+6. Find All Anagrams in a String
+
+What this pattern teaches:
+- Track character frequency using a hashmap or array.
+- Maintain a valid window using counts.
+- Shrink the window when duplicate or extra characters appear.
+- Use frequency comparison for anagram and permutation problems.
+
+
+Pattern 4: Count-Based Sliding Window
+
+1. Binary Subarrays With Sum
+2. Subarrays with K Different Integers
+3. Count Number of Nice Subarrays
+4. Fruit Into Baskets
+5. Number of Substrings Containing All Three Characters
+
+What this pattern teaches:
+- Count number of valid subarrays or substrings.
+- Often use the formula: exactly K = at most K - at most K - 1.
+- Track frequencies while moving left and right pointers.
+- Count multiple valid windows at once instead of generating each one.
+
+
+Pattern 5: Monotonic Queue Window
+
+1. Sliding Window Maximum
+2. Sliding Window Minimum
+3. Shortest Subarray with Sum at Least K
+4. Constrained Subsequence Sum
+5. Jump Game VI
+
+What this pattern teaches:
+- Use a deque to maintain useful candidates.
+- Remove elements outside the current window.
+- Remove weaker elements from the back of the deque.
+- Get max or min from the front in O(1).
+
+
+Pattern 6: Prefix Sum with Sliding Window
+
+1. Maximum Average Subarray I
+2. Subarray Product Less Than K
+3. Minimum Operations to Reduce X to Zero
+4. Get Equal Substrings Within Budget
+5. Longest Continuous Subarray With Absolute Diff Less Than or Equal to Limit
+
+What this pattern teaches:
+- Combine running sum or product with two pointers.
+- Convert some problems into longest valid subarray.
+- Shrink window when sum, product, or cost exceeds limit.
+- Handle edge cases like zero, negative numbers, and overflow carefully.
+
+
+Most Important 15 Questions
+
+Follow this order first:
+
+1. Maximum Sum Subarray of Size K
+2. First Negative Number in Every Window of Size K
+3. Maximum of All Subarrays of Size K
+4. Longest Subarray with Sum K
+5. Minimum Size Subarray Sum
+6. Longest Substring Without Repeating Characters
+7. Longest Substring with At Most K Distinct Characters
+8. Longest Repeating Character Replacement
+9. Minimum Window Substring
+10. Permutation in String
+11. Find All Anagrams in a String
+12. Fruit Into Baskets
+13. Binary Subarrays With Sum
+14. Subarrays with K Different Integers
+15. Sliding Window Maximum
+
+
+12-Day Practice Plan
+
+Day 1-2: Fixed Size Window
+1. Maximum Sum Subarray of Size K
+2. Average of Subarrays of Size K
+3. First Negative Number in Every Window of Size K
+4. Maximum of All Subarrays of Size K
+
+Day 3-4: Variable Size Window
+1. Longest Subarray with Sum K
+2. Smallest Subarray with Sum Greater Than or Equal to K
+3. Minimum Size Subarray Sum
+4. Max Consecutive Ones III
+
+Day 5-7: String Window with HashMap
+1. Longest Substring Without Repeating Characters
+2. Longest Substring with At Most K Distinct Characters
+3. Longest Repeating Character Replacement
+4. Minimum Window Substring
+5. Permutation in String
+6. Find All Anagrams in a String
+
+Day 8-9: Count-Based Sliding Window
+1. Binary Subarrays With Sum
+2. Subarrays with K Different Integers
+3. Count Number of Nice Subarrays
+4. Fruit Into Baskets
+
+Day 10: Monotonic Queue Window
+1. Sliding Window Maximum
+2. Sliding Window Minimum
+3. Shortest Subarray with Sum at Least K
+
+Day 11: Mixed Advanced Practice
+1. Subarray Product Less Than K
+2. Minimum Operations to Reduce X to Zero
+3. Longest Continuous Subarray With Absolute Diff Less Than or Equal to Limit
+
+Day 12: Revision
+1. Maximum Sum Subarray of Size K
+2. Longest Substring Without Repeating Characters
+3. Minimum Window Substring
+4. Permutation in String
+5. Fruit Into Baskets
+6. Sliding Window Maximum
+
+
+Completion Rule
+
+For each sliding window question:
+
+1. First identify fixed window or variable window.
+2. Write the condition that makes the window valid.
+3. Move the right pointer to expand.
+4. Move the left pointer to shrink.
+5. Update the answer at the correct time.
+
+If you can solve Longest Substring Without Repeating Characters, Minimum Window Substring, Find All Anagrams in a String, Fruit Into Baskets, Minimum Size Subarray Sum, and Sliding Window Maximum without help, your sliding window foundation is strong.

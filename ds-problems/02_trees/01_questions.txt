@@ -1,0 +1,249 @@
+Trees Questions Practice List
+
+Total target: 30-40 questions
+Minimum strong foundation: 18 important questions
+Estimated time: 15-25 days
+
+
+Pattern 1: Basic Tree Traversal
+
+1. Inorder Traversal
+2. Preorder Traversal
+3. Postorder Traversal
+4. Level Order Traversal
+5. Reverse Level Order Traversal
+
+What this pattern teaches:
+- How to visit every node in a tree.
+- Recursive DFS traversal.
+- Iterative traversal using stack or queue.
+- Difference between DFS and BFS.
+
+
+Pattern 2: Tree Height, Depth, and Size
+
+1. Maximum Depth of Binary Tree
+2. Minimum Depth of Binary Tree
+3. Count Nodes in Binary Tree
+4. Count Leaf Nodes
+5. Diameter of Binary Tree
+
+What this pattern teaches:
+- How to collect information from left and right subtrees.
+- How to return values from recursion.
+- How to calculate height-based answers.
+
+
+Pattern 3: Path-Based Problems
+
+1. Root to Leaf Paths
+2. Path Sum
+3. Path Sum II
+4. Binary Tree Maximum Path Sum
+5. Sum Root to Leaf Numbers
+6. Lowest Common Ancestor of Binary Tree
+
+What this pattern teaches:
+- Carry path information during recursion.
+- Backtrack after exploring one path.
+- Use return values to pass information upward.
+- Handle paths that may start and end anywhere.
+
+
+Pattern 4: Tree View Problems
+
+1. Left View of Binary Tree
+2. Right View of Binary Tree
+3. Top View of Binary Tree
+4. Bottom View of Binary Tree
+5. Vertical Order Traversal
+6. Boundary Traversal
+
+What this pattern teaches:
+- Level order traversal.
+- Horizontal distance concept.
+- Tracking first or last node at each level.
+- Using maps with BFS.
+
+
+Pattern 5: Binary Search Tree Basics
+
+1. Search in BST
+2. Insert into BST
+3. Delete Node in BST
+4. Validate Binary Search Tree
+5. Minimum Value in BST
+6. Kth Smallest Element in BST
+
+What this pattern teaches:
+- Left subtree values are smaller.
+- Right subtree values are greater.
+- Use BST property to reduce search space.
+- Inorder traversal of BST gives sorted order.
+
+
+Pattern 6: BST Advanced Problems
+
+1. Lowest Common Ancestor of BST
+2. Two Sum IV - Input is a BST
+3. Recover Binary Search Tree
+4. Convert Sorted Array to BST
+5. Convert BST to Greater Tree
+6. Merge Two BSTs
+
+What this pattern teaches:
+- Use sorted order from inorder traversal.
+- Build balanced BSTs.
+- Fix swapped nodes.
+- Combine BST property with two-pointer logic.
+
+
+Pattern 7: Tree Construction
+
+1. Construct Binary Tree from Preorder and Inorder Traversal
+2. Construct Binary Tree from Inorder and Postorder Traversal
+3. Construct Binary Search Tree from Preorder Traversal
+4. Serialize and Deserialize Binary Tree
+5. Flatten Binary Tree to Linked List
+
+What this pattern teaches:
+- How traversal order defines tree structure.
+- How to split left and right subtrees.
+- How to rebuild trees recursively.
+- How to store and restore tree structure.
+
+
+Pattern 8: Tree Modification
+
+1. Invert Binary Tree
+2. Merge Two Binary Trees
+3. Delete Leaves With a Given Value
+4. Prune Binary Tree
+5. Add One Row to Tree
+
+What this pattern teaches:
+- Change tree links safely.
+- Return modified subtree root.
+- Remove nodes based on conditions.
+- Think recursively from bottom to top.
+
+
+Pattern 9: Balanced and Symmetric Trees
+
+1. Symmetric Tree
+2. Same Tree
+3. Balanced Binary Tree
+4. Subtree of Another Tree
+5. Check Completeness of a Binary Tree
+
+What this pattern teaches:
+- Compare two subtrees at the same time.
+- Check mirror structure.
+- Combine height calculation with validation.
+- Use BFS for complete tree checks.
+
+
+Most Important 18 Questions
+
+Follow this order first:
+
+1. Inorder Traversal
+2. Preorder Traversal
+3. Postorder Traversal
+4. Level Order Traversal
+5. Maximum Depth of Binary Tree
+6. Diameter of Binary Tree
+7. Path Sum
+8. Path Sum II
+9. Lowest Common Ancestor of Binary Tree
+10. Right View of Binary Tree
+11. Vertical Order Traversal
+12. Search in BST
+13. Validate Binary Search Tree
+14. Kth Smallest Element in BST
+15. Lowest Common Ancestor of BST
+16. Construct Binary Tree from Preorder and Inorder Traversal
+17. Invert Binary Tree
+18. Balanced Binary Tree
+
+
+20-Day Practice Plan
+
+Day 1-2: Basic Traversals
+1. Inorder Traversal
+2. Preorder Traversal
+3. Postorder Traversal
+4. Level Order Traversal
+
+Day 3-4: Height and Depth
+1. Maximum Depth of Binary Tree
+2. Minimum Depth of Binary Tree
+3. Count Nodes in Binary Tree
+4. Diameter of Binary Tree
+
+Day 5-7: Path Problems
+1. Root to Leaf Paths
+2. Path Sum
+3. Path Sum II
+4. Binary Tree Maximum Path Sum
+5. Lowest Common Ancestor of Binary Tree
+
+Day 8-10: Tree Views
+1. Left View of Binary Tree
+2. Right View of Binary Tree
+3. Top View of Binary Tree
+4. Bottom View of Binary Tree
+5. Vertical Order Traversal
+
+Day 11-13: BST Basics
+1. Search in BST
+2. Insert into BST
+3. Delete Node in BST
+4. Validate Binary Search Tree
+5. Kth Smallest Element in BST
+
+Day 14-15: Advanced BST
+1. Lowest Common Ancestor of BST
+2. Two Sum IV - Input is a BST
+3. Recover Binary Search Tree
+4. Convert Sorted Array to BST
+
+Day 16-17: Tree Construction
+1. Construct Binary Tree from Preorder and Inorder Traversal
+2. Construct Binary Tree from Inorder and Postorder Traversal
+3. Serialize and Deserialize Binary Tree
+4. Flatten Binary Tree to Linked List
+
+Day 18: Tree Modification
+1. Invert Binary Tree
+2. Merge Two Binary Trees
+3. Prune Binary Tree
+
+Day 19: Balanced and Symmetric Trees
+1. Symmetric Tree
+2. Same Tree
+3. Balanced Binary Tree
+4. Subtree of Another Tree
+
+Day 20: Revision
+1. Level Order Traversal
+2. Diameter of Binary Tree
+3. Path Sum II
+4. Lowest Common Ancestor of Binary Tree
+5. Vertical Order Traversal
+6. Validate Binary Search Tree
+7. Kth Smallest Element in BST
+8. Construct Tree from Preorder and Inorder
+9. Balanced Binary Tree
+
+
+Completion Rule
+
+For each pattern:
+
+1. Solve 1 question by watching or reading explanation.
+2. Solve 1 similar question with hints.
+3. Solve 2-3 questions completely alone.
+4. Re-solve important questions after 2-3 days.
+
+If you can solve traversal, height, diameter, path sum, LCA, right view, validate BST, kth smallest BST, tree construction, and balanced tree without help, your tree foundation is strong.
