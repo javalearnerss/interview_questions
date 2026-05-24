@@ -1,12 +1,83 @@
 🔐 Security & Compliance Scenarios
 
-Unauthorized consumer reads sensitive data. How did this happen?
-ACL misconfiguration blocks production traffic. How do you recover?
-Certificates expire and Kafka clients start failing. What breaks?
-A team bypasses security using shared credentials. How do you prevent this?
-Audit team asks who accessed which topics. How do you answer?
-Kafka credentials leak. What’s your immediate action?
-TLS handshake failures happen intermittently. Why?
-IAM-based auth works in one region but not another. Why?
-Security changes break older consumers. Why?
-How do you rotate secrets without downtime?
+1. **Unauthorized Producer Access**
+   - A producer from an unknown application is able to publish messages to a Kafka topic.
+   - How would you secure the topic so only approved producers can write to it?
+
+2. **Consumer Reading Sensitive Data**
+   - A consumer team reports they can read data from a topic that contains customer PII.
+   - How would you prevent unauthorized consumers from accessing sensitive topics?
+
+3. **Kafka Cluster Without Encryption**
+   - Your Kafka cluster is running in production, but data is sent in plain text between producers, brokers, and consumers.
+   - What risks does this create, and how would you enable secure communication?
+
+4. **SSL/TLS Setup Scenario**
+   - Your organization requires all Kafka clients to communicate with brokers using TLS.
+   - What certificates and configurations are needed on brokers and clients?
+
+5. **Authentication Requirement**
+   - Multiple applications use the same Kafka cluster.
+   - How would you ensure each application authenticates with its own identity?
+
+6. **SASL vs SSL**
+   - Your team asks whether to use SSL, SASL, or both for Kafka security.
+   - How would you explain the difference and recommend an approach?
+
+7. **Topic-Level Authorization**
+   - A finance application should write to `payment-events`, but should not read from `salary-events`.
+   - How would you enforce this in Kafka?
+
+8. **ACL Misconfiguration**
+   - After adding Kafka ACLs, consumers are unable to read from a topic.
+   - What ACL permissions would you check?
+
+9. **Consumer Group Security**
+   - A consumer has access to a topic but still cannot consume messages because of a permission error on the consumer group.
+   - What Kafka ACL is likely missing?
+
+10. **Data Compliance Scenario**
+   - A Kafka topic contains GDPR-sensitive user data.
+   - What security and compliance controls would you apply?
+
+11. **Internal Broker Communication**
+   - Kafka brokers communicate with each other over an internal listener.
+   - Should this communication also be encrypted and authenticated? Why?
+
+12. **Credential Rotation**
+   - Your company wants to rotate Kafka client credentials without downtime.
+   - How would you approach this?
+
+13. **Audit Requirement**
+   - Security teams want to know which users accessed which Kafka topics.
+   - How would you enable auditing or monitoring?
+
+14. **Multi-Tenant Kafka Cluster**
+   - Multiple teams share the same Kafka cluster.
+   - How would you isolate access between teams?
+
+15. **Schema Registry Security**
+   - Producers and consumers use Schema Registry.
+   - How would you secure access to schemas and prevent unauthorized schema changes?
+
+16. **Kafka Connect Security**
+   - Kafka Connect is used to move data from databases into Kafka.
+   - What security concerns would you check for Kafka Connect workers and connectors?
+
+17. **Secrets in Configuration**
+   - Kafka client passwords are stored directly in application properties files.
+   - What is the risk, and how would you improve this?
+
+18. **Public Network Exposure**
+   - A Kafka broker is accidentally exposed to the public internet.
+   - What immediate steps would you take?
+
+19. **Least Privilege Access**
+   - A service account currently has `All` permission on all Kafka topics.
+   - How would you redesign its permissions?
+
+20. **Incident Scenario**
+   - You suspect a compromised Kafka client is producing invalid messages to a critical topic.
+   - How would you investigate, contain, and prevent recurrence?
+
+A strong answer should usually mention **SSL/TLS, SASL authentication, ACL authorization, topic-level access control, consumer group permissions, auditing, secret management, and least privilege access**.

@@ -7,7 +7,7 @@
     Q: Why does @Transactional not work when one method calls another method inside the same class?
        Scenario 1: A non-transactional method calls tranactional method 
        Scenario 2: A transactiona method calls another tranctional method 
-    
+     
 
 2. Private Method Trap
     Q: Does @Transactional work on private methods?
