@@ -1,0 +1,142 @@
+Service Decomposition & Design
+1. Your monolithic e-commerce application is becoming difficult to scale. How would you identify boundaries for breaking it into microservices?
+
+2. Two microservices frequently call each other synchronously, causing latency. How would you redesign the communication?
+
+3. A User Service and Order Service both need customer information. How would you avoid database sharing?
+
+4. A single microservice has grown too large and contains multiple business capabilities. How would you split it further?
+
+5. How would you determine whether a functionality should be a separate microservice or remain part of an existing service?
+
+Distributed Transactions
+6. An order creation process involves:
+
+    Order Service
+    Payment Service
+    Inventory Service
+
+    Payment succeeds but inventory update fails. How would you handle this?
+
+7. How would you implement the Saga Pattern in an order processing system?
+
+8. What would be your approach if compensation transactions fail during Saga execution?
+
+9. When would you choose choreography over orchestration for Saga implementation?
+
+10. How would you ensure consistency without using distributed transactions (2PC)?
+
+API Gateway Scenarios
+11. Your API Gateway becomes a bottleneck during Black Friday traffic. How would you address it?
+
+12. Different clients require different response formats from the same backend services. How would you handle this?
+
+13. A malicious client is sending excessive requests. How would you protect your services?
+
+14. How would you implement API versioning without breaking existing consumers?
+
+15. How would you handle authentication and authorization at the gateway level?
+
+Inter-Service Communication
+16. A downstream service becomes slow, causing request pileups. How would you prevent cascading failures?
+
+17. A service dependency is temporarily unavailable. How would you keep the system functional?
+
+18. When would you choose REST versus gRPC between microservices?
+
+19. How would you decide between synchronous and asynchronous communication?
+
+20. A service call chain is:
+
+A → B → C → D
+
+D is slow. How would you identify and troubleshoot the issue?
+
+Event-Driven Architecture
+21. Order Service publishes events to Kafka, but some consumers miss events. How would you investigate?
+
+22. Duplicate events are being processed. How would you ensure idempotency?
+
+23. A Kafka consumer is lagging significantly. What steps would you take?
+
+24. How would you handle event schema evolution?
+
+25. An event publisher crashes after database commit but before publishing the event. How would you solve this?
+
+(Expected answer: Transactional Outbox Pattern)
+
+Data Management
+26. Customer data exists across multiple services. How would you generate a consolidated customer view?
+
+27. How would you manage reporting requirements when data is distributed across services?
+
+28. One service requires data owned by another service for every request. What architectural concern does this raise?
+
+29. How would you implement CQRS in a microservices environment?
+
+30. A service database becomes a performance bottleneck. How would you scale it?
+
+Resiliency & Fault Tolerance
+31. A critical dependency starts timing out intermittently. How would you design resilience mechanisms?
+
+32. How would you implement Circuit Breakers?
+
+33. A retry mechanism is causing a traffic storm during outages. How would you prevent it?
+
+34. A service memory leak causes repeated pod restarts. How would you diagnose it?
+
+35. How would you handle partial failures in distributed systems?
+
+Kubernetes & Deployment Scenarios
+36. A new microservice version is deployed and starts failing. How would you minimize customer impact?
+
+37. How would you implement Blue-Green Deployment?
+
+38. How would you implement Canary Deployment?
+
+39. A pod is healthy according to Kubernetes but users experience failures. What might be wrong?
+
+40. Your application scales from 10 pods to 200 pods during traffic spikes. What challenges could arise?
+
+Observability
+41. A user reports a failed transaction, but logs are spread across 20 services. How would you trace the request?
+
+42. How would you implement distributed tracing?
+
+43. What metrics would you monitor for a microservices platform?
+
+44. One service is producing excessive logs, increasing storage costs. How would you address it?
+
+45. How would you identify the root cause of increased latency across the platform?
+
+Security
+46. How would you secure service-to-service communication?
+
+47. A compromised service starts calling unauthorized APIs. How would you prevent this?
+
+48. How would you manage secrets in Kubernetes-based microservices?
+
+49. How would you implement Zero Trust security in a microservices ecosystem?
+
+50. A JWT token format changes due to a new Identity Provider. How would you migrate without downtime?
+
+Advanced Architecture Scenarios (Frequently Asked for 10+ Years)
+51. Your organization wants to migrate 500 microservices from on-premises to cloud. How would you approach it?
+
+52. One service is responsible for 70% of all platform traffic. How would you scale and redesign it?
+
+53. A Kafka cluster outage impacts multiple business-critical services. What would your recovery strategy be?
+
+54. Your microservices architecture has become a distributed monolith. What indicators would you look for?
+
+55. How would you design a globally distributed microservices platform serving users across multiple regions?
+
+56. How would you handle cross-region database consistency?
+
+57. How would you perform zero-downtime schema migrations across hundreds of services?
+
+58. How would you design a multi-tenant SaaS platform using microservices?
+
+59. How would you reduce cloud costs in a large microservices ecosystem?
+
+60. A production incident occurs at 2 AM affecting 50 services. Walk through your incident response strategy.

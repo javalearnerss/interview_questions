@@ -1,0 +1,137 @@
+How to Approach a System Design Interview Question
+
+A system design interview for a 10+ years experienced engineer is not just about drawing architecture diagrams. Interviewers evaluate how you gather requirements, estimate scale, make architectural decisions, handle failures, ensure scalability, and discuss trade-offs. A structured approach helps demonstrate both technical depth and architectural thinking.
+
+1. Understand and Clarify Requirements
+
+Before proposing any design, spend time understanding the problem thoroughly. Many candidates immediately start drawing components, but senior engineers first clarify the scope and expectations.
+
+Start by discussing the functional requirements. Understand what the system is expected to do, who the users are, and what major workflows need to be supported. For example, if asked to design an Order Management System, clarify whether the system should support order creation, cancellation, tracking, returns, inventory management, and payment processing.
+
+Next, identify the non-functional requirements. These include scalability, latency, availability, reliability, consistency, security, and disaster recovery expectations. Understanding these requirements often influences architecture more than the functional requirements themselves.
+
+Finally, clarify the expected scale. Determine the number of users, requests per second, data volume, growth expectations, and geographic distribution of users.
+
+2. Perform Capacity Planning
+
+Once the requirements are clear, perform a high-level capacity estimation. This demonstrates that your design decisions are backed by realistic assumptions.
+
+Estimate the number of daily active users, requests per second, storage requirements, network bandwidth, and data growth. These estimates do not need to be perfect; interviewers are more interested in your thought process than exact numbers.
+
+For example, if a system handles 100 million requests per day, calculate average and peak request rates. These numbers will help justify decisions related to load balancing, caching, database scaling, and messaging infrastructure.
+
+3. Design the High-Level Architecture
+
+After understanding the requirements and scale, define the major building blocks of the system.
+
+Start with components such as clients, load balancers, API gateways, application services, databases, caches, and messaging systems. Focus on explaining the responsibilities of each component and how they interact with one another.
+
+Avoid diving into implementation details at this stage. The goal is to establish a clear architectural foundation that can be expanded later during the discussion.
+
+4. Define APIs and Request Flows
+
+Once the architecture is established, explain how users interact with the system.
+
+Describe the major APIs that will be exposed and the key operations they support. Then walk through a typical request flow step-by-step. For example, explain what happens when a user places an order, how the request moves through various services, and how the final response is generated.
+
+Interviewers often use this stage to assess your understanding of service interactions and business workflows.
+
+5. Design the Data Layer
+
+Database design is a critical part of any system design discussion.
+
+Explain your choice of database technologies based on business requirements. Discuss whether relational or NoSQL databases are more appropriate and justify your decision. Explain how data will be modeled, stored, queried, and maintained.
+
+You should also discuss database scaling strategies such as read replicas, partitioning, sharding, indexing, and backup mechanisms. For large-scale systems, interviewers expect you to understand how the data layer evolves as the system grows.
+
+6. Discuss Scalability
+
+Scalability is one of the most important evaluation areas in system design interviews.
+
+Explain how the system can handle increasing traffic and data volume. Discuss horizontal scaling of application services, database scaling approaches, caching layers, content delivery networks, and asynchronous processing mechanisms.
+
+Interviewers frequently ask how your design would change if traffic increased tenfold or hundredfold. Be prepared to explain how each component can scale independently.
+
+7. Address Reliability and Fault Tolerance
+
+Every production system experiences failures. Senior engineers are expected to proactively discuss how failures are detected, contained, and recovered from.
+
+Consider scenarios such as database outages, service failures, network disruptions, cache failures, and message broker issues. Explain how retries, circuit breakers, timeouts, dead-letter queues, failover mechanisms, and disaster recovery strategies help maintain system reliability.
+
+Demonstrating strong failure-handling strategies often differentiates senior candidates from mid-level engineers.
+
+8. Design Caching Strategies
+
+Caching plays a major role in improving system performance and reducing database load.
+
+Discuss what data should be cached, where the cache should be placed, and how cache consistency will be maintained. Explain common challenges such as cache invalidation, cache stampedes, stale data, and cache warming strategies.
+
+A thoughtful caching strategy shows practical experience with large-scale systems.
+
+9. Consider Security Requirements
+
+Security should be treated as a first-class design concern rather than an afterthought.
+
+Discuss authentication mechanisms, authorization models, secure communication between services, encryption of sensitive data, secret management, and access control policies. For microservices-based systems, explain how service-to-service communication can be secured and how API access is protected.
+
+Senior-level interviews increasingly include security-focused discussions, especially for financial and enterprise systems.
+
+10. Plan for Observability
+
+A system that cannot be monitored effectively becomes difficult to operate in production.
+
+Explain how you will collect metrics, logs, and traces. Discuss monitoring dashboards, alerting mechanisms, distributed tracing, and incident investigation workflows.
+
+A strong observability strategy enables teams to detect issues quickly, diagnose root causes, and maintain service reliability.
+
+11. Discuss Trade-Offs and Alternatives
+
+This is often the most important section of a senior-level interview.
+
+Whenever you propose a technology or architectural pattern, explain why you chose it and what trade-offs are involved. There are rarely perfect solutions in distributed systems.
+
+For example, asynchronous messaging improves scalability and decoupling but introduces eventual consistency and operational complexity. Relational databases provide strong consistency but may be harder to scale than NoSQL solutions.
+
+Interviewers are often more interested in your reasoning than in the specific technology choices.
+
+12. Explain Future Evolution
+
+Conclude the discussion by explaining how the system can evolve over time.
+
+Discuss potential improvements such as multi-region deployment, active-active architectures, advanced caching strategies, cost optimization, performance tuning, and support for additional business requirements.
+
+This demonstrates long-term architectural thinking and shows that you are designing for growth rather than only solving today's problem.
+
+Typical System Design Interview Flow
+
+A strong answer generally follows this sequence:
+
+Phase 1: Problem Understanding
+Functional requirements
+Non-functional requirements
+Scale estimation
+Phase 2: Core Design
+High-level architecture
+API design
+Request flow
+Database design
+Phase 3: Scalability
+Horizontal scaling
+Database scaling
+Caching
+Messaging systems
+Phase 4: Reliability
+Failure scenarios
+Resilience patterns
+Disaster recovery
+Phase 5: Production Readiness
+Security
+Observability
+Monitoring
+Alerting
+Phase 6: Architecture Review
+Trade-offs
+Alternatives
+Future enhancements
+
+This structured framework works for almost every system design interview question, whether you're designing an e-commerce platform, payment system, notification service, observability platform, Kafka-based event processing system, or a large-scale microservices architecture.

@@ -1,0 +1,164 @@
+50 System Design Questions for 10+ Years Experience
+Distributed Systems
+1. Design a URL Shortener like Bitly.
+
+2. Design a distributed caching system.
+
+3. Design a distributed rate limiter for millions of requests per second.
+
+4. Design a distributed locking service.
+
+5. Design a service discovery mechanism for microservices.
+
+6. Design a globally distributed configuration management system.
+
+7. Design a distributed scheduler similar to Kubernetes CronJobs.
+
+8. Design a feature flag management platform.
+
+9. Design a distributed workflow orchestration platform.
+
+10. Design a high-throughput notification platform.
+
+Messaging & Event Streaming
+11. Design a message queue similar to Apache Kafka.
+
+12. Design an event-driven order processing system.
+
+13. Design a dead-letter queue architecture.
+
+14. Design a real-time event processing platform.
+
+15. Design a publish-subscribe messaging system.
+
+E-Commerce Systems
+16. Design an online shopping platform like Amazon.
+
+17. Design an inventory management system.
+
+18. Design a product catalog service handling millions of products.
+
+19. Design a shopping cart system.
+
+20. Design a checkout and payment platform.
+
+21. Design a flash sale system handling millions of concurrent users.
+
+22. Design an order management system.
+
+23. Design a coupon and promotion engine.
+
+24. Design a recommendation system.
+
+25. Design a warehouse management system.
+
+Social Media Systems
+26. Design a social networking platform like Facebook.
+
+27. Design a news feed generation system.
+
+28. Design a real-time chat application.
+
+29. Design a video-sharing platform like YouTube.
+
+30. Design a photo-sharing platform like Instagram.
+
+31. Design a real-time presence service.
+
+32. Design a follower-following system.
+
+33. Design a live streaming platform.
+
+Banking & FinTech
+34. Design a digital payment system similar to PayPal.
+
+35. Design a UPI transaction platform.
+
+36. Design a fraud detection system.
+
+37. Design a wallet system.
+
+38.  Design a real-time account balance service.
+
+39. Design a credit card transaction processing system.
+
+Cloud & Infrastructure
+40. Design a Kubernetes monitoring platform.
+
+41. Design a centralized logging platform.
+
+42. Design a metrics collection platform similar to Prometheus.
+
+43. Design a dashboard platform similar to Grafana.
+
+44. Design a cloud storage service similar to Dropbox.
+
+45. Design a CI/CD platform.
+
+46. Design a container orchestration platform.
+
+47. Design a secrets management system.
+
+48. Design a service mesh platform.
+
+49. Design a multi-region disaster recovery architecture.
+
+50. Design a centralized observability platform for 10,000+ microservices.
+
+Frequently Asked Senior-Level Scenario Questions
+51. Your system receives 100 million requests/day. How would you scale it?
+
+52. Database CPU reaches 95% utilization. What is your approach?
+
+53. How would you handle a cache outage without affecting customers?
+
+54. How would you migrate a monolith to microservices?
+
+55. How would you design a zero-downtime deployment strategy?
+
+56. How would you design a multi-region active-active architecture?
+
+57. How would you handle distributed transactions across services?
+
+58. How would you ensure data consistency in an event-driven architecture?
+
+59. A Kafka cluster goes down. What happens and how do you recover?
+
+60. How would you reduce cloud costs by 30% while maintaining SLAs?
+
+Most Asked System Design Questions for 10+ Years (Product + Cloud Companies)
+Order Management System
+Payment Processing System
+URL Shortener
+Notification System
+Distributed Cache
+API Gateway
+Service Mesh
+Kafka-like Messaging System
+Observability Platform
+Multi-Region Architecture
+Ride Booking System
+Food Delivery Platform
+Real-Time Chat System
+Inventory Management System
+Rate Limiter
+Logging Platform
+Metrics Platform
+Cloud Storage System
+CI/CD Platform
+E-commerce Platform
+
+For someone with your background in Spring Boot, Kafka, Kubernetes, Prometheus, Grafana, and Microservices, interviewers are especially likely to ask:
+
+Design an Observability Platform
+Design a Kafka-based Event Processing System
+Design an Order Management System
+Design a Payment System
+Design a Multi-Region Microservices Architecture
+Design a Monitoring Platform like Prometheus + Grafana
+Design a Logging Platform like ELK
+Design a Kubernetes-based SaaS Platform
+Design a Notification Service
+Design a Distributed Rate Limiter
+
+These topics align closely with Staff Engineer/Architect-level interviews.
