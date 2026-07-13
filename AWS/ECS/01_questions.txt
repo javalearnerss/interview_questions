@@ -1,0 +1,125 @@
+ECS Fundamentals
+    01. What is Amazon ECS?
+    02. What are the different launch types in ECS?
+    03. ECS vs EKS—when would you choose each?
+    04. What are ECS clusters, services, and tasks?
+    05. What is a Task Definition?
+    06. What is the difference between a Task and a Service?
+    07. Can a task run without a service?
+    08. What is the purpose of a Task Role?
+    09. What is an Execution Role?
+    10. How do you update an ECS service?
+
+Architecture
+    11. Explain how an application is deployed in ECS.
+    12. How does ECS communicate with Docker containers?
+    13. What happens when a task crashes?
+    14. How does ECS maintain the desired count?
+    15. What happens during rolling deployment?
+    16. How do blue/green deployments work in ECS?
+    17. How does ECS schedule tasks?
+    18. How do multiple task replicas work?
+    19. How does ECS decide which Availability Zone to place tasks in?
+    20. What deployment strategies are available?
+
+Networking
+    21. What networking modes does ECS support?
+    22. What is awsvpc mode?
+    23. Why is awsvpc recommended for Fargate?
+    24. Difference between public and private subnets for ECS.
+    25. How does an ECS task get an IP address?
+    26. How do Security Groups work with ECS?
+    27. What is the role of NAT Gateway?
+    28. How does an Application Load Balancer route traffic?
+    29. How do containers communicate with each other?
+    30. Can two containers in the same task communicate over localhost?
+
+Load Balancer
+    31. Difference between ALB and NLB.
+    32. How do health checks work?
+    33. What happens if health checks fail?
+    34. How do you expose multiple services using one ALB?
+    35. Explain path-based routing.
+    36. Explain host-based routing.
+
+Auto Scaling
+    37. How do you auto-scale ECS services?
+    38. Difference between Service Auto Scaling and Cluster Auto Scaling.
+    39. What metrics are commonly used?
+    40. CPU vs Memory scaling.
+    41. How would you scale based on Kafka consumer lag?
+
+Security
+    42. Difference between Task Role and Execution Role.
+    43. How do you store secrets?
+    44. How do you access Secrets Manager?
+    45. How do containers authenticate to AWS?
+    46. How do you restrict S3 access?
+    47. How do you rotate secrets?
+
+Monitoring
+    48. How do you monitor ECS?
+    49. Which CloudWatch metrics are important?
+    50. How do you collect application metrics?
+    51. How would you expose /actuator/prometheus?
+    52. How does Prometheus discover ECS tasks?
+    53. How do you integrate Prometheus with ECS?
+    54. How do you use Grafana with ECS?
+    55. How would you monitor Kafka producer and consumer metrics in ECS?
+    56. How do you use OpenTelemetry with ECS?
+    57. Difference between Micrometer and OpenTelemetry.
+
+Logging
+    58. Where are ECS logs stored?
+    59. Explain the awslogs log driver.
+    60. How do you centralize logs?
+    61. How do you troubleshoot missing logs?
+    62. How do you send logs to CloudWatch?
+
+Deployment
+    63. How do you deploy a new Docker image?
+    64. How do you perform zero-downtime deployment?
+    65. Explain minimum healthy percent.
+    66. Explain maximum percent.
+    67. How do you roll back a failed deployment?
+    68. How do you deploy multiple versions simultaneously?
+
+Kafka + ECS (very common for backend engineers)
+    69. How do Kafka consumers work in ECS?
+    70. How do you avoid duplicate consumption?
+    71. How do multiple consumer replicas share partitions?
+    72. What happens if there are more consumers than partitions?
+    73. How do you monitor Kafka lag?
+    74. How would you deploy producers and consumers separately?
+    75. How do you perform blue/green deployment for Kafka consumers?
+
+Troubleshooting
+    76. Task stuck in Pending—possible reasons?
+    77. Container exits immediately—how do you debug?
+    78. ECS service not reaching desired count.
+    79. Target group unhealthy.
+    80. Container cannot connect to RDS.
+    81. Container cannot connect to MSK.
+    82. Image pull failed.
+    83. OutOfMemoryError in ECS.
+    84. High CPU usage.
+    85. Container keeps restarting.
+
+Cost Optimization
+    86. ECS on EC2 vs Fargate cost.
+    87. When should you use Spot instances?
+    88. How do you reduce CloudWatch costs?
+    89. How do you optimize CPU and memory allocation?
+    90. How do you optimize Prometheus storage costs?
+
+Scenario-Based Questions
+    91. Design an ECS architecture for a microservices application.
+    92. Deploy 50 Spring Boot services on ECS—how would you structure the clusters?
+    93. Handle 10 million requests per day on ECS.
+    94. Your service deployment failed in production—what steps would you take?
+    95. CPU is only 20% but response time is high. What would you investigate?
+    96. One ECS task is healthy, another is unhealthy—how would you debug?
+    97. How would you monitor hundreds of ECS tasks?
+    98. How would you implement blue/green deployment with ECS and CodeDeploy?
+    99. How would you deploy Kafka producers and consumers with Prometheus and Grafana on ECS?
+    100. Design a production-ready ECS architecture with ALB, Auto Scaling, MSK, CloudWatch, Prometheus, and Grafana.

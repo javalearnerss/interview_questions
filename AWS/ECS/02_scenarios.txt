@@ -1,0 +1,50 @@
+01. Your ECS tasks keep restarting every few minutes. How would you troubleshoot the issue?
+02. An ECS service is unable to maintain the desired number of running tasks. What could be the reasons?
+03. A task remains in the PENDING state indefinitely. How would you investigate?
+04. An ECS task starts successfully but stops after a few seconds. What steps would you take?
+05. Your application is running, but the ALB marks all targets as unhealthy. How would you debug this?
+06. A new ECS deployment fails while the previous version works. How would you identify the root cause?
+07. Users report intermittent 502/504 errors from the Application Load Balancer. How would you troubleshoot?
+08. CPU utilization suddenly spikes to 95% in production. What would you check first?
+09. Memory usage keeps increasing until the container is killed. How would you investigate?
+10. ECS service auto scaling is not triggering even though CPU utilization is very high. What could be wrong?
+11. A container cannot connect to an RDS database. How would you troubleshoot?
+12. A Spring Boot application cannot connect to Amazon MSK from ECS. What would you verify?
+13. CloudWatch logs are not being generated for your ECS tasks. How would you debug the issue?
+14. ECS tasks fail with CannotPullContainerError. What are the possible causes?
+15. A deployment succeeds, but the application is inaccessible from the internet. Where would you start?
+16. Your service is timing out only under heavy load. How would you identify the bottleneck?
+17. Only one ECS task is slow while the others perform normally. What could cause this?
+18. Users report slow response times even though CPU and memory are low. How would you investigate?
+19. ECS tasks cannot communicate with another microservice running in the same VPC. What would you check?
+20. Health checks pass locally but fail in ECS. Why might this happen?
+21. Kafka consumer lag keeps increasing in production. What would you investigate?
+22. Multiple Kafka consumers are deployed, but only one is processing messages. What could be the reason?
+23. Your Kafka producer is sending duplicate messages. How would you debug the issue?
+24. Messages are being produced to Kafka but never consumed. What could be wrong?
+25. During a blue/green deployment, some requests fail. How would you troubleshoot?
+26. A deployment must be rolled back immediately. How would you perform the rollback?
+27. ECS tasks are running in only one Availability Zone. How would you fix this?
+28. One Availability Zone goes down. How does your ECS architecture recover?
+29. Your ECS cluster runs out of capacity during peak traffic. How would you handle it?
+30. How would you migrate an application from ECS EC2 launch type to Fargate with minimal downtime?
+31. Your application requires zero-downtime deployments. How would you design the deployment strategy?
+32. How would you securely provide database credentials to ECS tasks?
+33. How would you rotate secrets without redeploying every service?
+34. A container needs access to S3 but should not have access to other AWS services. How would you implement this?
+35. How would you monitor hundreds of ECS services from a single Grafana dashboard?
+36. Prometheus is not scraping metrics from ECS tasks. How would you troubleshoot?
+37. Grafana suddenly shows no data for your ECS services. What would you check?
+38. How would you monitor Kafka producer and consumer metrics running in ECS?
+39. How would you collect application metrics from dynamically created ECS tasks?
+40. How would you troubleshoot missing OpenTelemetry traces in production?
+41. Your monthly ECS bill suddenly doubles. How would you identify the cause?
+42. How would you optimize ECS costs without affecting application performance?
+43. Your application experiences traffic spikes during business hours. How would you design auto scaling?
+44. You need to deploy 100 microservices on ECS. How would you organize clusters, services, and networking?
+45. How would you design a highly available ECS architecture across multiple Availability Zones?
+46. How would you deploy a Spring Boot application with Kafka, RDS, Prometheus, Grafana, and ECS in production?
+47. Your application must process one million Kafka messages per hour. How would you design the ECS deployment?
+48. How would you troubleshoot intermittent network connectivity issues between ECS tasks and external services?
+49. An ECS deployment succeeds, but users still receive traffic from the old version. What could be happening?
+50. If you were asked to review an existing ECS production architecture for scalability, reliability, security, and cost optimization, what areas would you evaluate first?
