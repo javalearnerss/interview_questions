@@ -329,200 +329,199 @@ Worker Nodes & Compute
 
 
 IAM, Authentication & Authorization
+    1.  How does IAM authentication work in EKS?
 
-1.  How does IAM authentication work in EKS?
+    2.  What is aws-auth ConfigMap?
 
-2.  What is aws-auth ConfigMap?
+    3.  Difference between IAM authentication and Kubernetes RBAC?
 
-3.  Difference between IAM authentication and Kubernetes RBAC?
+    4.  How do you give cluster access to a new user?
 
-4.  How do you give cluster access to a new user?
+    5.  How do you restrict namespace-level access?
 
-5.  How do you restrict namespace-level access?
+    6.  What is IRSA (IAM Roles for Service Accounts)?
 
-6.  What is IRSA (IAM Roles for Service Accounts)?
+    7.  Why is IRSA preferred over node IAM roles?
 
-7.  Why is IRSA preferred over node IAM roles?
+    8.  How does pod-level IAM work internally?
 
-8.  How does pod-level IAM work internally?
+    9.  Common IAM misconfigurations in EKS?
 
-9.  Common IAM misconfigurations in EKS?
-
-10. How do you audit access to an EKS cluster?
+    10. How do you audit access to an EKS cluster?
 
 
 Deployments & Workloads
 
-How do you deploy applications to EKS?
+    01. How do you deploy applications to EKS?
 
-Difference between Deployment, StatefulSet, and DaemonSet?
+    02. Difference between Deployment, StatefulSet, and DaemonSet?
 
-How does rolling deployment work in EKS?
+    03. How does rolling deployment work in EKS?
 
-How do you handle zero-downtime deployments?
+    04. How do you handle zero-downtime deployments?
 
-What causes pods to restart frequently?
+    05. What causes pods to restart frequently?
 
-How do you debug CrashLoopBackOff in EKS?
+    06. How do you debug CrashLoopBackOff in EKS?
 
-How do you control pod placement?
+    07. How do you control pod placement?
 
-What are taints and tolerations?
+    08. What are taints and tolerations?
 
-What are node selectors and affinity rules?
+    09. What are node selectors and affinity rules?
 
-How do you isolate workloads in the same cluster?
+    10. How do you isolate workloads in the same cluster?
 
 Scaling & Autoscaling
 
-Difference between HPA, VPA, and Cluster Autoscaler?
+    11. Difference between HPA, VPA, and Cluster Autoscaler?
 
-How does HPA work internally?
+    12. How does HPA work internally?
 
-What metrics should NOT be used for autoscaling?
+    13. What metrics should NOT be used for autoscaling?
 
-How does Cluster Autoscaler interact with AWS Auto Scaling Groups?
+    14. How does Cluster Autoscaler interact with AWS Auto Scaling Groups?
 
-Why does scaling sometimes make performance worse?
+    15. Why does scaling sometimes make performance worse?
 
-How do you prevent autoscaling thrashing?
+    16. How do you prevent autoscaling thrashing?
 
-How do you scale Kafka or stateful workloads in EKS?
+    17. How do you scale Kafka or stateful workloads in EKS?
 
-How do you handle uneven pod distribution?
+    18. How do you handle uneven pod distribution?
 
-When should scaling be manual?
+    19. When should scaling be manual?
 
-How do you test autoscaling behavior?
+    20. How do you test autoscaling behavior?
 
 Load Balancing & Ingress
 
-How does service type LoadBalancer work in EKS?
+    21. How does service type LoadBalancer work in EKS?
 
-Difference between ALB Ingress Controller and NGINX Ingress?
+    22. Difference between ALB Ingress Controller and NGINX Ingress?
 
-How does ALB get created in EKS?
+    23. How does ALB get created in EKS?
 
-What security groups apply to ALB-created services?
+    24. What security groups apply to ALB-created services?
 
-How do you expose internal vs external services?
+    25. How do you expose internal vs external services?
 
-What happens when an ALB target becomes unhealthy?
+    26. What happens when an ALB target becomes unhealthy?
 
-How does path-based routing work?
+    27. How does path-based routing work?
 
-How do you do blue-green or canary deployments using ALB?
+    28. How do you do blue-green or canary deployments using ALB?
 
-How do you handle TLS in EKS?
+    29. How do you handle TLS in EKS?
 
-Common ingress misconfigurations you’ve seen?
+    30. Common ingress misconfigurations you’ve seen?
 
 Storage in EKS
 
-How does persistent storage work in EKS?
+    31. How does persistent storage work in EKS?
 
-Difference between emptyDir, hostPath, and PVC?
+    32. Difference between emptyDir, hostPath, and PVC?
 
-What is the EBS CSI driver?
+    33. What is the EBS CSI driver?
 
-How does dynamic volume provisioning work?
+    34. How does dynamic volume provisioning work?
 
-How do you back up persistent data?
+    35. How do you back up persistent data?
 
-Can a PVC move across nodes?
+    36. Can a PVC move across nodes?
 
-What happens if a node with EBS volume fails?
+    37. What happens if a node with EBS volume fails?
 
-EFS vs EBS in EKS — when to use what?
+    38. EFS vs EBS in EKS — when to use what?
 
-How do StatefulSets handle storage?
+    39. How do StatefulSets handle storage?
 
-Common storage-related failures in EKS?
+    40. Common storage-related failures in EKS?
 
 Observability & Troubleshooting
 
-How do you monitor an EKS cluster?
+    41. How do you monitor an EKS cluster?
 
-What metrics are critical at cluster level?
+    42. What metrics are critical at cluster level?
 
-How do you collect logs from pods?
+    43. How do you collect logs from pods?
 
-How do you debug network connectivity issues?
+    44. How do you debug network connectivity issues?
 
-Difference between liveness and readiness probes?
+    45. Difference between liveness and readiness probes?
 
-How do bad probes cause outages?
+    46. How do bad probes cause outages?
 
-How do you debug intermittent pod restarts?
+    47. How do you debug intermittent pod restarts?
 
-How do you troubleshoot DNS issues?
+    48. How do you troubleshoot DNS issues?
 
-How do you debug node-level issues?
+    49. How do you debug node-level issues?
 
-What tools do you rely on most for EKS debugging?
+    50. What tools do you rely on most for EKS debugging?
 
 Upgrades & Operations
 
-How do you upgrade an EKS cluster?
+    51. How do you upgrade an EKS cluster?
 
-What is the safest upgrade strategy?
+    52. What is the safest upgrade strategy?
 
-What breaks during Kubernetes upgrades?
+    53. What breaks during Kubernetes upgrades?
 
-How do you handle deprecated APIs?
+    54. How do you handle deprecated APIs?
 
-How do you test upgrades before production?
+    55. How do you test upgrades before production?
 
-How do you roll back an EKS upgrade?
+    56. How do you roll back an EKS upgrade?
 
-How do you manage multiple clusters?
+    57. How do you manage multiple clusters?
 
-How do you enforce cluster standards?
+    58. How do you enforce cluster standards?
 
-How do you reduce operational toil?
+    59. How do you reduce operational toil?
 
-Biggest operational challenge you faced with EKS?
+    60. Biggest operational challenge you faced with EKS?
 
 Security & Compliance
 
-How do you secure EKS clusters in production?
+    61. How do you secure EKS clusters in production?
 
-How do you isolate workloads for compliance?
+    62. How do you isolate workloads for compliance?
 
-How do you scan container images?
+    63. How do you scan container images?
 
-How do you handle secret management?
+    64. How do you handle secret management?
 
-Why should Kubernetes Secrets not be trusted blindly?
+    65. Why should Kubernetes Secrets not be trusted blindly?
 
-How do you secure etcd data?
+    66. How do you secure etcd data?
 
-How do you prevent privilege escalation?
+    67. How do you prevent privilege escalation?
 
-How do you handle multi-tenant clusters?
+    68. How do you handle multi-tenant clusters?
 
-What security incidents have you handled?
+    69. What security incidents have you handled?
 
-How do you design EKS for regulated environments?
+    70. How do you design EKS for regulated environments?
 
 Senior / Architect-Level Scenarios
 
-Single large cluster vs multiple clusters — how do you decide?
+    71. Single large cluster vs multiple clusters — how do you decide?
 
-When should you split clusters?
+    72. When should you split clusters?
 
-How do you design EKS for 50+ microservices?
+    73. How do you design EKS for 50+ microservices?
 
-How do you control blast radius in EKS?
+    74. How do you control blast radius in EKS?
 
-How do you handle noisy neighbors?
+    75. How do you handle noisy neighbors?
 
-How do you design DR for EKS?
+    76. How do you design DR for EKS?
 
-How do you migrate from ECS/VMs to EKS?
+    77. How do you migrate from ECS/VMs to EKS?
 
-How do you standardize EKS across teams?
+    78. How do you standardize EKS across teams?
 
-What would you redesign if starting fresh?
+    79. What would you redesign if starting fresh?
 
-What EKS decision went wrong and what did you learn?
+    80. What EKS decision went wrong and what did you learn?
