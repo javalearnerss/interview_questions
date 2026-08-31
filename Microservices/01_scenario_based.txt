@@ -63,21 +63,36 @@ Scaling & performance
 **********Data ownership & consistency**********
 
 1. Each service owns its database. How do you implement cross-service queries?
-    1. Scenario:
-    A user wants to view their booking history, including event details and payment status.
-    Data needed:
-        Booking details (from Booking Service, with userId, eventId, bookingId)
-        Event/inventory details (from Inventory Service, with eventId, seat info)
-        User info (from User Service, with userId)
-        Payment status (from Payment Service, with bookingId or paymentId)
+Image : 1.png
+    A user wants to view their e-commerce order history, including product details and payment status.
 
-    2. Cross-service query need:
-        To show a user’s booking history with event name, seat, and payment status, you need to join data from all these services.
-        Since each service has its own database, you cannot do a direct SQL join.
-        Instead, you must:
-        Query Booking Service for all bookings by userId.
-        For each booking, call Inventory Service for event details, and Payment Service for payment status.
-        Optionally, get user info from User Service.
+    Data needed:
+
+        Order details → Order Service: userId, orderId, productId
+        Product details → Product Service: productId, product name, price
+        User info → User Service: userId, name
+        Payment status → Payment Service: orderId, payment status
+
+    Cross-service query need:
+    To show order history with product name, user details, and payment status, we need data from multiple services.
+
+    Since each service has its own database, we cannot do a direct SQL join.
+
+    Instead, we can:
+
+        Query Order Service for all orders by userId.
+        For each order, call Product Service to get product details.
+        Call Payment Service to get payment status.
+        Optionally call User Service to get user information.
+        An Aggregator/Order History Service combines these responses and returns the final result to the client.
+
+    In a microservices architecture, each service owns its own database, so we cannot directly perform SQL joins across services. 
+    For example, in an e-commerce application, the Order Service has order details, the Product Service has product details, 
+    and the Payment Service has payment status. If we use CQRS, we create a separate read model for queries such as “My Orders.” 
+    Services publish events like `OrderCreated` and `PaymentCompleted`, and a Read Model Service consumes these events and stores 
+    the required data in a denormalized database. Now, when the user requests their order history, we can query this read
+     model directly instead of calling multiple services, which makes the query faster and reduces network calls.
+
 
 ***********************************************************************************************************************************************
 
@@ -89,36 +104,58 @@ Scaling & performance
         When data is updated in one service/database, other services may not see the change immediately.
         The system guarantees that, given enough time and no new updates, all services will eventually reflect the latest data.
 
-    Example scenario:
-        Booking Service marks a seat as booked.
-        Inventory Service is notified via an event/message.
-        There may be a short delay before Inventory Service updates its database.
-        During this delay, another service querying Inventory may see stale data.
-        Eventually, all services will show the seat as booked.
+    Scenario:
+    A user adds products to the cart, goes to checkout, makes the payment, and then the order is confirmed.
+
+    How it works:
+        Cart Service stores the products when the user adds items to the cart.
+        User proceeds to Checkout and selects the address and payment method.
+        When the user clicks “Place Order”, the Order Service creates the order with status PENDING.
+        Order Service publishes an OrderCreated event.
+        Inventory Service receives the event and reserves the required products.
+        Payment Service processes the payment.
+        When payment succeeds, Payment Service publishes PaymentCompleted.
+        When inventory is successfully reserved, Inventory Service publishes InventoryReserved.
+        Order Service receives both events. If payment and inventory are successful, it changes the order status from PENDING → CONFIRMED.
+        Order Service publishes OrderConfirmed.
+        Notification Service consumes this event and sends an order-confirmation email/notification to the user.
+
+
+        Where eventual consistency happens
+
+        Immediately after the user clicks Place Order, we may have:
+        Order Service       → PENDING
+        Payment Service     → PROCESSING
+        Inventory Service   → RESERVING
+        Notification        → Not sent yet
+
+        A few seconds later:
+        Payment Service     → PAID
+        Inventory Service   → RESERVED
+        Order Service       → CONFIRMED
+        Notification        → "Your order is confirmed"
 
     How to handle:
 
     1. UI/UX Patterns for Temporary Inconsistencies:
-     - When a user books a ticket, immediately show a “Booking in progress…” or loading indicator, so the user knows the system is processing their 
-       request.
-     - Display the last known status of the booking (e.g., “Pending”, “Processing”) and add a note such as “This may take a few moments to update.”
-     - Provide a “Refresh” or “Retry” button so users can manually check for updates if they wish.
-     - Once the booking is confirmed or failed, notify the user with an in-app notification or send an email to inform them of the final status.
+     - When the user places an order, immediately show “Order processing…” instead of waiting for payment and inventory services to finish.
+     - Display the current order status as PENDING and a message such as “Your order is being confirmed. This may take a few moments.”
+     - Provide a Refresh/View Order Status option so the user can check the latest status.
+     - Once payment and inventory are successfully processed and the order becomes CONFIRMED, show the confirmation to the user.
+     - If the order fails, clearly show “Order failed” and provide an option to retry.
+     - Send an email/in-app notification when the order is finally confirmed or failed.
 
     2. Backend Patterns:
-     - Ensure all booking operations are idempotent, so if the user retries (due to network issues or refresh), the backend can safely handle 
-       repeated requests without creating duplicate bookings.
-     - The backend should poll or subscribe to events from other services (like inventory or payment) to get real-time updates on booking status.
-     - As events arrive (e.g., payment completed, inventory reserved), cache and update the booking status in the database, so the latest status 
-       is always available for the user.
+     - Make order and payment operations idempotent. If the user clicks Place Order again because of a network issue or timeout, 
+       the system should not create a duplicate order or charge the customer twice.
+     - Order Service subscribes to events from Payment and Inventory services, such as PaymentCompleted, PaymentFailed, 
+       and InventoryReserved, instead of continuously polling those services.
+     - Update the Order Service database as events arrive. For example, when PaymentCompleted and InventoryReserved are received, 
+       Order Service updates the order from PENDING → CONFIRMED.
+     - The client can query the Order Service to get the latest order status, while Notification Service can notify the user 
+       when the order is confirmed or failed.
 
-    Example: Booking Confirmation Flow
-        Booking Service publishes events to Kafka for Inventory and Payment.
-        Inventory and Payment Services process events and update their own DBs.
-        After processing, Inventory and Payment Services publish "InventoryUpdated" and "PaymentCompleted" events to Kafka.
-        Booking Service subscribes to these events.
-        When Booking Service receives both confirmations for a booking, it updates the booking status to "CONFIRMED" (or "FAILED" if any failed).
-        Client polls Booking Service for status.
+    
 
 ***********************************************************************************************************************************************
 3. A transaction spans multiple services. How do you ensure consistency without 2PC?
@@ -138,9 +175,26 @@ Scaling & performance
         If any participant replied "No", the coordinator tells everyone to abort/rollback.
 
     In a booking system:
-        If booking, inventory, and payment services all support 2PC, the coordinator (e.g., Booking Service) would:
-        Ask Inventory and Payment if they can reserve resources and process payment.
-        If both agree → commit. Otherwise → abort transaction.
+        2-Phase Commit (2PC) – E-commerce Example
+        Scenario: A user buys an iPhone for ₹50,000.
+        1. Order Service acts as the coordinator
+            Creates the order with status PENDING.
+            Starts a distributed transaction with Inventory Service and Payment Service.
+        2. Prepare Phase
+            Inventory Service: Checks whether the iPhone is available and temporarily reserves the product. It responds PREPARED.
+            Payment Service: Checks whether the customer's card has sufficient balance/credit and temporarily reserves/authorizes ₹50,000. It responds PREPARED.
+            At this point, nothing is permanently committed.
+        3. Commit Phase
+            If both services respond PREPARED, Order Service sends COMMIT.
+            Inventory Service: Permanently reserves the iPhone.
+            Payment Service: Permanently captures the ₹50,000.
+            Order Service: Changes order status from PENDING → CONFIRMED.
+        4. If any service fails
+            Suppose Inventory responds PREPARED, but Payment cannot authorize the amount.
+            Order Service sends ABORT.
+            Inventory releases its temporary reservation.
+            Payment does not capture any money.
+            Order Service marks the order as FAILED.
 
     - In 2PC, if all participants say "yes" in the prepare phase but a commit fails in one service during the commit phase, 
         the system enters an inconsistent state. This is a known limitation of 2PC:
@@ -150,15 +204,21 @@ Scaling & performance
     - Recovery is complex: the failed participant must recover and try to complete the commit when it comes back online, but if it cannot, 
         manual intervention may be needed.
 
-    How do you ensure consistency?
-        Use eventual consistency with event-driven architecture.
-        Booking Service creates a booking with status PENDING.
-        Booking Service publishes events to Inventory and Payment Services (via Kafka).
-        Inventory and Payment Services process events and publish result events (success/failure).
-        Booking Service listens for result events and updates booking status to CONFIRMED or FAILED.
-        If any service fails, Booking Service can trigger compensating actions (e.g., refund payment, release inventory).
-        Ensure all operations are idempotent to handle retries.
-        Client polls Booking Service for booking status.
+    How do you ensure consistency in a microservices architecture?
+        Use eventual consistency with an event-driven architecture. For example, in an e-commerce application:
+
+        * Order Service creates an order with status PENDING when the user clicks Place Order.
+        * Order Service publishes an OrderCreated event to Kafka.
+        * Inventory Service consumes the event and reserves the product. It publishes InventoryReserved or InventoryFailed.
+        * Payment Service processes the payment. It publishes PaymentCompleted or PaymentFailed.
+        * Order Service listens to these events:
+            - If payment and inventory both succeed → order becomes CONFIRMED.
+            - If either fails → order becomes FAILED.
+        * If one operation succeeds and another fails, use compensating actions:
+            - Payment succeeded but inventory failed → refund the payment.
+            - Inventory was reserved but payment failed → release the inventory.
+        * Make operations idempotent so retries or duplicate events do not create duplicate orders, payments, or reservations.
+        * The client can query the Order Service to get the latest order status.
 
 ***********************************************************************************************************************************************
 4. How do you design idempotent APIs in distributed systems?
@@ -173,19 +233,91 @@ Scaling & performance
             Return the previously stored response/result without re-processing.
             Ensure all side effects (DB writes, events) are only performed once per idempotency key.
 
-    - When a user books a ticket, the Booking Service receives the request and creates a booking record with status "PENDING".
-    - The Booking Service sends asynchronous requests (events) to the Inventory Service (to reserve a seat) and the Payment Service 
-        (to process payment).
-    - The Booking Service does not wait for these services to finish; it immediately responds to the client that the booking is being processed.
-    - The Inventory and Payment Services process their tasks independently and send back results (success or failure) to the Booking Service 
-        via events.
-    - The Booking Service listens for these results. When both are successful, it updates the booking status to "CONFIRMED". If either fails, 
-        it updates the status to "FAILED" and may trigger compensating actions (like refunding payment or releasing the seat).
-    - The client can check the booking status by polling the Booking Service or receiving a notification when the status changes.
-    - All operations are designed to be idempotent, so repeated requests (due to retries or network issues) do not cause duplicate bookings 
-        or payments.
-    - This approach ensures consistency without using 2PC, by relying on eventual consistency, event-driven updates, and compensating actions
-     for failures.
+    Example: E-commerce order placement
+
+    The client sends a Place Order request with an idempotency key, for example:
+    Idempotency-Key: K12345
+     * The Order Service receives the request and generates the actual orderId itself, for example O1001. The client does not generate the order ID.
+     * Order Service stores the idempotency key and order information together, with a unique constraint such as (userId, idempotencyKey), 
+       so concurrent retries cannot create two orders.
+     * The Order Service creates:
+       Order O1001 → PENDING
+
+    and publishes:
+
+    OrderCreated(O1001)
+     * Suppose the client does not receive the response because of a network timeout and sends the same request again with K12345.
+     * Order Service finds that K12345 has already been processed and returns the existing O1001 instead of creating another order.
+     * The same principle must be applied to downstream services.
+
+    Payment Service:
+
+    Receives OrderCreated(O1001).
+     * Processes the payment and stores that O1001 has been processed.
+     * If the same event is received again, it detects O1001 is already processed and does not charge the customer again.
+
+    Inventory Service:
+
+    Receives OrderCreated(O1001).
+    * Reserves the product and stores the reservation against O1001.
+    * If the same event is received again, it detects that the reservation already exists and does not reserve the product again.
+
+    So the flow is:
+        
+        Client
+        |
+        | Idempotency-Key = K12345
+        ↓
+        Order Service
+        |
+        | generates orderId = O1001
+        ↓
+        Order = PENDING
+        |
+        | OrderCreated(O1001)
+        ↓
+        ┌───────────────┬────────────────┐
+        ↓               ↓
+        Payment        Inventory
+        Service        Service
+        ↓               ↓
+        O1001           O1001
+        already         already
+        processed       reserved
+        ↓               ↓
+        No duplicate    No duplicate
+        charge          reservation
+
+    Key point: The client may provide the idempotency key to identify a retry, but idempotency is enforced by the server and database. 
+    Each service independently ensures that the same business operation, such as an order, payment, or inventory reservation, 
+    is processed only once.
+***********************************************************************************************************************************************
+5. How do you deal with duplicate requests caused by retries?
+    I would use idempotency at each service so that a retry does not repeat the same side effect.
+
+    Example: E-commerce order
+
+        * Client sends a Place Order request with an idempotency key.
+        * Order Service generates the orderId, for example O1001, and stores the key with that order.
+        * If the client retries because of a timeout, Order Service detects that the request was already processed and returns O1001 
+          instead of creating another order.
+        * Order Service publishes OrderCreated(O1001) to Kafka.
+        * Payment Service uses O1001 as the idempotency reference. If the same event is received again, 
+          it detects that payment for O1001 was already processed and does not charge the customer again.
+        * Inventory Service similarly checks whether inventory for O1001 has already been reserved and avoids reserving it again.
+        * Use database unique constraints/transactions to make these checks safe even when two identical requests arrive at the same time.
+
+    So:
+
+        Retry
+        ↓
+        Order Service → same orderId O1001
+        ↓
+        Payment       → no duplicate charge
+        Inventory     → no duplicate reservation
+
+    Key idea: retries are expected in distributed systems, so every operation with side effects should be designed to be idempotent.
+
 
 ***********************************************************************************************************************************************
 ******************** Communication patterns *******************
@@ -282,22 +414,43 @@ any failure or slowness in those services will block the Booking Service. This c
 ***********************************************************************************************************************************************
 
 4. How do you design graceful degradation in microservices?
-    1. Identify critical flows in the booking system: booking creation, payment, inventory reservation.
-    2. For each dependency (e.g., Payment Service, Inventory Service), implement fallback logic in Booking Service.
+    1. Identify critical flows in the e-commerce system: order creation, inventory reservation, payment.
+    2. For each dependency, implement fallback logic in Order Service.
     3. Use timeouts, retries, and circuit breakers to detect failures quickly.
-    4. If a dependency fails, Booking Service should:
-        1.. Mark booking as "PENDING" or "FAILED" (not crash).
-        2.  Notify the user that confirmation/payment/seat assignment is delayed.
-        3.  Allow the user to check status later or receive notification when resolved.
-        4.  Log degraded operations for monitoring and alerting.
+    4. If a dependency fails, Order Service should:
+        Mark the order as "PENDING" or "PAYMENT_PENDING" instead of failing.
+        Inform the user that order confirmation or payment is delayed.
+        Allow the user to check the order status later.
+        Log the degraded operation for monitoring and alerting.
 
-Example: Booking Service graceful degradation
-    - If Inventory Service is unavailable, Booking Service creates booking with status "PENDING" and informs user that seat assignment will be 
-    processed later.
-    - If Payment Service is unavailable, Booking Service marks payment as "PENDING" and notifies user that payment confirmation will follow.
-    - Booking Service uses circuit breakers and fallback methods to implement this logic.
-    - UI displays intermediate states ("Processing", "Pending") and allows user to refresh or receive notifications.
+    Example: Amazon/Flipkart-like e-commerce app
 
+    * If Inventory Service is unavailable, Order Service creates the order with status "PENDING" and informs the user 
+      that product availability will be confirmed later.
+    * If Payment Service is unavailable, Order Service marks payment as "PENDING" and informs the user that payment confirmation will follow.
+    * Order Service uses circuit breakers and fallback logic to handle these failures.
+    * UI displays intermediate states like "Processing" or "Payment Pending" and allows the user to check the status later.
+***********************************************************************************************************************************************
+
+5. What does a good health check look like in microservices?
+
+    A good health check in microservices should quickly tell us whether a service is able to do its job.
+
+    For example, in an e-commerce application:
+
+    * Liveness check – checks whether the service is running.
+        Example: Order Service is alive and responding.
+    * Readiness check – checks whether the service is ready to receive traffic.
+        Example: Order Service is running, its database connection is available, and it can process orders.
+    * Dependency checks – check important dependencies like database, cache, or message broker.
+        But don't make the health check too heavy or call every downstream service unnecessarily.
+    * Fast and lightweight – health checks should return quickly and should not perform real business operations.
+
+    Example:
+
+    /health/live → 200 OK → service is running.
+    /health/ready → 200 OK → service is ready to accept requests.
+    If the database is unavailable, readiness can return 503, so Kubernetes/load balancer can stop sending traffic to that instance.
 ***********************************************************************************************************************************************
 Observability & debugging
 1. A request flows through multiple services and fails intermittently. How do you debug it?

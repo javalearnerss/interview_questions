@@ -62,7 +62,7 @@ Top 10 Production Failure Stories Caused by Wrong @Transactional Usage
 
 4. @Async + @Transactional → Lost Transaction Context
 
-5. Transaction Too Large → Connection Pool Starvation
+5. Transaction Too Large → Connection Pool Starva tion
 Transaction wrapped: DB updates, Kafka publish, Cache update, Audit logging, Email sending
 
 6. Wrong Propagation → Parent Transaction Marked Rollback
@@ -81,8 +81,8 @@ Question 1 : What is the step-by-step flow when a transactional method is called
     
     When you annotate an Inventory method with @Transactional, Spring creates a proxy around that class. 
     When another bean (like Booking service) calls this method, the call first goes to the proxy, not directly to your method. 
-    The proxy checks if a transaction already exists for the current thread. It does this using ThreadLocal, w
-    here Spring stores transaction details like the DB connection and transaction status per thread.
+    The proxy checks if a transaction already exists for the current thread. It does this using ThreadLocal, 
+    where Spring stores transaction details like the DB connection and transaction status per thread.
 
     If a transaction already exists, your method joins the same transaction (default propagation = REQUIRED). 
     If no transaction exists, the proxy asks the TransactionManager to start a new transaction. 

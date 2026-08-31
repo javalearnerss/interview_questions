@@ -93,7 +93,7 @@ Security Between Services
 		1. Use timeouts for all external service calls.
 		2. Implement circuit breaker pattern for inventory service.
 		3. Use bulkheads to isolate failures.
-		4. Use fallback logic where possible.
+		4. Use fallback logic where possible. - default values
 		5. Consider asynchronous processing or message queues.
 		6. Monitor and alert on failures.
 
