@@ -100,6 +100,22 @@ Angular 15+ / 16+ / 17+
                 console.log(changes['age'].previousValue);
                 console.log(changes['age'].currentValue);
             }
+
+        You want to calculate a label based on price.
+        priceLabel = '';
+
+        ngOnChanges(changes: SimpleChanges): void {
+
+        if (changes['book']) {
+
+            if (this.book.price > 700) {
+            this.priceLabel = 'Premium';
+            } else {
+            this.priceLabel = 'Affordable';
+            }
+
+        }
+        }
         -------------------------------------------------------------------------
             
         ngOnInit()
@@ -135,6 +151,34 @@ Angular 15+ / 16+ / 17+
         ngDoCheck	        ✅ Yes (runs every check)
 
         Note : Angular runs change detection whenever something might have changed in your app state.
+
+        For your Book Gallery app, a realistic use case for ngDoCheck is when you need to detect a 
+        change that Angular's normal ngOnChanges doesn't detect.
+
+        The classic example is mutating the existing books array instead of replacing it.
+
+        books: Book[] = [
+            { id: 1, title: 'Java' },
+            { id: 2, title: 'Angular' }
+        ];
+
+        this.books.push({
+            id: 3,
+            title: 'Kafka'
+        });
+
+
+        same array
+            ↓
+        books.push(...)
+            ↓
+        array reference did NOT change
+
+        <app-books-grid [books]="books"></app-books-grid>
+
+        ngOnChanges() may not run, because Angular sees the same array reference.
+
+        ngDoCheck can detect this.
 
         -------------------------------------------------------------------------  
                 
@@ -256,6 +300,70 @@ Angular 15+ / 16+ / 17+
         Initializing third-party libraries that need real DOM elements (charts, sliders, maps).
         Starting animations that require final DOM layout.
 
+    The easiest way to understand ngAfterViewInit() is through something that exists in the component's own HTML and you need to access it after Angular has created the view.
+
+    For your Book Gallery, a very realistic example is automatically focusing the search input.
+
+    1. Book search component
+
+    Template:
+
+    <input
+        #searchInput
+        type="text"
+        placeholder="Search books..."
+    >
+
+    Componnet : 
+    import {
+        AfterViewInit,
+        Component,
+        ElementRef,
+        ViewChild
+        } from '@angular/core';
+
+        @Component({
+        selector: 'app-book-search',
+        templateUrl: './book-search.component.html'
+        })
+        export class BookSearchComponent implements AfterViewInit {
+
+        @ViewChild('searchInput')
+        searchInput!: ElementRef<HTMLInputElement>;
+
+        ngAfterViewInit(): void {
+            this.searchInput.nativeElement.focus();
+        }
+    }
+
+    What is happening?
+
+    When Angular starts creating the component:
+    BookSearchComponent created
+            ↓
+    Angular processes component
+            ↓
+    Angular creates the <input>
+            ↓
+    #searchInput now exists
+            ↓
+    @ViewChild can find it
+            ↓
+    ngAfterViewInit()
+            ↓
+    focus the input
+
+    So:
+
+    this.searchInput.nativeElement.focus();
+
+    means:
+
+    "After my component's HTML/view has been created, find the input and focus it."
+
+    Easy rule
+        Need to access something in MY HTML? → ngAfterViewInit()
+        Need to access something the PARENT projected into me? → ngAfterContentInit()
 ******************************************************************************************************************************************
 4. When would you use ngOnDestroy?
     Use ngOnDestroy to run cleanup logic just before Angular destroys a component or directive. It’s where you release resources so they 
