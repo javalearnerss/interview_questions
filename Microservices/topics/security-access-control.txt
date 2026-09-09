@@ -1,0 +1,453 @@
+Security & access control
+    1. How do you handle authentication and authorization across microservices?
+    2. How do you secure service-to-service communication?
+    3. One service is compromised. How do you limit blast radius?
+    4. How do you manage secrets without hard-coding them?
+    5. How do you prevent data leakage between services?
+
+=======================================================================================================================
+01. How do you handle authentication and authorization across microservices?
+
+I would explain the implementation in 7 steps using an e-commerce application.
+
+Step 1: Centralize user authentication
+I would use an Identity Provider such as Keycloak, Auth0, or Azure AD instead of implementing login separately in every microservice.
+
+When the user enters username and password on the Angular login page and clicks Login, Angular sends the authentication request to the Identity Provider.
+
+    Customer / Admin
+        ↓
+    Angular Login Page
+        ↓
+    Enter Username + Password
+        ↓
+    Click Login
+        ↓
+    Identity Provider
+        ↓
+    Validate Credentials
+        ↓
+    Access Token 🎫
+        ↓
+    Angular
+
+
+Step 2: Client Sends the Token
+Suppose an Admin wants initiate refund for an order.
+The Admin first searches for and views the order in the Angular application. After reviewing the order, the Admin clicks Refund.
+Angular sends the request to the backend along with the access token.
+The username and password are never sent to the microservices. Only the access token is sent with API requests.
+
+Step 3: API Gateway validates the token
+The request first reaches the API Gateway.
+
+             JWT
+              ↓
+Frontend → API Gateway
+              ↓
+        Is token valid?
+           ↙       ↘
+         No         Yes
+         ↓           ↓
+       401      Refund Service
+
+The Gateway can validate things such as:
+
+JWT signature
+Expiration
+Issuer
+Audience
+
+If the token is invalid, the request is rejected with 401 Unauthorized.
+If it is valid, the Gateway routes the request to the appropriate microservice.
+
+Step 4: Microservice Validates and Authorizes
+The Refund Service acts as an OAuth2 Resource Server. It is responsible for validating the access token and deciding whether the user is allowed to perform the requested operation.
+Using Spring Security OAuth2 Resource Server, it checks:
+    Is the token valid and not expired?
+    Who is the user?
+    Does the user have the required permission, such as orders:refund?
+
+If authorized → process the refund.
+If not → return 401/403.
+
+@PreAuthorize("hasAuthority('REFUND_INITIATE')")
+@PostMapping("/refunds")
+public ResponseEntity<Void> initiateRefund(
+        @RequestBody RefundRequest request) {
+
+    refundService.initiateRefund(request);
+    return ResponseEntity.ok().build();
+}
+
+Step 5: Secure Service-to-Service Communication(image : service-to-service-communication.png)
+Suppose the Refund Service needs to call the Payment Service to process a refund.
+The Refund Service first authenticates itself with the Identity Provider using its client credentials and receives a service access token.
+It then sends that token when calling the Payment Service.
+The Payment Service validates the token to confirm that the request really came from the Refund Service and that it has permission to perform the refund operation.
+If the token is valid and the required permission is present, the Payment Service processes the request; otherwise, it rejects it.
+In short: The Payment Service doesn't blindly trust the Refund Service—it verifies its identity and permissions before allowing the operation.
+
+Step 6 : Apply the same model to every microservice
+
+The important architectural principle is that every microservice protects its own APIs.
+
+                    Identity Provider
+                           │
+                         JWT
+                           ↓
+                    API Gateway
+                           │
+          ┌────────────────┼────────────────┐
+          ↓                ↓                ↓
+    Product Service   Order Service   Refund Service
+          │                │                │
+     Authorization    Authorization    Authorization
+                                           │
+                                           ↓
+                                    Payment Service
+                                           │
+                                    Service Auth
+                            
+=======================================================================================================================
+02. How do you secure service-to-service communication?
+Let's take an e-commerce example where the Order Service needs to communicate with the Inventory Service.
+
+Step 1: Angular sends the user's JWT
+
+The user has already authenticated, and Angular has received a JWT. When the user places an order, Angular sends that JWT to the backend.
+
+For example:
+
+POST /api/orders
+Authorization: Bearer <JWT>
+
+The API Gateway validates the JWT and forwards the request to the Order Service.
+
+Step 2: Order Service needs Inventory Service
+
+After creating the order, Order Service needs to reserve the items.
+
+Order Service
+      │
+      │ Reserve product
+      ▼
+Inventory Service
+
+At this point, there are two identities involved:
+
+User identity       → Customer
+Service identity    → Order Service
+
+This distinction is important.
+
+Step 3: Should Order Service pass the same JWT?
+
+There are two possible approaches.
+
+Option A — Propagate the user's JWT
+
+Order Service forwards the same JWT to Inventory Service:
+
+Angular
+   │
+   │ User JWT
+   ▼
+API Gateway
+   │
+   │ User JWT
+   ▼
+Order Service
+   │
+   │ Same User JWT
+   ▼
+Inventory Service
+
+This is useful when Inventory Service needs to know which user initiated the operation and needs to make authorization decisions based on the user's identity.
+
+For example:
+
+Inventory Service
+       ↓
+Who initiated this request?
+       ↓
+Customer #101
+
+However, the token represents the user, not the Order Service.
+
+Step 4: Service identity approach
+
+If Inventory Service only needs to know:
+
+"Is this request coming from a trusted Order Service?"
+
+then I would prefer a service-to-service token.
+
+                         Identity Provider
+                                ▲
+                                │
+                         Service Token
+                                │
+                                │
+                       ┌────────┴────────┐
+                       │  Order Service  │
+                       └────────┬────────┘
+                                │
+                       HTTPS + Service JWT
+                                │
+                                ▼
+                       ┌──────────────────┐
+                       │ Inventory Service│
+                       └──────────────────┘
+
+The service token represents:
+
+Order Service
+
+rather than:
+
+Customer #101
+
+Inventory Service can then authorize something like:
+
+    order-service
+        ↓
+    inventory:reserve
+        ↓
+    ALLOW
+
+Step 5: What would I choose?
+
+As a Senior Developer, I would not automatically pass the user's JWT to every downstream service.
+
+I would first ask:
+
+Does Inventory Service need the user's identity, or does it only need to trust Order Service?
+
+If Inventory Service is performing an operation on behalf of Order Service, I would generally use service-to-service authentication so that Inventory Service knows:
+
+"This request is coming from Order Service."
+
+If the downstream service also needs the original user's identity for authorization or auditing, I would preserve that identity separately or use an appropriate token-exchange/delegation mechanism rather than blindly treating the user's JWT as the service's identity.
+
+Complete flow
+                         ┌──────────────────────┐
+                         │   Identity Provider  │
+                         └──────────┬───────────┘
+                                    │
+                              User JWT
+                                    │
+                                    ▼
+┌────────────┐              ┌──────────────┐
+│  Angular   │─────────────►│ API Gateway  │
+└────────────┘     JWT      └──────┬───────┘
+                                    │
+                              Valid JWT
+                                    │
+                                    ▼
+                           ┌────────────────┐
+                           │ Order Service  │
+                           └───────┬────────┘
+                                   │
+                    Service-to-Service Authentication
+                                   │
+                              Service JWT
+                                   │
+                                   ▼
+                         ┌──────────────────┐
+                         │Inventory Service │
+                         └──────────────────┘
+
+Interview answer
+
+"In our application, the user is already authenticated on the Angular side and Angular sends the JWT with the API request. 
+The API Gateway validates that JWT and forwards the request to the Order Service. Now suppose Order Service needs to reserve inventory. 
+I would secure this service-to-service call separately rather than automatically trusting the internal network.
+ Order Service can authenticate itself using its own service identity and obtain a service access token, 
+ for example using OAuth2 Client Credentials. It then calls Inventory Service over HTTPS with that token. 
+ Inventory Service validates the token and verifies that the caller is Order Service and that it has the required permission, such as inventory:reserve.
+
+The important distinction is that the user's JWT represents the customer, whereas the service token represents Order Service. 
+If Inventory Service needs the original customer's identity for authorization or auditing, 
+I would use an appropriate delegation or token-exchange mechanism rather than simply treating the user's JWT as the Order Service's identity. 
+This gives us separate and clear security boundaries between user authentication and service-to-service authentication."
+
+===========================================================================================================================================
+
+
+===========================================================================================================================================
+04. How do you manage secrets without hard-coding them?
+I would use a centralized Secret Manager and follow several practices.
+
+1. Never hard-code secrets
+
+For example, the Booking Service should not contain:
+
+DB_PASSWORD=abc123
+PAYMENT_API_KEY=xyz456
+
+and these should never be committed to Git.
+
+2. Use a Secret Manager
+
+I would use HashiCorp Vault, AWS Secrets Manager, or Azure Key Vault.
+
+              Secret Manager
+             /      |       \
+            /       |        \
+       DB Password API Key  Certificates
+            |
+            ↓
+      Booking Service
+
+The Booking Service retrieves the required secrets at runtime.
+
+3. Use service identity
+
+The Booking Service should authenticate to the Secret Manager using its workload/service identity, rather than storing another password in the application.
+
+Booking Service
+       ↓
+Service Identity
+       ↓
+Secret Manager
+4. Apply least privilege
+
+The Booking Service should only have access to the secrets it needs.
+
+Booking Service
+   ├── Booking DB credentials ✅
+   ├── Payment API key        ✅
+   └── Admin credentials      ❌
+5. Rotate secrets
+
+I would use automatic rotation or short-lived credentials where possible.
+
+If a credential is leaked, its lifetime and usefulness are limited.
+
+6. Don't expose secrets
+
+Secrets should never appear in:
+
+Application logs
+Error messages
+Git repositories
+Monitoring/debug output
+
+7. Separate environments
+
+Development, staging, and production should have completely separate secrets.
+
+Development → Dev Secrets
+Staging     → Staging Secrets
+Production  → Production Secrets
+Interview answer
+
+"For a Booking Service, I would never hard-code database passwords, API keys, or certificates in the application or commit them to Git. 
+I would store them in a centralized Secret Manager such as Vault, AWS Secrets Manager, or Azure Key Vault. 
+The Booking Service would authenticate using its service identity and retrieve only the secrets it needs. 
+I would follow least privilege, rotate credentials regularly, prevent secrets from appearing in logs, 
+and maintain separate secrets for each environment. This keeps credentials centrally managed and limits the impact 
+if a service or credential is compromised."
+
+=======================================================================================================================================
+05. How do you prevent data leakage between services?
+
+I would prevent data leakage using data isolation, least privilege, API-level authorization, and careful data exposure.
+
+1. Database isolation
+
+Each service should ideally own its own database.
+
+Booking Service  → Booking DB
+Payment Service  → Payment DB
+User Service     → User DB
+
+Booking Service should not directly access the Payment database.
+
+2. Expose only required data
+
+A service should return only the fields the caller actually needs.
+
+For example, if Booking Service calls User Service:
+
+{
+  "userId": 101,
+  "name": "John"
+}
+
+There is no reason to return:
+
+password
+creditCardNumber
+securityQuestions
+internalMetadata
+
+This is especially important when designing DTOs. I would avoid exposing database entities directly through APIs.
+
+3. Service-level authorization
+
+Every service should verify who is calling and what they're allowed to access.
+
+Service A
+   │
+   │ Request
+   ▼
+Service B
+   │
+   ├── Authenticate caller
+   ├── Check permission
+   └── Return authorized data
+
+Even if Service A is compromised, it should not automatically be able to retrieve sensitive information from Service B.
+
+4. Least-privilege access
+
+Give each service only the permissions and data access it requires.
+
+Booking Service
+   ├── Booking data       ✅
+   ├── Customer profile   → Required fields only
+   └── Payment details    ❌
+
+I would also use separate database credentials and restrict access to specific databases/tables where appropriate.
+
+5. Protect sensitive data
+
+Sensitive information such as passwords, payment information, tokens, and personal data should be:
+
+Encrypted at rest
+Encrypted in transit using TLS
+Masked in logs
+Excluded from unnecessary API responses
+
+For example:
+
+Card Number:
+**** **** **** 1234
+
+rather than sending the complete card number between services.
+
+6. Prevent accidental leakage through logs
+
+A common source of data leakage is logging.
+
+I would make sure we don't do:
+
+logger.info("User request: {}", request);
+
+if request contains passwords, tokens, payment details, or personal information.
+
+Instead, log only what is necessary for troubleshooting and auditing.
+
+7. Control service-to-service communication
+
+I would restrict which services are allowed to communicate with each other.
+
+Booking Service
+      │
+      ├────► User Service       ✅
+      ├────► Payment Service    ✅
+      └────► Admin Service      ❌
+
+This can be enforced using network policies, service-mesh authorization, and service identities.
