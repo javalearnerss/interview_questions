@@ -1,0 +1,106 @@
+30 Tough Scenario-Based Questions — 15 YOE | AWS ECS
+1. Production migration
+Your company has a large on-premises Java application used by thousands of customers. You have been asked to move it to AWS. The application currently uses Spring Boot, MySQL, IBM MQ and several internal REST services. You cannot stop production traffic during migration. How would you design and execute the migration to ECS without a big-bang cutover?
+
+2. Book/order platform under sudden traffic
+Your e-commerce platform normally receives 5,000 requests/minute. During a festival sale, traffic suddenly reaches 100,000 requests/minute. ECS starts scaling, but customers begin receiving timeouts and some orders are duplicated. Walk me through how you would redesign the system to handle this traffic safely.
+
+3. Order created but event lost
+A customer places an order. The Spring Boot service successfully commits the order into MySQL, but immediately afterward the ECS task crashes before publishing OrderCreated to Kafka. The customer sees "Order Created", but Payment and Notification never receive the event. How would you solve this without introducing distributed transactions?
+
+4. Duplicate payment
+During a production incident, the Payment Service processes the same Kafka message twice. The first attempt successfully charges the customer, but the ECS task crashes before committing the Kafka offset. The second consumer receives the message. How would you guarantee that the customer is not charged twice?
+
+5. ECS scaling makes things worse
+Your Order Service is overloaded, so ECS Auto Scaling increases the service from 10 tasks to 80. Instead of improving performance, the entire application becomes slower and RDS reaches its connection limit. What went wrong, and how would you redesign the scaling strategy?
+
+6. ALB suddenly returns 503
+At 2 PM, customers start receiving 503 Service Unavailable. ECS shows all 20 desired tasks as RUNNING, and there was no deployment. You are the production architect on the incident call. What do you investigate first, second and third, and why?
+
+7. ALB suddenly returns 502
+After a new Spring Boot release, users intermittently receive 502 Bad Gateway. ECS tasks are running and CPU is only 35%. Rolling back removes the problem. How would you identify the actual root cause rather than simply concluding that "the application is down"?
+
+8. ALB returns 504 only during peak traffic
+During normal traffic everything works. At peak traffic, requests that call the Payment Service start returning 504 Gateway Timeout. CPU and memory on ECS look normal. How would you trace the latency through ALB → ECS → Payment → database → external payment provider?
+
+9. One ECS service becomes a bottleneck
+Your application has Order, User, Product and Recommendation services. During a marketing campaign, only Recommendation Service becomes extremely slow and starts consuming most of its ECS capacity. The other services are healthy. How would you isolate the failure so Recommendation Service doesn't bring down the rest of the platform?
+
+10. Service-to-service failure
+Order Service calls User Service synchronously. User Service's database becomes slow, causing User Service responses to take 15 seconds. Order Service starts accumulating requests until its ECS tasks run out of threads. What would you change in the architecture?
+
+📨 Kafka / MQ scenarios
+11. Kafka consumer is healthy but business is failing
+Your Kafka consumer shows no errors and Kafka reports messages are being consumed. However, customers complain that orders remain in PAYMENT_PENDING. How would you determine whether the problem is Kafka, the consumer, the database transaction, or the downstream Payment Service?
+
+12. Kafka lag explodes
+At 10 AM, consumer lag is 5,000. At 10:30 AM it reaches 10 million. ECS CPU is only 30%. Increasing ECS tasks doesn't reduce the lag. What would you investigate and what architectural bottlenecks could explain this?
+
+13. Kafka ordering requirement
+The business tells you that for every order the following must happen in order:
+
+OrderCreated
+PaymentCompleted
+OrderShipped
+
+But there are millions of orders and they must be processed concurrently. How would you design Kafka so events for one order remain ordered without serializing the entire system?
+14. Kafka is unavailable
+MSK becomes unavailable for 15 minutes during a production incident. Customers are still placing orders successfully through your application. Would you continue accepting orders or reject them? Design the solution you would recommend to the business.
+
+15. MQ to Kafka migration
+Your organization has 200 existing IBM MQ integrations. A new platform uses Kafka, and management wants to gradually migrate the messaging architecture without breaking existing consumers. How would you design the migration and coexistence strategy?
+
+🗄️ Database scenarios
+16. Last item in inventory
+There is only one laptop left in inventory. Two customers click Buy Now at almost exactly the same time. Both ECS tasks read stock = 1. Both try to create the order. How would you guarantee that only one customer gets the product?
+
+17. Production database migration
+You need to add a mandatory column to a large production MySQL table containing 500 million records. Hundreds of ECS tasks are running the current application version. How would you perform the change without downtime?
+
+18. Database becomes slow
+Nothing was deployed today, but database latency increases from 20 ms to 3 seconds. ECS CPU is normal, Kafka is healthy and ALB traffic hasn't changed. How would you isolate the root cause?
+
+19. Database failure during transaction
+Order Service starts a transaction, updates Order, and then the MySQL primary becomes unavailable before the transaction completes. The ECS task remains alive. What should happen to the request, the transaction and the customer's retry?
+
+☁️ AWS architecture scenarios
+20. ECS private network
+Your security team says that no ECS task may have a public IP. The services still need to access RDS, MSK, S3, ECR, Secrets Manager and external payment APIs. Design the network architecture and explain how traffic reaches each dependency.
+
+21. One Availability Zone fails
+Your production ECS cluster runs across three Availability Zones. One entire AZ suddenly becomes unavailable. Customers must not notice the failure. What happens to ALB, ECS, RDS, MSK and service-to-service traffic, and what must you have designed beforehand?
+
+22. ECS service cannot connect to RDS
+A newly deployed ECS service is healthy according to ECS, but every database call fails with a connection timeout. The RDS instance is healthy and other services can connect to it. Walk me through your investigation from the ECS task all the way to RDS.
+
+23. ECS service discovery
+You have 50 ECS tasks running across several services. Order Service needs to call User Service, but User Service tasks are continuously being created and terminated. How would Order Service reliably discover User Service without maintaining IP addresses manually?
+
+24. Private ECS service exposure
+Your business wants customers to access /books and /orders, but User, Payment and Inventory services must never be directly reachable from the internet. How would you expose the APIs while keeping internal services private?
+
+🔐 Security scenarios
+25. Compromised ECS task
+Assume an attacker compromises one ECS task running Recommendation Service. That container now tries to access RDS, S3, Secrets Manager and Payment Service. How would you design AWS permissions and network controls so the compromise remains isolated?
+
+26. Secret leaked
+A developer accidentally commits the production database password into the Spring Boot Git repository. The password has already been deployed to ECS. What actions do you take immediately, and how would you redesign secret management to prevent this happening again?
+
+27. JWT security
+Your Angular application obtains a JWT and calls your APIs through a gateway. A developer proposes validating the JWT only at the gateway because "all traffic passes through it." Would you accept this architecture? Why or why not?
+
+🚀 Deployment scenarios
+28. Bad deployment
+Version 2 of Order Service passes all automated tests and health checks. You deploy it to 100% of ECS traffic. Ten minutes later, you discover that orders are being created correctly but the wrong customer is associated with some orders. How would you have designed the deployment process to detect this before reaching 100% traffic?
+
+29. Database + application deployment
+Version 2 of your Spring Boot service requires a new database column, but 50 old ECS tasks are still running Version 1. How would you deploy the database and application changes without breaking either version?
+
+30. Complete production incident
+You are the architect responsible for an AWS ECS platform. At 11 AM, the following happens simultaneously:
+- ALB 5xx errors increase
+- Kafka consumer lag reaches 2 million
+- RDS CPU reaches 95%
+- ECS Auto Scaling starts adding tasks
+- Customers report duplicate orders
+You have 15 minutes to stabilize production. What do you do first, what do you stop, what metrics do you examine, and how do you prevent the incident from cascading further?

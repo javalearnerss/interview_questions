@@ -1,0 +1,141 @@
+30 Toughest Scenario-Based System Design Questions
+1. Massive traffic — 1M requests/minute
+Your application currently handles 100K requests/minute. The business expects 1 million requests/minute during a major sale. Design the AWS EKS/ECS architecture to handle this traffic with low latency and no downtime.
+
+2. 10 million requests/minute
+Your platform must support 10 million requests/minute during a 30-minute flash sale. How would you design the system so that traffic spikes don't bring down the application or database?
+
+3. Sudden traffic spike
+Your normal traffic is 50K requests/minute, but traffic can suddenly increase to 1M requests/minute within 60 seconds. How would you handle a spike that is faster than Kubernetes/ECS Auto Scaling can react to?
+
+4. 100K concurrent users
+Design an Angular + Spring Boot + Kafka + MySQL application that must support 100,000 concurrent users. Where would you expect the bottlenecks and how would you remove them?
+
+5. 1 million orders/hour
+An e-commerce platform needs to process 1 million orders per hour. Design the order-processing architecture using Spring Boot, Kafka, MySQL and AWS.
+
+6. 100K messages/second
+Your system receives 100,000 Kafka events per second. Consumers run on EKS/ECS and persist data into MySQL. How would you design the architecture to process this volume without overwhelming MySQL?
+
+7. Database cannot scale with application
+Your application needs to support 1M requests/minute, but the MySQL database can handle only 20K queries/second. How would you design the system so the database does not become the bottleneck?
+
+8. Read-heavy application
+Your Book Gallery receives 1 million requests/minute, and 95% are book-search/read requests while only 5% are writes. Design the architecture for this workload.
+
+9. Flash sale
+At exactly 12 PM, 500,000 users try to purchase the same product whose inventory is only 10,000 units. How would you prevent overselling while keeping the system responsive?
+
+10. Payment system
+Your payment platform must process 50,000 transactions per second. Every successful transaction must be recorded and must never result in a duplicate charge. Design the architecture.
+
+☁️ AWS / EKS / ECS Scale
+11. ECS at massive scale
+You have 1 million requests/minute coming into an AWS ECS Fargate application. How would you determine the number of tasks required, configure ALB, and design Auto Scaling?
+
+12. EKS at massive scale
+You need to process 1 million requests/minute using Spring Boot services running on EKS. How would you design node groups, pod scaling, load balancing and cluster autoscaling?
+
+13. ECS vs EKS at scale
+A new application needs to handle 1 million requests/minute. You can choose ECS Fargate or EKS. Which would you choose and why?
+
+The important part is the trade-off, not simply choosing Kubernetes.
+14. Multi-AZ architecture
+Your application must handle 1 million requests/minute and continue operating if an entire AWS Availability Zone fails. Design the architecture.
+
+15. Multi-region architecture
+Your application has 1 million requests/minute and the business requires the system to survive an entire AWS region failure. Design the multi-region architecture.
+
+Then:
+How would you handle data consistency?
+
+📨 Kafka Scaling
+16. Kafka at 1M events/minute
+Your platform generates 1 million business events per minute. Design the Kafka architecture including partitions, producers, consumers and consumer groups.
+
+17. Kafka backlog
+Your system normally processes 1 million events/minute, but for 30 minutes consumers can process only 500K/minute. You accumulate millions of messages. How would you design the system to recover without impacting new traffic?
+
+18. Ordering at scale
+You process 1 million orders/minute. Events for the same order must remain strictly ordered, but different orders should process in parallel. How would you partition Kafka?
+
+19. Kafka + database bottleneck
+Kafka receives 100K events/second, but MySQL can persist only 20K records/second. What architecture would you use?
+
+20. Exactly-once business processing
+Your business says: "Every order must be processed exactly once, even if pods restart, Kafka redelivers messages, or the database temporarily fails." Design the solution.
+
+🗄️ Database Scale
+21. 1 billion records
+Your MySQL database grows to 1 billion order records and the application must still support 1 million requests/minute. How would you design the database and data-access architecture?
+
+22. 100K DB operations/sec
+Your microservices collectively generate 100,000 database operations per second, but a single MySQL instance cannot handle it. How would you scale the data layer?
+
+23. Connection explosion
+You have 500 Spring Boot pods, each configured with a 20-connection Hikari pool. The database can support only 5,000 connections. How would you architect the system?
+
+24. Global application
+Your application serves users from India, Europe and the US and receives 1 million requests/minute. How would you design the data layer to provide low latency globally?
+
+🏗️ Microservices Scale
+25. 100 microservices
+Your organization has 100 Spring Boot microservices. Some receive 1M requests/minute while others receive only 100 requests/minute. How would you design deployment, scaling and communication between these services?
+
+26. Service bottleneck
+Your API receives 1 million requests/minute, but only 10% of requests require Payment Service. How would you prevent Payment Service from becoming a bottleneck?
+
+27. Synchronous chain
+An API request currently passes through six synchronous microservices. At 1M requests/minute, latency becomes unacceptable. How would you redesign the workflow?
+
+28. Event-driven architecture
+You need to process 1 million customer activities/minute. The business wants real-time notifications, analytics, audit logging and recommendations. Design an event-driven architecture that avoids making the customer request wait for all downstream processing.
+
+💣 Architect-Level Questions
+29. Design for 1M RPM with constraints
+Design a production system capable of handling 1 million requests/minute with:
+- p99 latency below 200 ms
+- 99.99% availability
+- zero-downtime deployment
+- no data loss
+- no duplicate transactions
+- automatic scaling
+- multi-AZ resilience
+- centralized observability
+- controlled AWS cost
+Use Spring Boot, Kafka, MySQL and AWS ECS/EKS. Explain every major architectural decision.
+
+30. The ultimate 15-YOE question 🚀
+Your company is launching a global e-commerce platform. On launch day you expect 10 million users, 1 million requests/minute, 100K orders/minute and 50K Kafka events/second.
+Design the complete AWS architecture using Angular, Spring Boot microservices, ECS/EKS, ALB/API Gateway, Kafka/MSK and MySQL/RDS.
+Explain how you would handle:
+- traffic distribution
+- horizontal scaling
+- database scaling
+- Kafka partitioning
+- ordering
+- duplicate processing
+- inventory consistency
+- payment reliability
+- caching
+- rate limiting
+- security
+- zero-downtime deployment
+- observability
+- multi-AZ failure
+- disaster recovery
+- cost optimization
+
+⭐ The 10 I would prepare first
+For a 15-year Java + AWS architect interview, I'd prioritize:
+1. 1M requests/minute
+2. 1M RPM with 99.99% availability
+3. Sudden 10× traffic spike
+4. 500K concurrent users
+5. 100K Kafka events/sec
+6. 1M orders/hour
+7. 500 ECS/EKS pods + database connection limits
+8. Flash sale with limited inventory
+9. Multi-region 1M RPM architecture
+10. Complete end-to-end e-commerce architecture at massive scale
+These are the questions where your answer needs to demonstrate capacity planning + distributed systems + AWS architecture + Spring Boot + Kafka + database design + failure handling, rather than just knowledge of individual technologies.

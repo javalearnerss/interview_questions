@@ -1,0 +1,207 @@
+Yes. For 15 YOE + EKS, the questions should be the same style: real production scenarios, where the interviewer does not tell you whether the answer should involve Kubernetes, Kafka, AWS, networking, database, or application changes.
+🔥 30 Toughest EKS Scenario-Based Questions — 15 YOE
+1. Production migration from ECS to EKS
+Your company currently runs 30 Spring Boot microservices on ECS Fargate. Management wants to move them to EKS because other teams are standardizing on Kubernetes. The business cannot tolerate downtime. How would you plan and execute the migration?
+
+Follow-ups:
+- How would you migrate service by service?
+- How would ECS and EKS communicate during migration?
+- How would you migrate Kafka consumers?
+- How would you handle database access?
+- How would you roll back?
+2. Production EKS outage
+At 10 AM, customers suddenly cannot access your application. The ALB is healthy, but requests to EKS are returning 503. The EKS cluster shows all nodes as Ready. Walk me through your investigation.
+
+Don't assume the nodes being healthy means the application is healthy.
+3. Pods are Running but application is unavailable
+Kubernetes shows:
+
+Pods:       Running
+Nodes:      Ready
+Deployment: Available
+
+Yet users receive 503.
+What Kubernetes components would you investigate between the ALB and the Spring Boot application?
+4. Pod keeps restarting
+A Spring Boot pod starts successfully and becomes Ready. After approximately 60 seconds, Kubernetes kills it. There is no obvious application exception. How would you determine whether the problem is liveness probes, OOMKilled, JVM memory, node pressure, or something else?
+
+5. Deployment causes outage
+You deploy a new version using a Kubernetes RollingUpdate. During deployment, traffic drops and customers receive intermittent 503 errors. What could have been incorrectly configured, and how would you design the deployment to prevent this?
+
+6. One pod receives all traffic
+You have 10 replicas of Order Service, but monitoring shows one pod receives most of the traffic while the others are almost idle. How would you investigate this?
+
+Think about:
+- Service
+- EndpointSlice
+- Ingress/ALB
+- Keep-alive
+- Connection distribution
+- Session affinity
+☁️ EKS + AWS Networking
+7. Pod cannot reach RDS
+A newly deployed Spring Boot pod can reach other services but cannot connect to RDS. Other pods in the same cluster can connect successfully. How would you isolate whether this is Kubernetes networking, AWS security groups, routing, DNS, or the application?
+
+8. Pod can access internet but not on-prem
+Your EKS cluster is connected to the corporate data center through Direct Connect. Pods can access the internet but cannot access an on-premises MySQL database. Walk through the network path and identify where the problem could exist.
+
+9. On-prem dependency becomes slow
+Your EKS Order Service calls an on-premises Customer Service. The call normally takes 30 ms but suddenly takes 2 seconds. EKS CPU and memory are normal. How would you identify whether the issue is Kubernetes, AWS networking, Direct Connect, firewall, or the on-prem application?
+
+10. EKS private cluster
+Security requires that EKS worker nodes and pods have no direct internet access. However, workloads must pull images from ECR, retrieve secrets, send logs, and access AWS APIs. How would you design this environment?
+
+🏗️ Kubernetes Architecture
+11. Service discovery failure
+Order Service calls:
+
+http://user-service/users/123
+
+Suddenly Kubernetes recreates all User Service pods. Their IP addresses change, and Order Service starts getting connection failures. Why shouldn't this architecture depend on pod IPs, and how would you design it correctly?
+12. Ingress architecture
+You have 40 microservices but only five services need to be publicly accessible. Creating a separate public AWS Load Balancer for every service is expensive. How would you expose the required services while keeping the remaining services internal?
+
+13. Namespace isolation
+Development, QA and production workloads are accidentally deployed into the same EKS cluster. A developer discovers that a QA pod can communicate with a production service. How would you prevent this architecturally?
+
+14. Kubernetes resource starvation
+One microservice suddenly consumes 90% of the CPU on a worker node. Other applications running on the same node become slow. How would you prevent one workload from affecting unrelated workloads?
+
+15. Node failure
+One EKS worker node suddenly becomes unavailable. It contains 15 production pods. What happens to those pods, and what must be configured so that the application recovers automatically?
+
+📈 EKS Scaling
+16. HPA makes things worse
+Your Order Service experiences high traffic. HPA increases replicas from 10 to 100, but latency gets worse and RDS reaches its connection limit. Why did scaling the application make the system less reliable? How would you redesign scaling?
+
+17. CPU doesn't reflect load
+API latency increases from 100 ms to 5 seconds, but CPU utilization remains at 30%. HPA doesn't scale the pods. What application or business metrics would you consider for autoscaling?
+
+18. Cluster has no capacity
+HPA wants to create 50 additional pods, but Kubernetes reports:
+
+Insufficient CPU
+
+The application is overloaded and needs more capacity immediately. How would you solve this?
+This can lead to:
+- Cluster Autoscaler
+- Karpenter
+- Node groups
+- Instance selection
+- Pod requests/limits
+📨 EKS + Kafka
+19. Kafka lag after deployment
+Your Kafka consumers run as EKS pods. Immediately after a deployment, consumer lag starts increasing rapidly. CPU is normal. What could have changed, and how would you investigate?
+
+20. Consumer killed while processing
+A Kafka consumer receives an event, updates MySQL, and Kubernetes terminates the pod before the Kafka offset is committed. Another pod receives the event again. How would you design the application so duplicate processing doesn't create duplicate business transactions?
+
+21. Kafka partition scaling
+You have:
+
+12 Kafka partitions
+20 consumer pods
+
+The team says all 20 pods should process messages simultaneously. Is that possible? Explain what Kubernetes scaling does and what Kafka partitioning controls.
+22. Kafka consumer and Kubernetes deployment
+You deploy a new version of a Kafka consumer. During the rolling deployment, old and new pods consume the same topic simultaneously. Version 2 changes the business logic. How would you safely deploy the new consumer?
+
+🗄️ EKS + Database
+23. Connection storm
+You have 200 Spring Boot pods. Each pod can create 30 MySQL connections. After a large-scale deployment, MySQL suddenly reaches its connection limit and the entire application becomes unavailable. How would you prevent this?
+
+24. Database is slower than application
+EKS shows healthy pods, CPU is 40%, memory is 50%, Kafka is healthy, but API latency has increased from 50 ms to 3 seconds. Database query latency has increased dramatically. How would you isolate and fix the bottleneck?
+
+25. Database schema migration
+100 EKS pods run Version 1 of the application. You need to introduce a database schema change required by Version 2. You cannot stop traffic. How would you deploy the database and application changes safely?
+
+🔐 EKS Security
+26. Compromised pod
+An attacker gains access to one Spring Boot pod. The pod attempts to read AWS Secrets Manager, access S3 and connect to Payment Service. How would you restrict what this pod can do?
+
+The interviewer may expect discussion around:
+- IAM roles for service accounts / EKS Pod Identity
+- Kubernetes RBAC
+- NetworkPolicy
+- Security groups
+- Secrets
+- Least privilege
+27. Secrets exposure
+A developer stores database credentials in a Kubernetes Secret and commits the YAML file into Git. The repository is accessible to hundreds of developers. How would you redesign secret management?
+
+28. Internal TLS requirement
+Security mandates encryption for:
+
+Angular
+ ↓
+Ingress
+ ↓
+Order Service
+ ↓
+Payment Service
+ ↓
+Kafka
+ ↓
+MySQL
+
+How would you implement TLS without forcing every development team to manually manage certificates?
+🚨 Senior Architect Incident Scenarios
+29. Complete production degradation
+At 2 PM, your EKS production platform starts showing:
+- API latency increasing
+- 503 errors
+- HPA creating more pods
+- Node CPU increasing
+- Kafka consumer lag increasing
+- RDS connections approaching the limit
+You are the architect on the incident bridge. What do you do in the first 15 minutes?
+
+The important part is not immediately saying:
+"Increase replicas."
+
+You need to determine whether scaling is actually making the failure worse.
+💣 30. Ultimate 15-YOE EKS Question
+Your company has 50 Spring Boot microservices running on EKS. Angular is the frontend. Kafka is used for asynchronous communication. MySQL is hosted outside the Kubernetes cluster. Some legacy services remain on-premises. Traffic enters through AWS load balancing.
+At peak time, users start receiving intermittent 502/503 errors. Kafka consumer lag reaches millions of messages, some pods are repeatedly restarting, and MySQL connection count reaches its maximum.
+You are the lead architect. Diagnose the architecture end-to-end and explain how you would stabilize production first, identify the root cause second, and redesign the system third.
+
+The interviewer can then drill down:
+                 Internet
+                    │
+                 ALB/Ingress
+                    │
+              ┌─────┴─────┐
+              │   EKS     │
+              │           │
+          Angular     Spring Boot
+                         │
+              ┌──────────┼─────────┐
+              ↓          ↓         ↓
+            Kafka       Redis     On-Prem
+              │                    │
+              ↓                    ↓
+         Consumers              MySQL
+
+And ask:
+- Why are pods restarting?
+- Why isn't HPA solving it?
+- Why is Kafka lag increasing?
+- Why is MySQL exhausted?
+- Is the database or application the bottleneck?
+- What happens if an EKS node dies?
+- What happens if Kafka becomes unavailable?
+- What happens if the on-prem link fails?
+- How do you isolate namespaces?
+- How do you secure pod-to-AWS access?
+- How do you deploy without downtime?
+- How do you trace one customer's request?
+- How do you recover from an AZ failure?
+🎯 For 15 YOE, this is the key difference
+Don't prepare answers like:
+"What is HPA?"
+
+Prepare for:
+"Traffic increases 5×, HPA creates more pods, RDS becomes saturated, Kafka lag increases, and latency gets worse. Explain what is happening and redesign the system."
+
+That is the scenario-based, architecture-level questioning I'd expect for a 15-year EKS candidate.

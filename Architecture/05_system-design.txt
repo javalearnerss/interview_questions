@@ -1,0 +1,55 @@
+Tough AWS System-Design Questions
+1. You have Angular + Spring Boot microservices + MySQL. Design the complete production architecture on AWS. Why did you choose ECS Fargate vs EKS, and what would you put in public vs private subnets?
+2. Your ECS service shows Desired = 4, Running = 4, but ALB returns 503. Walk me through your troubleshooting process without restarting the service.
+3. Your ALB occasionally returns 502 while ECS tasks are healthy. The error disappears when traffic decreases. What are your hypotheses?
+4. Users receive 504 from ALB only during peak traffic. ECS CPU is 40%, but request latency is increasing. Where would you investigate?
+5. Your ECS task is running but cannot connect to RDS MySQL. Security groups appear correct. What AWS networking components would you check?
+6. Your ECS tasks are in private subnets. They need to pull Docker images from ECR and send logs to CloudWatch. How can they access AWS services without giving them public IPs?
+7. Your application is deployed across two Availability Zones. One AZ goes down. How does your architecture continue serving traffic? What AWS components must be configured correctly?
+8. Your RDS MySQL database becomes unavailable. Your ECS services are healthy but all APIs start failing. How would you design the database layer for high availability?
+9. Your application has 20 ECS tasks and suddenly receives 10× traffic. How would you design ECS Auto Scaling? Which metrics would you use and why?
+10. CPU utilization remains at 30%, but request latency increases dramatically. Your ECS CPU-based scaling doesn't trigger. What would you change?
+11. You deploy version 2 of your Spring Boot service using ECS blue-green deployment. How would you route traffic gradually from version 1 to version 2 and roll back if errors increase?
+12. Your Angular application is public, but Order, Payment, and User services must never be directly accessible from the internet. Design the AWS networking architecture.
+13. You have:
+Internet
+   ↓
+ALB
+   ↓
+Angular ECS
+   ↓
+Spring Boot ECS
+   ↓
+RDS
+
+Where would you terminate TLS? Would you encrypt traffic again between ALB and ECS? Why?
+14. Your company wants the same microservices architecture deployed first on ECS and later on EKS. What would you keep platform-independent, and what AWS-specific components would change?
+15. Your Spring Boot service needs to communicate with another ECS service privately. Would you use Spring Cloud Gateway, ALB, Cloud Map, ECS Service Connect, or direct task IPs? Defend your choice.
+16. Your ECS tasks restart whenever traffic increases. CloudWatch shows no obvious application error. How would you determine whether the problem is memory, health checks, networking, or deployment configuration?
+17. Your ECS service's target health constantly changes between healthy and unhealthy. What could cause this? How would you debug the ALB health-check path?
+18. Your application needs secrets such as DB passwords and JWT signing configuration. Where would you store them in AWS, and how would ECS retrieve them securely?
+19. A developer accidentally exposes RDS to 0.0.0.0/0. How would you design AWS security groups and network controls so this mistake doesn't expose the production database?
+20. Your application needs Kafka on AWS. When would you choose Amazon MSK, MSK Serverless, or self-managed Kafka on EC2? What are the trade-offs?
+21. Your Kafka consumers run on ECS. Consumer lag suddenly increases. ECS CPU is normal, but RDS CPU is 95%. How would you determine whether Kafka or MySQL is the bottleneck?
+22. Your ECS tasks need to consume from MSK, but the MSK cluster is in private subnets. What AWS networking and security configuration is required?
+23. Your production system receives 100,000 Kafka messages/sec, but your database can handle only 20,000 writes/sec. How would you architect the AWS solution?
+24. Your application has Angular, Spring Boot, Kafka, and RDS. How would you monitor the entire architecture using CloudWatch, Prometheus, Grafana, and OpenTelemetry?
+25. A production request travels through:
+CloudFront
+   ↓
+ALB
+   ↓
+ECS
+   ↓
+Kafka
+   ↓
+Another ECS service
+   ↓
+RDS
+
+A customer says, "My order is stuck." You have only the Order ID. How would you trace the request across AWS?
+26. Your AWS bill suddenly doubles after increasing ECS task count. How would you identify the source of the cost increase and optimize it without compromising availability?
+27. Your ECS application works in one AWS region. The business now requires disaster recovery if the entire region becomes unavailable. Design the AWS architecture.
+28. RDS is unavailable for 30 seconds during failover. Your Spring Boot application has hundreds of active DB connections. What happens, and how would you make the application recover gracefully?
+29. Your company wants zero-downtime deployments for Spring Boot services. Design the deployment using ECS, ALB, health checks, and blue-green deployment. What happens if the new version fails after receiving 20% traffic?
+30. You have ECS today and EKS tomorrow. Your interviewer asks: "Why should I use Kubernetes when AWS ECS already gives me container orchestration?" Give a production-level justification rather than a textbook answer.
