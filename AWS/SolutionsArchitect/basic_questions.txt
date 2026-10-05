@@ -1,0 +1,181 @@
+AWS Solutions Architect Associate — 150 Practice Questions
+Below is the full 150-question scenario-based set. No answers or explanations are included, so you can solve them independently. 🎯
+🔐 Domain 1 — IAM & Security
+Q1–20
+Q1. An application running on EC2 needs read-only access to objects in a specific S3 bucket. The company does not want credentials stored on the server. What is the best solution?
+Q2. A company wants developers to access AWS resources only during their working hours. Which IAM capability can enforce this restriction?
+Q3. An application stores database credentials that must be encrypted and automatically rotated. Which AWS service is most appropriate?
+Q4. A company wants to encrypt S3 data using customer-controlled encryption keys. Which AWS service should manage the keys?
+Q5. A public web application behind an ALB is receiving SQL injection and cross-site scripting attacks. Which AWS service should protect the application?
+Q6. A company wants enhanced protection against large-scale DDoS attacks targeting its public applications. Which AWS service should it consider?
+Q7. An EC2 instance needs to access S3 without sending traffic through the public internet. What should the architect configure?
+Q8. A company wants users to authenticate to a web and mobile application using email/password and social identity providers. Which AWS service is appropriate?
+Q9. An organization has multiple AWS accounts and wants employees to centrally access those accounts using their corporate identities. Which AWS service should be considered?
+Q10. A company wants an IAM role to perform only the minimum actions required by an application. What security principle should be applied?
+Q11. A company wants to prevent accidental deletion of objects in an S3 bucket by authorized users. Which S3 capability can help?
+Q12. A company needs to record API calls made by users and services across its AWS accounts for auditing purposes. Which AWS service should be used?
+Q13. A security team wants to detect whether AWS resources are being accessed using overly permissive IAM policies. Which AWS capability can help analyze access activity?
+Q14. An application running on ECS needs access to DynamoDB. The company does not want static AWS credentials inside the container. What should be used?
+Q15. A company needs to encrypt sensitive application secrets before storing them. It also needs centralized key management and auditability. Which AWS service should be considered?
+Q16. A company wants to prevent resources in a private subnet from receiving unsolicited inbound internet traffic while allowing them to make outbound connections. Which architecture is appropriate?
+Q17. A company needs a TLS certificate for an internet-facing ALB. Which AWS service can provide and manage the certificate?
+Q18. A company wants to restrict access to an S3 bucket so that only requests originating through a specific VPC endpoint are allowed. What should be used?
+Q19. A company wants to identify sensitive data such as personally identifiable information stored in S3. Which AWS service can assist?
+Q20. A company wants centralized security findings across multiple AWS accounts and services. Which AWS security service should be considered?
+
+🌐 Domain 2 — VPC & Networking
+Q21–45
+Q21. An application has web servers in public subnets and database servers in private subnets. The database servers need outbound internet access for software updates but must not accept inbound internet connections. What architecture should be used?
+Q22. An application in a private subnet needs to access S3 without using a NAT Gateway or public internet. What should be configured?
+Q23. What is the primary difference between a Security Group and a Network ACL?
+Q24. A company wants to distribute HTTP/HTTPS traffic across EC2 instances based on URL paths such as /orders and /users. Which load balancer is most appropriate?
+Q25. A company needs extremely high-performance TCP load balancing with static IP addresses. Which load balancer should be considered?
+Q26. An application must remain available if one Availability Zone fails. How should the EC2 architecture be designed?
+Q27. A company wants private communication between two VPCs in different AWS accounts. Which connectivity option could be used?
+Q28. A company has hundreds of VPCs across multiple AWS accounts and wants centralized network connectivity. Which AWS service should be considered?
+Q29. A company wants private connectivity between its corporate data center and AWS. Which AWS networking solutions could be used?
+Q30. An application has global users and needs them to connect through AWS's global network infrastructure. Which service can help?
+Q31. A company wants to distribute static content globally with low latency. Which AWS service should be used?
+Q32. A private EC2 instance needs to download operating-system updates from the internet. Which architecture should be used?
+Q33. Two VPCs have overlapping CIDR ranges. Which VPC connectivity option would have limitations because of the overlap?
+Q34. An application needs DNS-based routing that directs users to different AWS Regions based on their geographic location. Which Route 53 routing policy should be used?
+Q35. An application needs DNS failover from a primary endpoint to a secondary endpoint when the primary becomes unhealthy. Which Route 53 capability should be used?
+Q36. A company wants to restrict inbound traffic to an EC2 instance to HTTPS traffic originating from an ALB. How should the Security Group be configured?
+Q37. An application requires a static public IP address while using an AWS load balancer. Which load balancer type is more appropriate?
+Q38. A company wants to expose an internal service privately to VPCs owned by other AWS accounts. Which AWS service should be considered?
+Q39. A company wants to connect an on-premises network to AWS using a dedicated private connection rather than the public internet. Which AWS service should be considered?
+Q40. An application is deployed across three Availability Zones. Traffic should be distributed evenly among healthy application instances. Which AWS component should perform this function?
+Q41. A company wants to block specific IP addresses at the subnet level. Which AWS networking capability should be considered?
+Q42. An application uses an ALB and has separate services for /users, /orders, and /payments. What ALB feature should be used?
+Q43. A company wants to reduce latency for users located around the world accessing an API hosted in one AWS Region. Which AWS service could improve global access?
+Q44. A company wants resources in a VPC to access AWS services privately without requiring public IP addresses. What AWS networking capability should be considered?
+Q45. A company needs to inspect and control traffic between multiple VPCs centrally. Which architecture could provide centralized network traffic inspection?
+
+☁️ Domain 3 — EC2, ECS, EKS & Compute
+Q46–65
+Q46. A workload runs continuously for three years and has predictable compute requirements. Which EC2 pricing option could provide significant savings compared with On-Demand?
+Q47. A batch workload can tolerate interruptions and does not need guaranteed availability. Which EC2 pricing option is generally most cost-effective?
+Q48. An application experiences unpredictable traffic. EC2 capacity must automatically increase and decrease based on demand. Which AWS capability should be used?
+Q49. A company wants to run containers without managing EC2 servers. Which AWS service should be considered?
+Q50. A company wants to run Kubernetes workloads while AWS manages the Kubernetes control plane. Which AWS service should be used?
+Q51. A containerized application has multiple microservices running on ECS. The services need to communicate using service names rather than hard-coded IP addresses. What capability should be considered?
+Q52. An ECS task needs access to database credentials at runtime. The company does not want credentials embedded in the container image. What AWS services could be used?
+Q53. An ECS service needs to automatically replace unhealthy tasks. Which ECS capability provides this behavior?
+Q54. A company wants to deploy a new version of a containerized service while gradually shifting traffic from the old version to the new version. Which deployment strategy should be considered?
+Q55. A company wants to run code in response to an S3 object upload without managing servers. Which service should be used?
+Q56. A Lambda function frequently connects to an RDS database and is exhausting database connections. Which AWS service can help manage database connections?
+Q57. A company needs compute capacity for a workload that runs only for a few hours each night. What architecture could reduce costs?
+Q58. A machine-learning workload requires GPU-enabled compute instances. Which AWS compute option should be considered?
+Q59. A company wants to run Docker containers and requires full control over the underlying EC2 instances. Which architecture should it consider?
+Q60. A company wants Kubernetes with maximum control over worker nodes and Kubernetes configuration. Which AWS service should be considered?
+Q61. An application needs to process thousands of independent jobs in parallel. Each job can run independently. Which architecture would provide good scalability?
+Q62. A company wants to automatically distribute EC2 instances across multiple Availability Zones. Which Auto Scaling capability should be used?
+Q63. An application requires a compute environment that automatically scales to zero when there are no requests. Which compute model is most appropriate?
+Q64. A company wants to run a container workload for a few minutes in response to an event and does not want to maintain infrastructure. Which service could be appropriate?
+Q65. A company wants to migrate an existing application from EC2-based deployment to containers while minimizing infrastructure management. Which AWS service should it evaluate first?
+
+🪣 Domain 4 — S3 & Storage
+Q66–80
+Q66. A company stores millions of objects that are accessed frequently for the first 30 days and rarely afterward. What S3 capability can automatically reduce storage costs?
+Q67. A company must retain objects for seven years and prevent them from being deleted or modified during that period. Which S3 capability should be considered?
+Q68. A company wants to host static HTML, CSS, JavaScript, and image files with global low-latency access. What architecture is appropriate?
+Q69. An application needs shared file storage that multiple EC2 instances can mount simultaneously. Which AWS storage service should be considered?
+Q70. An EC2 instance requires persistent block storage with low latency. Which AWS storage service should be used?
+Q71. A company wants to replicate S3 objects automatically from one AWS Region to another for disaster recovery. What should be configured?
+Q72. A company accidentally deleted important S3 objects and wants to recover previous versions. Which S3 feature should be enabled?
+Q73. A company needs extremely durable storage for data that is rarely accessed and can tolerate retrieval delays. Which S3 storage classes should be considered?
+Q74. An application needs to upload very large files to S3 reliably over an unreliable network connection. Which S3 capability should be used?
+Q75. A company wants users to upload files directly to S3 without providing users with AWS credentials. What mechanism can be used?
+Q76. A company wants to automatically transition S3 objects between storage classes based on age. Which feature should be configured?
+Q77. A company needs to store frequently accessed objects with automatic movement to lower-cost storage when access patterns change. Which S3 storage option should be considered?
+Q78. A company wants to serve private S3 content through CloudFront without making the S3 bucket public. What architecture should be used?
+Q79. A company needs a shared filesystem for Linux workloads across multiple Availability Zones. Which AWS service is most appropriate?
+Q80. A company needs to transfer hundreds of terabytes from on-premises storage to AWS. Which AWS service or solution should be considered instead of transferring all data over a normal internet connection?
+
+🗄️ Domain 5 — RDS, Aurora, DynamoDB & ElastiCache
+Q81–100
+Q81. A production relational database must remain available if an Availability Zone fails. Which RDS capability should be used?
+Q82. A read-heavy application needs additional database read capacity without affecting the primary database. What RDS capability should be considered?
+Q83. A company wants a managed relational database compatible with MySQL but requiring less database administration. Which AWS database service should be considered?
+Q84. An application needs a NoSQL database capable of handling very high request rates with single-digit millisecond latency. Which AWS service is appropriate?
+Q85. A DynamoDB workload has unpredictable traffic. The company does not want to provision capacity manually. Which capacity mode should be considered?
+Q86. A DynamoDB table needs automatic scaling based on traffic. Which capability should be configured?
+Q87. A company needs a cache for frequently accessed database records to reduce database load. Which AWS service should be considered?
+Q88. An application needs a relational database but requires read scalability across multiple read replicas. Which database architecture should be considered?
+Q89. A company wants automatic database backups and point-in-time recovery for an RDS database. Which feature should be configured?
+Q90. An application requires a relational database that can automatically fail over to another Availability Zone. Which RDS architecture should be used?
+Q91. A company wants to migrate a MySQL database to AWS with minimal downtime. Which AWS migration service should be considered?
+Q92. A DynamoDB table needs to maintain multiple versions of an item over time. Which DynamoDB feature could help?
+Q93. A company wants to trigger processing whenever data changes in a DynamoDB table. Which capability can be used?
+Q94. An application frequently reads the same product information from a relational database. Which caching architecture would reduce database load?
+Q95. A company needs a database for a simple key-value workload with extremely high scalability and low latency. Which database should be considered?
+Q96. A database workload requires strong relational consistency, SQL queries, and transactions. Which AWS database category is most appropriate?
+Q97. A company wants to encrypt RDS database storage. Which AWS capability should be used?
+Q98. A company needs to increase the storage capacity of an RDS database without manually migrating data to another database. What RDS capability should be considered?
+Q99. An application needs a database cache that supports Redis-compatible features and high availability. Which AWS service should be considered?
+Q100. A company needs to store session data for a highly scalable web application so that sessions can be shared across multiple application servers. Which architecture should be considered?
+
+⚖️ Domain 6 — ELB, Auto Scaling & High Availability
+Q101–115
+Q101. An application runs on multiple EC2 instances and needs automatic distribution of HTTP traffic. Which AWS service should be used?
+Q102. An application needs path-based routing such as /api and /admin. Which load balancer should be considered?
+Q103. An application requires TCP-level load balancing with very high performance. Which load balancer should be used?
+Q104. An application should automatically replace EC2 instances that fail health checks. Which AWS capability should be configured?
+Q105. An application experiences increased traffic every weekday between 9 AM and 6 PM. What type of Auto Scaling policy could optimize capacity?
+Q106. An application experiences sudden unpredictable traffic spikes. Which Auto Scaling policy would respond dynamically to demand?
+Q107. A company wants application instances distributed across multiple Availability Zones. What Auto Scaling configuration should be used?
+Q108. An application needs to maintain a minimum number of healthy instances at all times. Which Auto Scaling configuration controls this?
+Q109. A company wants zero-downtime deployment while replacing instances with a new version. Which deployment approach could be used?
+Q110. A company needs an application to survive the complete failure of one Availability Zone. What architectural principle should be followed?
+Q111. An application has become unavailable because the only database instance failed. What database architecture should have been used?
+Q112. A company wants to distribute requests between healthy targets and automatically stop sending traffic to unhealthy targets. Which service provides this?
+Q113. An application has long-running TCP connections and requires a load balancer optimized for Layer 4 traffic. Which load balancer should be considered?
+Q114. A company wants to scale ECS tasks based on CPU utilization. Which AWS capability should be used?
+Q115. A company wants to maintain application availability during an EC2 hardware failure. Which AWS architecture provides the strongest resilience?
+
+🌍 Domain 7 — Route 53 & CloudFront
+Q116–125
+Q116. A company owns example.com and wants DNS resolution managed by AWS. Which AWS service should be used?
+Q117. A company wants users to be routed to the AWS Region with the lowest network latency. Which Route 53 routing policy should be considered?
+Q118. A company wants users in India to be routed to an India-based application endpoint and users in Europe to a European endpoint. Which routing policy should be considered?
+Q119. A company wants traffic distributed between two endpoints using configurable percentages. Which Route 53 routing policy should be used?
+Q120. A company wants to route traffic to a secondary endpoint only when the primary endpoint becomes unhealthy. Which Route 53 feature should be used?
+Q121. A website has users around the world and serves many static images, JavaScript files, and CSS files. Which AWS service should cache this content close to users?
+Q122. A company wants CloudFront to serve content from a private S3 bucket. What should be configured?
+Q123. A company wants to reduce the latency of API responses for global users. How could CloudFront be used?
+Q124. A company wants to terminate TLS connections at the edge before forwarding requests to an origin. Which AWS service can provide this capability?
+Q125. A company wants to invalidate cached CloudFront objects after deploying a new version of its website. What CloudFront capability should be used?
+
+📨 Domain 8 — SQS, SNS, EventBridge & MSK
+Q126–135
+Q126. An order service should not fail when the payment service is temporarily unavailable. Which architecture should be used?
+Q127. A company wants to decouple two microservices so that the consuming service can process messages asynchronously. Which AWS service should be considered?
+Q128. A message should be delivered to multiple independent subscribers. Which AWS service is designed for this pub/sub pattern?
+Q129. A company wants to send notifications to multiple subscribers whenever an order is created. Which architecture should be considered?
+Q130. A company needs event-driven integration between many AWS services and SaaS applications. Which AWS service should be considered?
+Q131. An SQS consumer fails to process a message repeatedly. The company wants failed messages isolated for later investigation. What should be configured?
+Q132. An application requires FIFO message processing and exactly-once processing semantics within the capabilities provided by the service. Which SQS queue type should be considered?
+Q133. A company wants to process a very high volume of ordered event streams and allow multiple independent consumers to process the same events. Which technology should be considered?
+Q134. A company already uses Apache Kafka and wants a managed Kafka service on AWS. Which AWS service should be considered?
+Q135. A company wants to automatically retry failed asynchronous processing while preventing a single failed message from blocking unrelated messages. Which architecture should be considered?
+
+⚙️ Domain 9 — Lambda & API Gateway
+Q136–140
+Q136. A company wants to expose REST APIs without managing API servers. Which AWS service should be considered?
+Q137. An API receives millions of requests but traffic varies significantly throughout the day. The company wants automatic scaling without managing servers. Which architecture is appropriate?
+Q138. A Lambda function needs permission to read from DynamoDB. Where should the permission be assigned?
+Q139. A Lambda function needs to access resources inside a private VPC. What networking configuration may be required?
+Q140. A company wants to protect an API from excessive request rates by limiting the number of requests a client can make. Which API Gateway capability should be considered?
+
+♻️ Domain 10 — Disaster Recovery, Monitoring & Cost Optimization
+Q141–150
+Q141. A company can tolerate several hours of downtime after a disaster but cannot afford to lose more than a few minutes of data. Which disaster recovery strategy should be considered?
+Q142. A business-critical application requires near-zero downtime and minimal data loss across Regions. Which disaster recovery architecture provides the strongest resilience?
+Q143. A company wants to monitor CPU utilization, memory utilization, application logs, and alarms for EC2 workloads. Which AWS service should be used?
+Q144. A company wants an audit trail of AWS API calls across its environment. Which AWS service should be used?
+Q145. A company wants to identify underutilized EC2 instances and receive recommendations for reducing compute costs. Which AWS capability should be considered?
+Q146. A company stores old S3 objects that are rarely accessed. It wants to automatically move them to cheaper storage classes. What should be configured?
+Q147. A company wants to reduce NAT Gateway costs for applications that only need access to AWS services such as S3. What architecture should be considered?
+Q148. A workload is fault-tolerant and can tolerate interruption. The company wants to significantly reduce compute costs. Which EC2 pricing option should be considered?
+Q149. A company wants centralized dashboards and alarms for application and infrastructure metrics. Which AWS monitoring service should be considered?
+Q150. A company wants to continuously evaluate its AWS environment against recommended security, reliability, performance, and cost practices. Which AWS service should be considered?

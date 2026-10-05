@@ -1,0 +1,162 @@
+1. Architecture Fundamentals — 50 Questions
+A. Requirements & Architecture Thinking
+Q1. What is a functional requirement? Give three examples from an e-commerce system.
+Q2. What is a non-functional requirement? Give five examples.
+Q3. What is the difference between a business requirement and a technical requirement?
+Q4. A business says, "The application must support 10 million users." What questions should a Solution Architect ask before designing the system?
+Q5. What is the difference between a requirement and a constraint?
+Q6. Give examples of technical constraints that can influence an architecture.
+Q7. What assumptions should an architect document before designing a system?
+Q8. Why is requirement clarification important before selecting technologies?
+
+B. Scalability
+Q9. What is scalability?
+Q10. What is vertical scaling?
+Q11. What is horizontal scaling?
+Q12. Compare vertical and horizontal scaling for a production web application.
+Q13. What is elasticity?
+Q14. What is the difference between scalability and elasticity?
+Q15. Why are stateless applications generally easier to scale horizontally?
+Q16. A service currently handles 1,000 requests/sec and is expected to handle 20,000 requests/sec next year. How would you approach the architecture?
+Q17. What components can become bottlenecks when horizontally scaling an application?
+Q18. How can caching improve scalability?
+
+C. Availability, Reliability & Durability
+Q19. What is availability?
+Q20. What is reliability?
+Q21. What is durability?
+Q22. Explain the difference between availability, reliability, and durability using a real-world example.
+Q23. What is fault tolerance?
+Q24. What is resilience?
+Q25. What is fault isolation?
+Q26. What is a Single Point of Failure (SPOF)?
+Q27. How would you identify SPOFs in an architecture diagram?
+Q28. An application has only one application server. What failures could make the system unavailable?
+Q29. How does redundancy improve availability?
+Q30. What is the difference between redundancy and replication?
+
+D. Performance
+Q31. What is latency?
+Q32. What is throughput?
+Q33. What is the difference between latency and throughput?
+Q34. Can a system have high throughput but poor latency? Explain.
+Q35. What factors can increase application latency?
+Q36. How can caching reduce latency?
+Q37. How can asynchronous processing improve system performance?
+Q38. How would you identify whether a performance problem originates in the application, database, or network?
+
+E. Capacity & Bottlenecks
+Q39. What is capacity planning?
+Q40. What factors should be considered during capacity planning?
+Q41. What is a system bottleneck?
+Q42. How would you identify the bottleneck in this architecture?
+Users
+  ↓
+Load Balancer
+  ↓
+Application
+  ↓
+Database
+
+Q43. Why can scaling application servers fail to improve performance if the database is the bottleneck?
+Q44. What is the difference between average capacity and peak capacity?
+
+F. Architecture Principles & Trade-offs
+Q45. What is loose coupling?
+Q46. What is high cohesion?
+Q47. What is separation of concerns?
+Q48. Why is modularity important in architecture?
+Q49. How would you evaluate two architectures that both satisfy the functional requirements?
+Q50. How would you decide between a simpler architecture with lower cost and a more complex architecture with higher availability?
+
+2. System Design Fundamentals — 50 Questions
+A. Requirement Gathering
+Q51. You are asked to design an online bookstore. What questions would you ask the business before designing the architecture?
+Q52. What functional requirements would you identify for an e-commerce application?
+Q53. What non-functional requirements would you identify for the same application?
+Q54. How would you determine the expected number of users?
+Q55. How would you determine whether traffic is predictable or unpredictable?
+Q56. Why should peak traffic be considered separately from average traffic?
+Q57. What questions would you ask about availability requirements?
+Q58. What questions would you ask about security and compliance requirements?
+Q59. What questions would you ask about data retention and recovery?
+Q60. What questions would you ask about the expected growth of the system?
+
+B. Traffic Estimation
+Q61. An application has 1 million daily active users. What information do you need to estimate requests per second?
+Q62. How would you calculate average requests per second from daily request volume?
+Q63. Why should an architect estimate peak requests per second instead of using only average requests per second?
+Q64. An application receives 10 million requests per day. How would you estimate the approximate average RPS?
+Q65. If peak traffic is expected to be 5× the average traffic, how should that influence your architecture?
+Q66. How does the read/write ratio influence architecture decisions?
+Q67. An application receives 90% reads and 10% writes. What architectural techniques could improve performance?
+
+C. Storage Estimation
+Q68. An application generates 10 GB of data per day. How would you estimate its storage requirement after five years?
+Q69. What factors should be included when estimating storage requirements?
+Q70. How would you estimate database storage growth?
+Q71. Why should backups and replicas be considered when estimating storage requirements?
+Q72. An application stores images uploaded by users. What information would you need before selecting a storage architecture?
+
+D. Bandwidth Estimation
+Q73. What is bandwidth estimation?
+Q74. What factors determine an application's network bandwidth requirements?
+Q75. An API returns a 500 KB response and receives 1,000 requests/sec. How would you estimate its network bandwidth?
+Q76. How can CDN caching reduce bandwidth requirements for an origin server?
+Q77. Why can large media files create a significantly different architecture from normal REST API responses?
+
+E. Capacity Estimation
+Q78. What is capacity estimation?
+Q79. What resources should be considered when estimating system capacity?
+Q80. How would you estimate the number of application instances required for a workload?
+Q81. What is a safety margin in capacity planning?
+Q82. Why should an architecture account for traffic growth?
+
+F. API Design
+Q83. What characteristics should a well-designed REST API have?
+Q84. How would you design APIs for creating, retrieving, updating, and deleting books?
+Q85. What is API versioning, and why is it important?
+Q86. How would you design pagination for an API returning millions of records?
+Q87. How would you design API error responses consistently?
+Q88. What is idempotency, and why is it important for APIs?
+Q89. How would you design an idempotent payment API?
+
+G. Data Flow & Components
+Q90. What is a data flow in system architecture?
+Q91. Given a requirement, how do you identify the major components of the system?
+Q92. How do you decide whether two functions should be implemented as separate services?
+Q93. What factors determine whether communication between two components should be synchronous or asynchronous?
+Q94. How would you identify dependencies between system components?
+
+H. Failure & Scalability Analysis
+Q95. How would you analyze what happens when a database becomes unavailable?
+Q96. How would you analyze what happens when an external API becomes slow?
+Q97. What happens if one microservice receives 10× more traffic than the others?
+Q98. How would you identify single points of failure in a system?
+Q99. How would you analyze whether an architecture can scale horizontally?
+Q100. Before approving a production architecture, what failure scenarios should a Solution Architect test mentally?
+
+3. Architecture Diagrams & Documentation — 20 Questions
+Architecture Diagrams
+Q101. What is an architecture diagram?
+Q102. What information should a high-level architecture diagram communicate?
+Q103. What is the difference between a logical architecture diagram and a deployment architecture diagram?
+Q104. What is a data-flow diagram?
+Q105. What is a sequence diagram?
+Q106. What is a deployment diagram?
+Q107. When would you use a sequence diagram instead of an architecture diagram?
+Q108. How would you represent synchronous communication in an architecture diagram?
+Q109. How would you represent asynchronous communication?
+Q110. How should external systems be represented in an architecture diagram?
+
+4. Architecture Decision Records — 10 Questions
+Q111. What is an Architecture Decision Record (ADR)?
+Q112. Why should architectural decisions be documented?
+Q113. What information should an ADR contain?
+Q114. When should an ADR be created?
+Q115. Who should participate in an important architecture decision?
+Q116. How would you document the decision to use ECS instead of EKS?
+Q117. How would you document the decision to use Kafka instead of SQS?
+Q118. How would you document the decision to use DynamoDB instead of RDS?
+Q119. Why should rejected alternatives be documented in an ADR?
+Q120. How can ADRs help future developers understand why a system was designed a certain way?
