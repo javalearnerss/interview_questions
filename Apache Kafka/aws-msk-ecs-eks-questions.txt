@@ -1,0 +1,225 @@
+🚀 Amazon MSK Interview Preparation: 160 Scenario-Based Questions
+
+Category 1: MSK Architecture and ECS Networking — 20 Questions
+
+Focus: Cluster design, VPCs, subnets, security groups, DNS, routing, and broker connectivity.
+
+1. Your Spring Boot producer runs on ECS Fargate but cannot connect to MSK. How would you troubleshoot the problem systematically?
+2. Your ECS tasks and MSK cluster reside in private subnets. How would you configure secure communication between them?
+3. Your ECS task can resolve the MSK bootstrap hostname but cannot establish a TCP connection. What would you investigate?
+4. Your application connects to the bootstrap broker but fails when connecting to other brokers. What could cause this behavior?
+5. Your MSK cluster and ECS tasks are in different VPCs. How would you establish private connectivity?
+6. Your organization has multiple AWS accounts. How would you allow ECS applications in one account to access an MSK cluster in another?
+7. Your ECS tasks run in three Availability Zones, but MSK is experiencing an Availability Zone outage. How would you assess application availability?
+8. Your MSK brokers and ECS tasks use separate security groups. What inbound and outbound rules are required?
+9. Your producer works when deployed on an EC2 instance but fails on ECS Fargate. How would you compare the two network configurations?
+10. Your ECS tasks have no public IP addresses. Do they need a NAT gateway to communicate with a private MSK cluster? Explain the conditions.
+11. Your application experiences intermittent connection failures after ECS tasks are replaced. How would you investigate DNS caching and connection lifecycle issues?
+12. Your MSK cluster has multiple bootstrap endpoints. How would you configure the application to use the correct endpoints for its authentication mechanism?
+13. Your MSK cluster is accessible from one subnet but not another. How would you isolate the routing and security group problem?
+14. Your application connects successfully to MSK, but connections fail after a broker restart. How should the client recover?
+15. Your organization wants to restrict MSK access to applications in specific subnets. Would subnet placement alone provide sufficient security?
+16. Your MSK cluster uses private connectivity, but your ECS application resolves an unexpected IP address for a broker. How would you troubleshoot DNS and endpoint selection?
+17. Your application experiences high latency communicating with MSK despite sufficient CPU and memory. How would you investigate network latency and cross-AZ traffic?
+18. Your organization wants to deploy separate development, test, and production environments. Would you share one MSK cluster or create separate clusters?
+19. Your MSK cluster must support multiple business applications with different availability requirements. How would you design the network and cluster boundaries?
+20. You must design production-grade networking for ECS-to-MSK connectivity. Explain your architecture, security controls, failure handling, and validation strategy.
+
+Category 2: MSK IAM Authentication and Authorization — 20 Questions
+
+Focus: IAM authentication, ECS task roles, Kafka permissions, least privilege, and credential management.
+
+1. You want your ECS producer to authenticate to MSK without a username and password. How would you configure IAM authentication?
+2. Your ECS task has an IAM execution role, but the Kafka client receives an authorization error. What would you check?
+3. What is the difference between an ECS task execution role and a task role when accessing MSK?
+4. Your producer authenticates successfully but cannot publish to the orders topic. How would you troubleshoot authorization?
+5. Your consumer can connect to MSK but cannot join its consumer group. Which permissions and configurations would you investigate?
+6. Your producer should publish only to orders, while your consumer should read only from payments. How would you enforce least privilege?
+7. Your organization requires separate identities for every producer and consumer service. How would you design IAM roles and policies?
+8. Your Spring Boot application must use IAM authentication without embedding AWS credentials. How would the application obtain its identity?
+9. You want to avoid AWS SDK dependencies in your business application. How would you implement MSK IAM authentication while keeping business logic independent of AWS?
+10. Your ECS application works in development but receives authorization errors in production. How would you compare its effective IAM permissions?
+11. Your IAM policy grants access to an MSK cluster, but publishing still fails. How would you distinguish cluster-level permissions from topic-level permissions?
+12. Your organization uses both IAM authentication and Kafka ACLs across different MSK clusters. How would you avoid confusion between their authorization models?
+13. An unauthorized ECS application attempts to publish to a sensitive topic. Which controls would prevent the operation?
+14. Your organization needs to revoke a compromised application’s access immediately. How would you handle IAM policy changes and active client connections?
+15. Your consumer uses a unique IAM role, but it cannot read messages because its consumer group ID changed. How would you investigate?
+16. Your ECS producer and consumer currently share one IAM role. What risks does this introduce, and how would you separate their permissions?
+17. An application needs access to MSK, CloudWatch, and Secrets Manager. How would you design its IAM permissions without granting broad administrative access?
+18. Your application uses SASL/SCRAM, but the organization wants to migrate to IAM authentication. How would you plan the migration?
+19. Your organization requires an audit trail showing which applications accessed specific Kafka resources. How would you approach auditing and monitoring?
+20. Design a least-privilege IAM architecture for multiple ECS producer and consumer applications sharing one MSK cluster.
+
+Category 3: MSK TLS, Secrets, and Security — 20 Questions
+
+Focus: Encryption in transit, encryption at rest, Secrets Manager, certificate validation, and security incidents.
+
+1. Your ECS producer fails with an SSL certificate validation error when connecting to MSK. How would you investigate?
+2. Your application encrypts Kafka traffic using TLS. Does TLS alone ensure that only authorized applications can publish messages?
+3. Your organization requires encryption at rest for Kafka data. How would you configure and validate it?
+4. Your SASL/SCRAM username and password are stored in AWS Secrets Manager. How should the application retrieve and use them securely?
+5. Your organization wants to eliminate Kafka usernames and passwords. Would IAM authentication remove every secret-management requirement?
+6. Your producer’s credentials are compromised. How would you revoke access, rotate credentials, and investigate potential misuse?
+7. Your ECS task logs contain Kafka authentication details. How would you remove the exposure and prevent recurrence?
+8. Your application image contains a Kafka password. What are the remediation steps?
+9. Your organization requires certificate validation for all Kafka connections. How would you prevent developers from disabling hostname verification?
+10. Your security team asks whether MSK encrypts data between brokers and clients. How would you verify the cluster’s encryption configuration?
+11. Your application connects through TLS but fails during SASL authentication. How would you separate TLS negotiation failures from authentication failures?
+12. Your organization uses customer-managed AWS KMS keys for MSK encryption at rest. What operational risks arise if the key becomes unavailable or access is revoked?
+13. Your company requires credential rotation without rebuilding application images. How would you design the deployment?
+14. Your security audit identifies excessive IAM permissions for the MSK producer role. How would you reduce them without disrupting production?
+15. Your organization requires different security policies for development and production MSK clusters. How would you prevent accidental cross-environment access?
+16. Your producer and consumer need different authentication configurations. How would you manage those settings without duplicating business code?
+17. An attacker gains access to an ECS task role. How would you limit the attacker’s ability to access unrelated AWS resources?
+18. Your application uses Secrets Manager, but secret retrieval fails during deployment. How would you prevent an uncontrolled application startup failure?
+19. Your security team requires evidence that unauthorized clients cannot access a sensitive Kafka topic. How would you design a validation test?
+20. Design a production-grade MSK security architecture covering TLS, IAM or SASL/SCRAM, secret management, encryption at rest, and auditing.
+
+Category 4: ECS Producer and Consumer Deployment — 20 Questions
+
+Focus: ECS Fargate, task definitions, deployment strategies, concurrency, offsets, and graceful shutdown.
+
+1. Your Spring Boot Kafka producer works locally but fails after deployment to ECS. What configuration differences would you investigate?
+2. You need to deploy a producer and two consumers as separate ECS services. How would you structure their task definitions and configurations?
+3. Your ECS producer starts before MSK becomes available. How should the application handle initial connectivity failures?
+4. Your producer reports successful sends, but the expected topic does not contain the message. How would you investigate?
+5. Your consumer updates MySQL and crashes before committing its Kafka offset. How would you prevent duplicate database updates?
+6. ECS terminates a consumer task during deployment while it is processing messages. How would you handle graceful shutdown?
+7. Your consumer deployment causes frequent group rebalances. How would you minimize processing interruptions?
+8. You scale a consumer service from five to 20 ECS tasks, but throughput barely improves. What would you investigate?
+9. Your topic has six partitions, and you run ten consumer tasks in one group. What happens, and how would you decide whether to add partitions?
+10. Your ECS service scales based on CPU, but consumer lag keeps increasing while CPU remains low. How would you improve the scaling policy?
+11. Your producer experiences buffer exhaustion during a traffic spike. How would you tune the client and prevent memory exhaustion?
+12. Your application experiences intermittent producer timeouts. How would you configure retries, delivery timeouts, and idempotence?
+13. Your consumer processes messages concurrently, but events for the same order must remain sequential. How would you implement this requirement?
+14. Your ECS service restarts repeatedly because it fails to initialize the Kafka consumer. How would you distinguish a genuine application failure from temporary MSK unavailability?
+15. Your new consumer version is incompatible with the existing event schema. How would you roll back safely?
+16. Your producer needs to publish to different topics based on business events. How would you externalize topic configuration and authorization?
+17. Your application uses a new consumer group ID after deployment and unexpectedly processes historical messages. Why did this happen?
+18. Your ECS consumer experiences long garbage-collection pauses and misses polling deadlines. How would you investigate and remediate the issue?
+19. Your organization wants to deploy producer and consumer services independently. How would you handle backward compatibility and coordinated releases?
+20. Design a production-grade ECS deployment for Spring Boot Kafka applications, covering reliability, scaling, security, and graceful shutdown.
+
+Category 5: MSK Performance, Scaling, and Cost — 20 Questions
+
+Focus: Broker capacity, partitioning, throughput, storage, latency, and cost optimization.
+
+1. Your MSK cluster handles 10,000 messages per second but must scale to 100,000. How would you estimate the required capacity?
+2. One MSK broker has significantly higher CPU utilization than the others. How would you investigate?
+3. One broker’s disk utilization is much higher than the rest. How would you identify partition imbalance?
+4. Your producer throughput drops after enabling compression. How would you determine whether CPU overhead outweighs bandwidth savings?
+5. Your consumer lag increases even though broker CPU and disk utilization are normal. What would you investigate?
+6. Your application produces 100,000 messages per second, each averaging 2 KB. How would you estimate ingress bandwidth and seven-day storage requirements with replication factor three?
+7. Your MSK cluster experiences high network utilization during peak traffic. How would you optimize producer batching, compression, and replication traffic?
+8. Your organization wants to reduce MSK costs. How would you evaluate broker sizing, storage, data transfer, and logging costs?
+9. Your MSK cluster experiences high request latency despite low CPU utilization. Which broker and client metrics would you examine?
+10. You increase the partition count, but consumer throughput does not improve. Why might this happen?
+11. Your producer uses a very small batch.size and low linger.ms. How could this affect throughput and request overhead?
+12. Your consumer fetches large batches but experiences high heap usage. How would you balance throughput and memory consumption?
+13. Your MSK storage grows faster than expected. How would you investigate retention settings, replication, message sizes, and topic distribution?
+14. Your application generates many small messages. Would batching or compression provide greater benefit? How would you measure the outcome?
+15. Your cluster approaches its supported capacity. How would you decide between scaling broker capacity and optimizing the application?
+16. Your MSK Serverless workload experiences unexpected costs. How would you investigate throughput patterns, storage usage, and data transfer?
+17. Your organization is choosing MSK Provisioned versus MSK Serverless. How would you compare the options for predictable high throughput?
+18. Your application requires low latency and high throughput. How would you evaluate the trade-offs among batching, acknowledgments, replication, and compression?
+19. Your cluster experiences repeated traffic spikes. How would you design capacity headroom and alerting to prevent service degradation?
+20. Design a capacity-planning process for MSK covering workload measurement, load testing, broker sizing, partition distribution, and cost forecasting.
+
+Category 6: MSK Monitoring and Troubleshooting — 20 Questions
+
+Focus: CloudWatch, Prometheus, Grafana, consumer lag, metrics, and incident response.
+
+1. Your MSK brokers are healthy, but producers experience frequent timeouts. How would you investigate?
+2. Your consumer lag increases continuously. Which metrics would you inspect first?
+3. Your application reports successful sends, but downstream processing is delayed. How would you identify where the latency occurs?
+4. Your expected MSK broker metrics are missing from CloudWatch. How would you troubleshoot the monitoring configuration?
+5. You need to monitor MSK broker metrics and Spring Boot application metrics in Grafana. How would you design the architecture?
+6. Your consumer lag alert fires during a short traffic spike but clears quickly. How would you reduce false alarms?
+7. Your producer has a high error rate, but MSK broker health metrics show no obvious problem. How would you isolate the cause?
+8. Your ECS application repeatedly loses connectivity to MSK. How would you correlate application logs, CloudWatch metrics, and networking events?
+9. Your broker request latency increases during peak hours. How would you investigate request queues, CPU, network, and disk behavior?
+10. Your consumer is running but has stopped making progress. How would you detect this condition?
+11. Your team wants alerts for under-replicated partitions and offline partitions. How would you design actionable alerts?
+12. Your consumer lag is high, but end-to-end event latency is acceptable. How would you decide whether the lag is operationally dangerous?
+13. Your application experiences intermittent authorization failures. How would you correlate IAM changes and Kafka client logs?
+14. Your producer throughput drops after a deployment. How would you compare application metrics before and after the release?
+15. Your monitoring system collects application metrics but not detailed broker metrics. How would you choose the right monitoring sources?
+16. Your team wants to trace an event from producer publication to database update. How would you implement correlation IDs and distributed tracing?
+17. Your CloudWatch costs increase after enabling detailed MSK monitoring. How would you optimize monitoring without losing critical visibility?
+18. Your incident dashboard shows consumer lag but not processing failures. Which additional metrics would you add?
+19. Your on-call team needs a troubleshooting runbook for MSK connectivity failures. What checks and decision points would you include?
+20. Design an end-to-end observability strategy for MSK, ECS, Spring Boot, and MySQL.
+
+Category 7: MSK Reliability, Data Consistency, and Disaster Recovery — 20 Questions
+
+Focus: Replication, transactions, retries, DLTs, failover, and business correctness.
+
+1. An MSK broker fails immediately after acknowledging a message. How do replication factor, ISR, and producer acknowledgment settings affect potential data loss?
+2. Your business requires that acknowledged financial events must not be lost. How would you configure producer and broker durability?
+3. Your consumer updates a database but crashes before committing the Kafka offset. How would you make processing idempotent?
+4. Your producer publishes an event after updating MySQL, but the database transaction rolls back. How would you prevent inconsistent events?
+5. Your application must update MySQL and publish an event to MSK reliably. How would you implement the transactional outbox pattern?
+6. Your consumer receives the same payment event multiple times. How would you prevent duplicate payment processing?
+7. Your consumer repeatedly fails on a malformed message. How would you implement retries and a Dead Letter Topic?
+8. Your retry mechanism causes later events to be processed before earlier events for the same account. How would you preserve ordering?
+9. An Availability Zone fails, and some partitions become unavailable for writes. How would you investigate ISR and replica availability?
+10. Your organization requires cross-region recovery with an RPO of five minutes and an RTO of 30 minutes. How would you design and test the recovery process?
+11. Your secondary region receives replicated events, but consumer offsets are not synchronized. How would you manage failover and resume processing safely?
+12. Your application fails over to a secondary region and processes some events twice. How would you reconcile business state?
+13. Your MSK topic’s retention setting is accidentally reduced, and required messages expire. What recovery options would you investigate?
+14. Your producer uses idempotence, but duplicate business operations still occur after application restarts. Why?
+15. Your Kafka transaction commits, but an external database update fails. How would you design consistency across both systems?
+16. Your organization wants to migrate to a new MSK cluster without losing messages. How would you plan replication, consumer migration, and cutover validation?
+17. Your DLT contains thousands of failed events. How would you investigate the cause and design a controlled replay process?
+18. Your application must continue operating during temporary MSK unavailability. How would you handle retries, local buffering, and recovery without risking uncontrolled data loss?
+19. Your consumers process transactions from several topics. How would you handle partial failures across those topics?
+20. Design a recovery strategy for MSK that covers broker failure, AZ failure, region failure, data reconciliation, and operational testing.
+
+Category 8: MSK-to-EKS Migration and Architecture — 20 Questions
+
+Focus: Reusing MSK, EKS workload identity, Kubernetes networking, migration, and end-to-end design.
+
+1. Your producer and consumers work on ECS. How would you connect applications deployed on EKS to the same MSK cluster?
+2. Your EKS application cannot connect to MSK, although the ECS application works. How would you compare their network paths?
+3. Your EKS workloads need IAM authentication. How would you provide AWS identities using EKS Pod Identity or IRSA, where appropriate?
+4. Your ECS producer and EKS consumer require different MSK permissions. How would you enforce least privilege?
+5. Your ECS and EKS consumers use the same consumer group ID. What happens when both environments run simultaneously?
+6. You want to migrate consumers from ECS to EKS without disrupting message processing. How would you plan the migration?
+7. Your EKS consumer pods restart frequently, causing repeated rebalances. How would you investigate readiness probes, liveness probes, resource limits, and shutdown handling?
+8. Your EKS deployment scales consumers based on Kafka lag. How would you collect lag metrics and configure autoscaling?
+9. Your EKS consumer count exceeds the partition count. How would this affect scaling and resource utilization?
+10. Your EKS pods can resolve MSK bootstrap endpoints but fail to connect to advertised broker endpoints. How would you troubleshoot the issue?
+11. Your organization wants ECS and EKS applications to use a common MSK cluster but different authentication identities. How would you design the authorization model?
+12. Your ECS application uses SASL/SCRAM, while the new EKS application uses IAM authentication. Can both access the same cluster, and what configuration considerations apply?
+13. Your EKS migration introduces a new application version with an incompatible event schema. How would you avoid disrupting ECS consumers?
+14. Your organization wants separate development and production clusters while sharing common deployment templates. How would you manage configuration and permissions?
+15. Your EKS pods require access to MSK and other AWS services. How would you prevent broad node-role permissions from being inherited unnecessarily?
+16. Your EKS consumer experiences CPU throttling and increasing lag. How would you tune resource requests, limits, and application concurrency?
+17. Your organization plans to move all Kafka consumers from ECS to EKS. What metrics would determine whether EKS delivers the expected operational benefits?
+18. Your ECS-to-EKS migration must support rollback. How would you coordinate consumer groups, offsets, application state, and deployment switching?
+19. Your organization wants to use the same observability stack for ECS and EKS workloads. How would you standardize application metrics, broker metrics, logs, and tracing?
+20. Design a production-grade architecture using Amazon MSK, ECS Fargate, EKS, IAM authentication, CloudWatch, Prometheus, Grafana, and RDS. Explain networking, security, reliability, migration, and cost trade-offs.
+
+⸻
+
+🎯 How to Use These Questions
+
+Prepare each scenario using this framework:
+
+1. Root cause: What is likely failing?
+2. Investigation: Which AWS resources, logs, metrics, and Kafka settings would you inspect?
+3. Resolution: What would you change?
+4. Prevention: How would you prevent recurrence?
+5. Trade-offs: How would your decision affect security, availability, throughput, latency, and cost?
+
+Recommended preparation sequence
+
+Since your plan is to connect through ECS first and then EKS, follow this order:
+
+First: Categories 1–4 — networking, IAM, security, and ECS deployment.
+
+Next: Categories 5–7 — performance, monitoring, and reliability.
+
+Finally: Category 8 — extending the architecture to EKS and planning migration.
+
+This gives you a practical learning path: implement the architecture, validate it, troubleshoot realistic failures, and then prepare to explain your decisions at a senior engineering interview.
